@@ -237,13 +237,8 @@ export async function routeIntent(user, text) {
         "🔔 Alertas sempre no horário certo\n" +
         "📅 Mais organização no seu dia a dia\n" +
         "⚡ Uso sem bloqueios ou interrupções\n\n" +
-        "📦 *Planos disponíveis:*\n" +
-        "• 🗓️ *Mensal* — R$ 9,90\n" +
-        "• 📆 *Trimestral* — R$ 27,90 *(melhor custo)*\n" +
-        "• 🧾 *Semestral* — R$ 49,90\n" +
-        "• 🏆 *Anual* — R$ 89,90 *(economia máxima)*\n\n" +
-        "👇 *Selecione um plano abaixo:*\n" +
-        "Exemplo: *mensal*",
+        "👇 *Selecione um plano abaixo:*\n",
+
       buttons: [
         { id: "plano_mensal", title: "🗓️ Mensal — R$ 9,90" },
         { id: "plano_trimestral", title: "📆 Trimestral — R$ 27,90" },
@@ -939,13 +934,8 @@ export async function routeIntent(user, text) {
         "🔔 Alertas sempre no horário certo\n" +
         "📅 Mais organização no seu dia a dia\n" +
         "⚡ Uso sem bloqueios ou interrupções\n\n" +
-        "📦 *Planos disponíveis:*\n" +
-        "• 🗓️ *Mensal* — R$ 9,90\n" +
-        "• 📆 *Trimestral* — R$ 27,90 *(melhor custo)*\n" +
-        "• 🧾 *Semestral* — R$ 49,90\n" +
-        "• 🏆 *Anual* — R$ 89,90 *(economia máxima)*\n\n" +
-        "👇 *Selecione um plano abaixo:*\n" +
-        "Exemplo: *mensal*",
+        "👇 *Selecione um plano abaixo:*\n",
+
       buttons: [
         { id: "plano_mensal", title: "🗓️ Mensal — R$ 9,90" },
         { id: "plano_trimestral", title: "📆 Trimestral — R$ 27,90" },
