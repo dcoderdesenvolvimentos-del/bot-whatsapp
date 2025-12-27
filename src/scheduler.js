@@ -1,38 +1,42 @@
 import { getPendingReminders, markAsSent } from "./reminders.js";
 import { sendMessage } from "./zapi.js";
 
+let isRunning = false;
+
 export function startScheduler() {
   console.log("⏱️ Scheduler iniciado");
 
   setInterval(async () => {
-    console.log("🔁 Verificando lembretes...");
+    // 🔒 evita execução simultânea
+    if (isRunning) {
+      console.log("⏳ Scheduler ainda em execução, pulando ciclo");
+      return;
+    }
 
-    const pendentes = await getPendingReminders();
-    console.log("📦 Pendentes:", pendentes.length);
+    isRunning = true;
 
-    for (const reminder of pendentes) {
-      console.log("🧪 reminder.when =", reminder.when);
-      console.log("🧪 typeof =", typeof reminder.when);
+    try {
+      console.log("🔁 Verificando lembretes...");
 
-      // 🔹 converte timestamp em data legível
-      let dateObj;
+      const pendentes = await getPendingReminders();
+      console.log("📦 Pendentes:", pendentes.length);
 
-      if (reminder.when?.seconds) {
-        // Firestore Timestamp
-        dateObj = new Date(reminder.when.seconds * 1000);
-      } else {
-        // Date ou timestamp normal
-        dateObj = new Date(reminder.when);
-      }
+      for (const reminder of pendentes) {
+        let dateObj;
 
-      const formattedDate = dateObj.toLocaleDateString("pt-BR");
-      const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+        if (reminder.when?.seconds) {
+          dateObj = new Date(reminder.when.seconds * 1000);
+        } else {
+          dateObj = new Date(reminder.when);
+        }
 
-      // 🔹 mensagem final
-      const message = `━━━━━━━━━━━━━━
+        const formattedDate = dateObj.toLocaleDateString("pt-BR");
+        const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const message = `━━━━━━━━━━━━━━
 ⏰ *LEMBRETE*
 ━━━━━━━━━━━━━━
 
@@ -42,9 +46,13 @@ export function startScheduler() {
 
 💡 Estou passando pra te lembrar 😉`;
 
-      await sendMessage(reminder.user, message);
-
-      await markAsSent(reminder.id);
+        await sendMessage(reminder.user, message);
+        await markAsSent(reminder.id);
+      }
+    } catch (err) {
+      console.error("❌ Erro no scheduler:", err);
+    } finally {
+      isRunning = false;
     }
-  }, 30_000);
+  }, 60_000); // ⏱️ 60 segundos (ideal pra produção)
 }
