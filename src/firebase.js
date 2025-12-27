@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import fs from "fs";
 
 const serviceAccount = JSON.parse(
-  fs.readFileSync("serviceAccountKey.json", "utf8")
+  process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
 );
 
 if (!admin.apps.length) {
