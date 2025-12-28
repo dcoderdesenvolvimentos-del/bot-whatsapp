@@ -38,7 +38,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 🔔 WEBHOOK MERCADO PAGO
-  if (req.method === "POST" && req.url === "/mp/webhook") {
+  if (req.method === "POST" && req.url === "/mpWebhook") {
     return handleMpWebhook(req, res);
   }
 });
