@@ -17,7 +17,12 @@ export async function handleMpWebhook(payload) {
     }
   );
 
-  if (data.status !== "approved") return;
+  console.log("💳 Status do pagamento:", data.status); // 👈 ADICIONA AQUI
+
+  if (data.status !== "approved") {
+    console.log("⏳ Pagamento ainda não aprovado, aguardando..."); // 👈 E AQUI
+    return;
+  }
 
   const userData = await getUserByPendingPayment(paymentId);
   if (!userData) {
