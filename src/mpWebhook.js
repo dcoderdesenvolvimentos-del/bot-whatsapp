@@ -1,11 +1,12 @@
 import axios from "axios";
-import { PLANS } from "./plans.js";
-import { getUser, updateUser } from "./services/userService.js";
+import { getUserByPendingPayment, updateUser } from "./services/userService.js";
+import { sendMessage } from "./zapi.js";
 
-export async function handleMpWebhook(req, res) {
-  console.log("🔔 MP Webhook recebido:", JSON.stringify(req.body, null, 2));
-  const paymentId = req.body.data?.id;
-  if (!paymentId) return res.sendStatus(200);
+export async function handleMpWebhook(payload) {
+  const paymentId = Number(payload?.data?.id);
+  if (!paymentId) return;
+
+  console.log("🧾 MP paymentId:", paymentId);
 
   const { data } = await axios.get(
     `https://api.mercadopago.com/v1/payments/${paymentId}`,
@@ -16,42 +17,29 @@ export async function handleMpWebhook(req, res) {
     }
   );
 
-  if (data.status !== "approved") return res.sendStatus(200);
-
-  const user = data.payer.email.replace("@mariomelembra.com.br", "");
+  if (data.status !== "approved") return;
 
   const userData = await getUserByPendingPayment(paymentId);
-  console.log("🧾 paymentId do webhook:", paymentId);
-
   if (!userData) {
-    console.log("⚠️ Nenhum usuário com esse pendingPayment:", paymentId);
-    return res.sendStatus(200);
+    console.log("❌ Usuário não encontrado para paymentId", paymentId);
+    return;
   }
-  const plan = PLANS[userData.pendingPlan];
-  const premiumUntil = Date.now() + plan.days * 24 * 60 * 60 * 1000;
 
-  await updateUser(user, {
+  const premiumUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+  await updateUser(userData.id, {
     plan: "premium",
-    planType: userData.pendingPlan,
     premiumUntil,
     pendingPayment: null,
     pendingPlan: null,
-    expirationWarnings: {
-      sevenDays: false,
-      oneDay: false,
-    },
   });
 
-  console.log("💰 Status pagamento:", data.status);
-
-  // 🎉 MENSAGEM PÓS-PAGAMENTO
   await sendMessage(
-    user,
-    "🎉 *Pagamento confirmado com sucesso!*\n\n" +
-      "💎 Seu *Plano Premium* já está ativo.\n\n" +
-      "Agora você pode criar *lembretes ilimitados* e usar o bot sem restrições.\n\n" +
-      "👉 Pode começar agora mesmo. É só me dizer 😊"
+    userData.id,
+    "🎉 *Pagamento confirmado!*\n\n" +
+      "💎 Seu plano Premium já está ativo.\n\n" +
+      "Obrigado por confiar no Mário 🤝"
   );
 
-  res.sendStatus(200);
+  console.log("✅ Usuário virou Premium:", userData.id);
 }
