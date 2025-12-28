@@ -3,6 +3,7 @@ import { PLANS } from "./plans.js";
 import { getUser, updateUser } from "./services/userService.js";
 
 export async function handleMpWebhook(req, res) {
+  console.log("🔔 MP Webhook recebido:", JSON.stringify(req.body, null, 2));
   const paymentId = req.body.data?.id;
   if (!paymentId) return res.sendStatus(200);
 
@@ -10,7 +11,7 @@ export async function handleMpWebhook(req, res) {
     `https://api.mercadopago.com/v1/payments/${paymentId}`,
     {
       headers: {
-        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
       },
     }
   );
@@ -34,6 +35,8 @@ export async function handleMpWebhook(req, res) {
       oneDay: false,
     },
   });
+
+  console.log("💰 Status pagamento:", data.status);
 
   // 🎉 MENSAGEM PÓS-PAGAMENTO
   await sendMessage(

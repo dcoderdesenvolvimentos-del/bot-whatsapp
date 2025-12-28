@@ -4,6 +4,7 @@ import http from "http";
 import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
+import { handleMpWebhook } from "./mercadoPagoWebhook.js";
 
 startScheduler();
 
@@ -34,6 +35,11 @@ const server = http.createServer(async (req, res) => {
   } else {
     res.writeHead(404);
     res.end();
+  }
+
+  // 🔔 WEBHOOK MERCADO PAGO
+  if (req.method === "POST" && req.url === "/mp/webhook") {
+    return handleMpWebhook(req, res);
   }
 });
 
