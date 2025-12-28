@@ -17,7 +17,7 @@ export async function handleMpWebhook(req, res) {
 
   if (data.status !== "approved") return res.sendStatus(200);
 
-  const user = data.payer.email.replace("@bot.com", "");
+  const user = data.payer.email.replace("@mariomelembra.com.br", "");
   const userData = await getUser(user);
 
   const plan = PLANS[userData.pendingPlan];

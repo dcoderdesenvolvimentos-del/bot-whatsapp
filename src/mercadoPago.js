@@ -12,7 +12,7 @@ export async function createPixPayment(user, planKey) {
     description: `Plano Premium ${plan.label} – Bot de Lembretes`,
     payment_method_id: "pix",
     payer: {
-      email: `${user}@bot.com`,
+      email: `${user}@mariomelembra.com.br`,
     },
   };
 
