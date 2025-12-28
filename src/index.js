@@ -1,4 +1,3 @@
-javascript;
 import "dotenv/config";
 
 import http from "http";
