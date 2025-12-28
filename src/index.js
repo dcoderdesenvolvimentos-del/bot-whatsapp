@@ -4,7 +4,7 @@ import http from "http";
 import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
-import { handleMpWebhook } from "./mercadoPagoWebhook.js";
+import { handleMpWebhook } from "./mpWebhook.js";
 
 startScheduler();
 
