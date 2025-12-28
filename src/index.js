@@ -37,8 +37,4 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Webhook rodando na porta ${PORT}`);
-});
+server.listen(3000, () => console.log("Webhook rodando na porta 3000"));
