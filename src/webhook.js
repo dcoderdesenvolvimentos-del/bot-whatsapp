@@ -85,8 +85,8 @@ export async function handleWebhook(payload) {
 
     // 💳 PIX
     if (typeof response === "object" && response.type === "pix") {
-      await sendMessage(user, response.message);
-      await sendMessage(user, response.pixCode);
+      await sendMessage(user, response.intro);
+      await sendMessage(user, response.code);
       return;
     }
 

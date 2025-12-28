@@ -215,9 +215,9 @@ export async function routeIntent(user, text) {
 
     return {
       type: "pix",
-      message:
-        "📲 PIX Copia e Cola\n\nCopie o código abaixo e cole no app do seu banco 👇",
-      pixCode: pix.qrCode,
+      intro:
+        "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
+      code: pix.point_of_interaction.transaction_data.qr_code,
     };
   }
 
@@ -542,9 +542,9 @@ export async function routeIntent(user, text) {
 
         return {
           type: "pix",
-          message:
-            "📲 PIX Copia e Cola\n\nCopie o código abaixo e cole no app do seu banco 👇",
-          pixCode: pix.qrCode,
+          intro:
+            "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
+          code: pix.point_of_interaction.transaction_data.qr_code,
         };
       }
 
@@ -992,9 +992,9 @@ export async function routeIntent(user, text) {
 
     return {
       type: "pix",
-      message:
-        "📲 PIX Copia e Cola\n\nCopie o código abaixo e cole no app do seu banco 👇",
-      pixCode: pix.qrCode,
+      intro:
+        "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
+      code: pix.point_of_interaction.transaction_data.qr_code,
     };
   }
 
