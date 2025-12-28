@@ -25,7 +25,7 @@ export function startScheduler() {
         let dateObj;
 
         if (reminder.when?.seconds) {
-          dateObj = new Date(reminder.when.seconds * 2000);
+          dateObj = new Date(reminder.when.seconds * 1000);
         } else {
           dateObj = new Date(reminder.when);
         }
