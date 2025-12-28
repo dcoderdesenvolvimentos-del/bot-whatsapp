@@ -283,6 +283,8 @@ export async function routeIntent(user, text) {
     );
   }
 
+  console.log("🧾 pix.id salvo no usuário:", pix.id);
+
   // =========================
   // NORMALIZAÇÃO NÍVEL 1 (HORAS)
   // =========================

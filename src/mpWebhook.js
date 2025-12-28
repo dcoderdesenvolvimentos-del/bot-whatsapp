@@ -21,6 +21,8 @@ export async function handleMpWebhook(req, res) {
   const user = data.payer.email.replace("@mariomelembra.com.br", "");
 
   const userData = await getUserByPendingPayment(paymentId);
+  console.log("🧾 paymentId do webhook:", paymentId);
+
   if (!userData) {
     console.log("⚠️ Nenhum usuário com esse pendingPayment:", paymentId);
     return res.sendStatus(200);
