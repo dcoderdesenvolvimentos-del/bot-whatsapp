@@ -208,6 +208,8 @@ export async function routeIntent(user, text) {
 
     const pix = await createPixPayment(user, planKey);
 
+    console.log("🧾 pix.id salvo no usuário:", pix.id);
+
     await updateUser(user, {
       pendingPayment: pix.id,
       pendingPlan: planKey,
@@ -282,8 +284,6 @@ export async function routeIntent(user, text) {
       "💎 Quando quiser ativar, é só digitar *premium*"
     );
   }
-
-  console.log("🧾 pix.id salvo no usuário:", pix.id);
 
   // =========================
   // NORMALIZAÇÃO NÍVEL 1 (HORAS)
