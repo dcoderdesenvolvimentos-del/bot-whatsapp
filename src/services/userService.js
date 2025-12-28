@@ -28,3 +28,16 @@ export async function saveUserName(userId, name) {
     { merge: true }
   );
 }
+
+export async function getUserByPendingPayment(paymentId) {
+  const snapshot = await db
+    .collection("users")
+    .where("pendingPayment", "==", paymentId)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) return null;
+
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+}

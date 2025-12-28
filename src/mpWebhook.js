@@ -19,8 +19,12 @@ export async function handleMpWebhook(req, res) {
   if (data.status !== "approved") return res.sendStatus(200);
 
   const user = data.payer.email.replace("@mariomelembra.com.br", "");
-  const userData = await getUser(user);
 
+  const userData = await getUserByPendingPayment(paymentId);
+  if (!userData) {
+    console.log("⚠️ Nenhum usuário com esse pendingPayment:", paymentId);
+    return res.sendStatus(200);
+  }
   const plan = PLANS[userData.pendingPlan];
   const premiumUntil = Date.now() + plan.days * 24 * 60 * 60 * 1000;
 
