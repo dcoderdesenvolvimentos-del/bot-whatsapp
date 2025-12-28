@@ -1,3 +1,4 @@
+javascript;
 import "dotenv/config";
 
 import http from "http";
@@ -9,6 +10,25 @@ import { handleMpWebhook } from "./mpWebhook.js";
 startScheduler();
 
 const server = http.createServer(async (req, res) => {
+  // 🔔 WEBHOOK MERCADO PAGO (tem que vir ANTES!)
+  if (req.method === "POST" && req.url === "/mp/webhook") {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", async () => {
+      try {
+        const payload = JSON.parse(body);
+        await handleMpWebhook(payload);
+        res.writeHead(200);
+        res.end("ok");
+      } catch (err) {
+        console.error("Erro no webhook MP:", err);
+        res.writeHead(500);
+        res.end("erro");
+      }
+    });
+    return;
+  }
+
   if (req.method === "POST") {
     let body = "";
 
@@ -19,7 +39,6 @@ const server = http.createServer(async (req, res) => {
         const payload = JSON.parse(body);
 
         const response = await handleWebhook(payload, sendMessage);
-        // 🔥 AQUI ESTÁ A DIFERENÇA
         if (response && payload?.phone) {
           await sendMessage(payload.phone, response);
         }
@@ -35,11 +54,6 @@ const server = http.createServer(async (req, res) => {
   } else {
     res.writeHead(404);
     res.end();
-  }
-
-  // 🔔 WEBHOOK MERCADO PAGO
-  if (req.method === "POST" && req.url === "/mp/webhook") {
-    return handleMpWebhook(req, res);
   }
 });
 
