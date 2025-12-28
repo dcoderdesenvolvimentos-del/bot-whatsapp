@@ -1,13 +1,19 @@
 import "dotenv/config";
-
 import http from "http";
 import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
-import { sendMessage } from "./zapi.js";
 
 startScheduler();
 
 const server = http.createServer(async (req, res) => {
+  // 🔎 Health check (Railway precisa disso)
+  if (req.method === "GET" && req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("OK");
+    return;
+  }
+
+  // 🔔 Webhook Z-API
   if (req.method === "POST") {
     let body = "";
 
@@ -16,13 +22,7 @@ const server = http.createServer(async (req, res) => {
     req.on("end", async () => {
       try {
         const payload = JSON.parse(body);
-
-        const response = await handleWebhook(payload, sendMessage);
-        // 🔥 AQUI ESTÁ A DIFERENÇA
-        if (response && payload?.phone) {
-          await sendMessage(payload.phone, response);
-        }
-
+        await handleWebhook(payload);
         res.writeHead(200);
         res.end("ok");
       } catch (err) {
@@ -31,14 +31,17 @@ const server = http.createServer(async (req, res) => {
         res.end("erro");
       }
     });
-  } else {
-    res.writeHead(404);
-    res.end();
+
+    return;
   }
+
+  // ❌ Qualquer outra rota
+  res.writeHead(404);
+  res.end();
 });
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Webhook rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor online na porta ${PORT}`);
 });
