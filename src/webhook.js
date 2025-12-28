@@ -2,11 +2,19 @@ import { routeIntent } from "./intentRouter.js";
 import { audioToText } from "./audio.js";
 import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendMessage, sendButtonList } from "./zapi.js";
+import { handleMpWebhook } from "./mpWebhook.js";
 
 // trava anti-duplicação
 const processedMessages = new Set();
 
-export async function handleWebhook(payload) {
+export async function handleWebhook(payload, sendMessage) {
+  // 🔔 Detecta se é webhook do Mercado Pago
+  if (payload?.action?.includes("payment") || payload?.type === "payment") {
+    console.log("🔔 Webhook do Mercado Pago detectado!");
+    await handleMpWebhook(payload);
+    return null; // não processa como mensagem
+  }
+
   try {
     const messageId =
       payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
