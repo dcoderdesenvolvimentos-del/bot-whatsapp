@@ -17,6 +17,17 @@ export async function handleMpWebhook(payload) {
     }
   );
 
+  const externalReference = payment.body.external_reference;
+
+  console.log("Pagamento:", paymentId);
+  console.log("Status:", status);
+  console.log("External Reference:", externalReference);
+
+  if (status === "approved") {
+    // Aqui você ativa a assinatura
+    // usando externalReference (ex: user_553391261443)
+  }
+
   console.log("💳 Status do pagamento:", data.status); // 👈 ADICIONA AQUI
 
   if (data.status !== "approved") {
