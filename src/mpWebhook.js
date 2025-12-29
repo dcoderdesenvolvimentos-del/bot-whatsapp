@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getUserByPendingPayment, updateUser } from "./services/userService.js";
 import { sendMessage } from "./zapi.js";
-import mercadoPago from "./mercadoPago.js";
+import mercadoPago from "mercadoPago";
 
 export async function handleMpWebhook(payload) {
   const paymentId = Number(payload?.data?.id);
