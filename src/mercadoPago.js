@@ -48,6 +48,7 @@ export async function createPixPayment(userPhone, planKey) {
             description: "Assinatura Bot de Lembretes",
             quantity: 1,
             unit_price: plan.price,
+            category_id: "services",
           },
         ],
       },
