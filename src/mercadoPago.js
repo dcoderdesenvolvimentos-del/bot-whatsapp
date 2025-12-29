@@ -1,6 +1,6 @@
 import axios from "axios";
 import crypto from "crypto";
-import { PLANS } from "./plans";
+import { PLANS } from "./plans.js";
 
 export async function createPixPayment(userPhone, planKey) {
   const plan = PLANS[planKey];
