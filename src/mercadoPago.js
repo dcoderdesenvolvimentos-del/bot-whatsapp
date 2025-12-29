@@ -30,7 +30,7 @@ export async function createPixPayment(userPhone, planKey) {
 
       // 🔎 AÇÃO OBRIGATÓRIA DO MP (rastreio interno)
       external_reference: `user_${userPhone}_plan_${planKey}`,
-      statement_descriptor: "MARIOLEMBRA",
+      statement_descriptor: "MARIOMELEMBRA",
 
       payer: {
         email: `user${userPhone}@mariomelembra.com.br`,
