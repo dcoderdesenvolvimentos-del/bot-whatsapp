@@ -39,6 +39,7 @@ export async function createPixPayment(userPhone, planKey) {
           number: "09084315626", // pode manter fixo por enquanto
         },
       },
+      external_reference: `user_${userPhone}_plan_${planKey}`,
 
       // 🔥 MUITO IMPORTANTE PARA A AVALIAÇÃO DA APLICAÇÃO
       additional_info: {
