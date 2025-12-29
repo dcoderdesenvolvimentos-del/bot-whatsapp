@@ -215,6 +215,14 @@ export async function routeIntent(user, text) {
       pendingPlan: planKey,
     });
 
+    // 👇 ADICIONA ESSA VERIFICAÇÃO
+    if (!pix.point_of_interaction?.transaction_data?.qr_code) {
+      console.error("❌ QR Code não encontrado na resposta do PIX");
+      return {
+        type: "text",
+        message: "Erro ao gerar PIX. Tente novamente.",
+      };
+    }
     return {
       type: "pix",
       intro:
