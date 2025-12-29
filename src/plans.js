@@ -1,7 +1,7 @@
 export const PLANS = {
   monthly: {
     label: "Mensal",
-    price: 0.2,
+    price: 1.1,
     days: 30,
   },
   quarterly: {
