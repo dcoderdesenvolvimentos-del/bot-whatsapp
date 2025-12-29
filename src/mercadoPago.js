@@ -40,6 +40,7 @@ export async function createPixPayment(userPhone, planKey) {
         },
       },
       external_reference: `user_${userPhone}_plan_${planKey}`,
+      external_reference: `user_${userPhone}_plan_${planKey}_${Date.now()}`,
 
       // 🔥 MUITO IMPORTANTE PARA A AVALIAÇÃO DA APLICAÇÃO
       additional_info: {
