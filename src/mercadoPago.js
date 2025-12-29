@@ -2,24 +2,7 @@ import axios from "axios";
 import crypto from "crypto";
 import { PLANS } from "./plans.js";
 
-import { MercadoPagoConfig, Payment } from "mercadopago";
-
-// cria o cliente com o token
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
-});
-
-// instancia o serviço de pagamento
-const payment = new Payment(client);
-
-// 🔥 EXPORT NOMEADO (é isso que o outro arquivo espera)
-export { payment };
-
 export async function createPixPayment(userPhone, planKey) {
-  mercadopago.configure({
-    access_token: process.env.MP_ACCESS_TOKEN,
-  });
-
   const plan = PLANS[planKey];
   if (!plan) {
     throw new Error(`Plano ${planKey} não encontrado`);
@@ -34,22 +17,19 @@ export async function createPixPayment(userPhone, planKey) {
       description: `Plano ${plan.label} – Bot de Lembretes`,
       payment_method_id: "pix",
 
-      // 🔥 OBRIGATÓRIO PARA STATUS FUNCIONAR
       notification_url:
         "https://bot-whatsapp-production-0c8c.up.railway.app/mp/webhook",
 
-      // 🔎 Rastreio interno (ajuda MUITO na aprovação)
       external_reference: `user_${userPhone}_plan_${planKey}`,
 
       payer: {
         email: `user${userPhone}@mariomelembra.com.br`,
         identification: {
           type: "CPF",
-          number: "09084315626", // pode manter fixo por enquanto
+          number: "09084315626",
         },
       },
 
-      // 🔥 MUITO IMPORTANTE PARA AVALIAÇÃO DA APLICAÇÃO
       additional_info: {
         items: [
           {
@@ -70,6 +50,11 @@ export async function createPixPayment(userPhone, planKey) {
       },
     }
   );
+
+  // 🔥 VALIDAÇÃO OBRIGATÓRIA
+  if (!response.data?.id) {
+    throw new Error("PIX criado sem payment_id");
+  }
 
   return {
     payment_id: response.data.id,
