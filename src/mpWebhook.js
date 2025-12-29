@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getUserByPendingPayment, updateUser } from "./services/userService.js";
 import { sendMessage } from "./zapi.js";
-import { mercadopago } from "./mercadoPago.js";
+import mercadoPago from "./mercadoPago.js";
 
 export async function handleMpWebhook(payload) {
   const paymentId = Number(payload?.data?.id);
@@ -23,7 +23,7 @@ export async function handleMpWebhook(payload) {
     }
   );
   // ✅ AQUI você define o payment
-  const payment = await mercadopago.payment.findById(paymentId);
+  const payment = await mercadoPago.payment.findById(paymentId);
   const externalReference = payment.body.external_reference;
 
   console.log("Pagamento:", paymentId);
