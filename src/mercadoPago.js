@@ -14,7 +14,7 @@ export async function createPixPayment(userPhone) {
         email: `user${userPhone}@mariomelembra.com.br`,
         identification: {
           type: "CPF",
-          number: "00000000000", // CPF genérico (teste)
+          number: "08813790694", // CPF genérico (teste)
         },
       },
     },
