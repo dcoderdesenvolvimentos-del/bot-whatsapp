@@ -2,9 +2,22 @@ import axios from "axios";
 import crypto from "crypto";
 import { PLANS } from "./plans.js";
 
-export async function createPixPayment(userPhone, planKey) {
-  const plan = PLANS[planKey];
+import mercadopago from "mercadopago";
 
+// configuração pode existir, mas SEM envolver export
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN,
+});
+
+// ✅ export no nível raiz (fora de qualquer bloco)
+export default mercadopago;
+
+export async function createPixPayment(userPhone, planKey) {
+  mercadopago.configure({
+    access_token: process.env.MP_ACCESS_TOKEN,
+  });
+
+  const plan = PLANS[planKey];
   if (!plan) {
     throw new Error(`Plano ${planKey} não encontrado`);
   }
