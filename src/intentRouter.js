@@ -208,7 +208,7 @@ export async function routeIntent(user, text) {
 
     const pix = await createPixPayment(user, planKey);
 
-    console.log("🧾 pix.id salvo no usuário:", pix.id);
+    console.log("🧾 pix.payment_id salvo no usuário:", pix.payment_id);
 
     await updateUser(user, {
       pendingPayment: pix.payment_id,
