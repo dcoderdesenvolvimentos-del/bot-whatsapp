@@ -52,12 +52,14 @@ export async function createPixPayment(userPhone, planKey) {
             quantity: 1,
             unit_price: plan.price,
             category_id: "services",
+            external_reference: `user_${userPhone}_plan_${planKey}`,
           },
         ],
       },
     },
     {
       headers: {
+        external_reference: `user_${userPhone}_plan_${planKey}`,
         Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
         "Content-Type": "application/json",
         "X-Idempotency-Key": idempotencyKey,
