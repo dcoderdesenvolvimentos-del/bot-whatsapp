@@ -4,6 +4,28 @@ import { sendMessage } from "./zapi.js";
 import { payment } from "./mercadoPago.js";
 
 export async function handleMpWebhook(payload) {
+  try {
+    const paymentId = req.body?.data?.id;
+    if (!paymentId) return res.sendStatus(200);
+
+    const mpPayment = await payment.get({ id: paymentId });
+
+    const status = mpPayment.status;
+    const externalReference = mpPayment.external_reference;
+
+    console.log("Status:", status);
+    console.log("External reference:", externalReference);
+
+    if (status === "approved") {
+      // ativar assinatura aqui
+    }
+
+    return res.sendStatus(200);
+  } catch (err) {
+    console.error("Erro MP webhook:", err);
+    return res.sendStatus(200);
+  }
+
   const paymentId = Number(payload?.data?.id);
   if (!paymentId) return;
 

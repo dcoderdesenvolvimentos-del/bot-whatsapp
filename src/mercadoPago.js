@@ -2,15 +2,18 @@ import axios from "axios";
 import crypto from "crypto";
 import { PLANS } from "./plans.js";
 
-import mercadopago from "mercadopago";
+import { MercadoPagoConfig, Payment } from "mercadopago";
 
-// configuração pode existir, mas SEM envolver export
-mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN,
+// cria o cliente com o token
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN,
 });
 
-// ✅ export no nível raiz (fora de qualquer bloco)
-export default mercadopago;
+// instancia o serviço de pagamento
+const payment = new Payment(client);
+
+// 🔥 EXPORT NOMEADO (é isso que o outro arquivo espera)
+export { payment };
 
 export async function createPixPayment(userPhone, planKey) {
   mercadopago.configure({
