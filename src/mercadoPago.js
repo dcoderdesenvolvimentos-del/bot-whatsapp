@@ -61,6 +61,7 @@ export async function createPixPayment(userPhone, planKey) {
         Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
         "Content-Type": "application/json",
         "X-Idempotency-Key": idempotencyKey,
+        external_reference: `user_${userPhone}_plan_${planKey}`,
       },
     }
   );
