@@ -19,7 +19,8 @@ export async function createPixPayment(userPhone, planKey) {
       payment_method_id: "pix",
 
       // 🔥 OBRIGATÓRIO PARA STATUS FUNCIONAR
-      notification_url: "https://SEU_DOMINIO/webhook",
+      notification_url:
+        "https://bot-whatsapp-production-0c8c.up.railway.app/mp/webhook",
 
       // 🔎 Rastreio interno (ajuda MUITO na aprovação)
       external_reference: `user_${userPhone}_plan_${planKey}`,
