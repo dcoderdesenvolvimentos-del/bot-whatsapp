@@ -16,7 +16,8 @@ export async function handleMpWebhook(payload) {
       },
     }
   );
-
+  // ✅ AQUI você define o payment
+  const payment = await mercadopago.payment.findById(paymentId);
   const externalReference = payment.body.external_reference;
 
   console.log("Pagamento:", paymentId);
