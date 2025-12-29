@@ -5,7 +5,7 @@ import { sendMessage } from "./zapi.js";
 export async function handleMpWebhook(payload) {
   const paymentId = Number(payload?.data?.id);
   if (!paymentId) return;
-  console.log("🔥 WEBHOOK COMPLETO:", JSON.stringify(payload, null, 2));
+
   console.log("🧾 MP paymentId:", paymentId);
 
   const { data } = await axios.get(
