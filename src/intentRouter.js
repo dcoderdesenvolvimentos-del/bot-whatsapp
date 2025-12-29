@@ -211,7 +211,7 @@ export async function routeIntent(user, text) {
     console.log("🧾 pix.id salvo no usuário:", pix.id);
 
     await updateUser(user, {
-      pendingPayment: pix.id,
+      pendingPayment: pix.payment_id,
       pendingPlan: planKey,
     });
 
@@ -538,7 +538,7 @@ export async function routeIntent(user, text) {
         const pix = await createPixPayment(user, planKey);
 
         await updateUser(user, {
-          pendingPayment: pix.id,
+          pendingPayment: pix.payment_id,
           pendingPlan: planKey,
         });
 
@@ -988,7 +988,7 @@ export async function routeIntent(user, text) {
     const pix = await createPixPayment(user, planKey);
 
     await updateUser(user, {
-      pendingPayment: pix.id,
+      pendingPayment: pix.payment_id,
       pendingPlan: planKey,
     });
 

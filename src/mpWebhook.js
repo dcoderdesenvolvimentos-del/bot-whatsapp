@@ -31,7 +31,10 @@ export async function handleMpWebhook(payload) {
   }
 
   const premiumUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
-
+  // 🔥 VALIDAÇÃO OBRIGATÓRIA
+  if (!pix?.payment_id) {
+    throw new Error("PIX criado sem payment_id");
+  }
   await updateUser(userData.id, {
     plan: "premium",
     premiumUntil,
