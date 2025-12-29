@@ -52,7 +52,6 @@ export async function createPixPayment(userPhone, planKey) {
             quantity: 1,
             unit_price: plan.price,
             category_id: "services",
-            currency_id: "BRL",
           },
         ],
       },
@@ -63,6 +62,7 @@ export async function createPixPayment(userPhone, planKey) {
         "Content-Type": "application/json",
         "X-Idempotency-Key": idempotencyKey,
         external_reference: `user_${userPhone}_plan_${planKey}`,
+        currency_id: "BRL",
       },
     }
   );
