@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getUserByPendingPayment, updateUser } from "./services/userService.js";
 import { sendMessage } from "./zapi.js";
-import mercadopago from "./mercadoPago.js";
+import { payment } from "./mercadoPago.js";
 
 export async function handleMpWebhook(payload) {
   const paymentId = Number(payload?.data?.id);
@@ -19,15 +19,18 @@ export async function handleMpWebhook(payload) {
   );
   // ✅ AQUI você define o payment
   const payment = await mercadopago.payment.findById(paymentId);
-  const externalReference = payment.body.external_reference;
+  const externalReference = mpPayment.external_reference;
 
-  console.log("Pagamento:", paymentId);
+  // ✅ SDK NOVO
+  const mpPayment = await payment.get({ id: paymentId });
+
+  const status = mpPayment.status;
+
   console.log("Status:", status);
-  console.log("External Reference:", externalReference);
+  console.log("External reference:", externalReference);
 
   if (status === "approved") {
-    // Aqui você ativa a assinatura
-    // usando externalReference (ex: user_553391261443)
+    // ativar assinatura aqui
   }
 
   console.log("💳 Status do pagamento:", data.status); // 👈 ADICIONA AQUI
