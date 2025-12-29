@@ -7,7 +7,7 @@ export async function createPixPayment(userPhone) {
   const response = await axios.post(
     "https://api.mercadopago.com/v1/payments",
     {
-      transaction_amount: 1, // valor de teste
+      transaction_amount: 2, // valor de teste
       description: "Plano Premium Mensal – Bot de Lembretes",
       payment_method_id: "pix",
       payer: {
