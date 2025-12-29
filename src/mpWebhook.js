@@ -1,10 +1,16 @@
 import axios from "axios";
 import { getUserByPendingPayment, updateUser } from "./services/userService.js";
 import { sendMessage } from "./zapi.js";
+import mercadopago from "mercadopago";
 
 export async function handleMpWebhook(payload) {
   const paymentId = Number(payload?.data?.id);
   if (!paymentId) return;
+
+  // 🔑 CONFIGURAÇÃO OBRIGATÓRIA
+  mercadopago.configure({
+    access_token: process.env.MP_ACCESS_TOKEN,
+  });
 
   console.log("🧾 MP paymentId:", paymentId);
 
