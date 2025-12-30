@@ -1,9 +1,8 @@
-import { routeIntent } from "./intentRouter.js";
 import { audioToText } from "./audio.js";
 import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendMessage, sendButtonList } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
-import { routeIntent } from "./intentRouter.js";
+import { routeIntent } from "./intent/intentRouter.js";
 
 // trava anti-duplicação
 const processedMessages = new Set();
