@@ -1,23 +1,13 @@
-if (
-  userData.stage === "active" &&
-  [
-    "oi",
-    "olá",
-    "boa noite",
-    "bom dia",
-    "boa tarde",
-    "oi mario",
-    "ola mario",
-    "opa",
-    "e ai",
-    "iae",
-    "fala campeão",
-  ].includes(normalized)
-) {
+export function responderSaudacao(userData) {
+  const name = userData?.name || "";
+
   return (
-    `👋 *Oi, ${name}!*\n\n` +
-    `Em que posso te ajudar? 😊\n\n` +
-    `• Criar lembretes\n` +
-    `• Listar lembretes\n`
+    `👋 *Oi${name ? `, ${name}` : ""}!*\n\n` +
+    `Em que posso te ajudar nesse momento? 😊\n\n` +
+    `📌 Exemplos:\n` +
+    `• me lembra daqui 10 minutos\n` +
+    `• amanhã às 17h30 ir à academia\n` +
+    `• listar lembretes\n\n` +
+    `🎤 Pode falar ou digitar 😉`
   );
 }
