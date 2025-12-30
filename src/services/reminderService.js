@@ -1,41 +1,48 @@
-import db from "../db/index.js";
+import { db } from "../config/firebase.js";
 
 export async function addReminder({ phone, message, datetime }) {
-  const query = `
-    INSERT INTO reminders (phone, message, datetime, sent)
-    VALUES (?, ?, ?, false)
-  `;
-  await db.run(query, [phone, message, datetime]);
+  await db.collection("reminders").add({
+    phone,
+    message,
+    datetime,
+    sent: false,
+    createdAt: new Date(),
+  });
 }
 
 export async function getUserReminders(phone) {
-  const query = `
-    SELECT * FROM reminders 
-    WHERE phone = ? AND sent = false 
-    ORDER BY datetime ASC
-  `;
-  return await db.all(query, [phone]);
+  const snapshot = await db
+    .collection("reminders")
+    .where("phone", "==", phone)
+    .where("sent", "==", false)
+    .orderBy("datetime", "asc")
+    .get();
+
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function deleteUserReminder(phone, index) {
   const reminders = await getUserReminders(phone);
 
   if (reminders[index - 1]) {
-    const query = `DELETE FROM reminders WHERE id = ?`;
-    await db.run(query, [reminders[index - 1].id]);
+    await db
+      .collection("reminders")
+      .doc(reminders[index - 1].id)
+      .delete();
   }
 }
 
 export async function getPendingReminders() {
   const now = new Date().toISOString();
-  const query = `
-    SELECT * FROM reminders 
-    WHERE datetime <= ? AND sent = false
-  `;
-  return await db.all(query, [now]);
+  const snapshot = await db
+    .collection("reminders")
+    .where("datetime", "<=", now)
+    .where("sent", "==", false)
+    .get();
+
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function markAsSent(id) {
-  const query = `UPDATE reminders SET sent = true WHERE id = ?`;
-  await db.run(query, [id]);
+  await db.collection("reminders").doc(id).update({ sent: true });
 }
