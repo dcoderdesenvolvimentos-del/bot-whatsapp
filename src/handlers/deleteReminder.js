@@ -1,8 +1,10 @@
-export async function deleteReminder(ctx, data) {
+import { deleteUserReminder } from "../services/reminderService.js";
+
+export async function deleteReminder(userData, data) {
   if (!data.indice) {
-    return ctx.reply("Qual lembrete você deseja excluir?");
+    return "🗑️ Qual lembrete você deseja excluir? (me diga o número)";
   }
 
-  await ctx.services.reminders.delete(ctx.user, data.indice);
-  return ctx.reply("🗑️ Lembrete excluído com sucesso.");
+  await deleteUserReminder(userData.phone, data.indice);
+  return "✅ Lembrete excluído com sucesso!";
 }

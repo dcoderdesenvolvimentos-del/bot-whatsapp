@@ -1,13 +1,20 @@
-export async function listReminders(ctx) {
-  const reminders = await ctx.services.reminders.list(ctx.user);
+import { getUserReminders } from "../services/reminderService.js";
+
+export async function listReminders(userData) {
+  const reminders = await getUserReminders(userData.phone);
 
   if (!reminders.length) {
-    return ctx.reply("📭 Você não tem lembretes salvos.");
+    return "📭 Você não tem lembretes salvos.";
   }
 
   const msg = reminders
-    .map((r, i) => `${i + 1}. ${r.text}`)
+    .map(
+      (r, i) =>
+        `${i + 1}. ${r.message} - ${new Date(r.datetime).toLocaleString(
+          "pt-BR"
+        )}`
+    )
     .join("\n");
 
-  return ctx.reply("📋 Seus lembretes:\n" + msg);
+  return "📋 Seus lembretes:\n" + msg;
 }

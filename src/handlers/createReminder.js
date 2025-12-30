@@ -1,13 +1,15 @@
-export async function createReminder(ctx, data) {
+import { addReminder } from "../services/reminderService.js";
+
+export async function createReminder(userData, data) {
   if (!data.hora) {
-    return ctx.reply("Qual horário você deseja?");
+    return "⏰ Qual horário você deseja para o lembrete?";
   }
 
-  await ctx.services.reminders.add({
-    user: ctx.user,
-    text: data.acao,
-    when: data.hora,
+  await addReminder({
+    phone: userData.phone,
+    message: data.acao,
+    datetime: data.hora,
   });
 
-  return ctx.reply("⏰ Lembrete criado com sucesso!");
+  return "✅ Lembrete criado com sucesso!";
 }
