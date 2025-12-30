@@ -1,4 +1,4 @@
-import { db } from "../firebase.js";
+import { db } from "../config/firebase.js";
 
 export async function getUser(user) {
   const ref = db.collection("users").doc(user);
