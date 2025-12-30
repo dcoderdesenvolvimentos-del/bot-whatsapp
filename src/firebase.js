@@ -1,18 +1,48 @@
-import admin from "firebase-admin";
-import fs from "fs";
+import { db } from "../config/firebase.js";
 
-const serviceAccount = JSON.parse(
-  process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
-);
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+export async function addReminder({ phone, message, datetime }) {
+  await db.collection("reminders").add({
+    phone,
+    message,
+    datetime,
+    sent: false,
+    createdAt: new Date(),
   });
 }
 
-console.log("🔥 Firebase app:", admin.apps[0]?.options?.credential?.projectId);
+export async function getUserReminders(phone) {
+  const snapshot = await db
+    .collection("reminders")
+    .where("phone", "==", phone)
+    .where("sent", "==", false)
+    .orderBy("datetime", "asc")
+    .get();
 
-export const db = admin.firestore();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
 
-console.log("🗄️ Firestore DB:", db._settings?.databaseId);
+export async function deleteUserReminder(phone, index) {
+  const reminders = await getUserReminders(phone);
+
+  if (reminders[index - 1]) {
+    await db
+      .collection("reminders")
+      .doc(reminders[index - 1].id)
+      .delete();
+  }
+}
+
+export async function getPendingReminders() {
+  const now = new Date().toISOString();
+  const snapshot = await db
+    .collection("reminders")
+    .where("datetime", "<=", now)
+    .where("sent", "==", false)
+    .get();
+
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+export async function markAsSent(id) {
+  await db.collection("reminders").doc(id).update({ sent: true });
+}
