@@ -11,5 +11,18 @@ export async function createReminder(userData, data) {
     datetime: data.hora,
   });
 
-  return "✅ Lembrete criado com sucesso!";
+  // Formatar data e hora
+  const dataHora = new Date(data.hora);
+  const dataFormatada = dataHora.toLocaleDateString("pt-BR");
+  const horaFormatada = dataHora.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    `✅ *Lembrete salvo com sucesso!*\n\n` +
+    `📌 *Ação:* ${data.acao}\n` +
+    `📅 *Data:* ${dataFormatada}\n` +
+    `⏰ *Horário:* ${horaFormatada}`
+  );
 }
