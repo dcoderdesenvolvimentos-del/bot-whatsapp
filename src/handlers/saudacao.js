@@ -1,5 +1,5 @@
 export function responderSaudacao(userData) {
-  const name = userData?.name || "";
+  const name = userData?.name || "😊";
 
   const hora = new Date().getHours();
   let saudacao = "👋 Olá";
@@ -9,12 +9,12 @@ export function responderSaudacao(userData) {
   else saudacao = "🌙 Boa noite";
 
   return (
-    `👋 *Oi${name ? `, ${name}` : ""}!*\n\n` +
-    `Em que posso te ajudar nesse momento? 😊\n\n` +
-    `📌 Exemplos:\n` +
-    `• me lembra daqui 10 minutos\n` +
-    `• amanhã às 17h30 ir à academia\n` +
-    `• listar lembretes\n\n` +
-    `🎤 Pode falar ou digitar 😉`
+    `👋 *Oi, ${name}!*\n\n` +
+    "Relaxa 😊 eu cuido dos seus lembretes pra você.\n\n" +
+    "📌 É só me dizer coisas como:\n" +
+    "• me lembra daqui 10 minutos\n" +
+    "• amanhã às 17h30 ir à academia\n" +
+    "• listar ou excluir lembretes\n\n" +
+    "🎤 Pode mandar áudio ou texto. Eu entendo tudo 😉"
   );
 }
