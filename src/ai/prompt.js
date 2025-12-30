@@ -10,6 +10,13 @@ REGRAS:
 - Se pedir ajuda → ajuda
 - Caso contrário → desconhecido
 
+Classifique como "saudacao" quando o usuário apenas cumprimentar,
+exemplo: "oi", "olá", "bom dia", "boa noite", "oi mario".
+
+Use "conversa_solta" APENAS quando o usuário puxar assunto
+sem relação com lembretes.
+
+
 Para criar_lembrete, extraia:
 - acao: o que fazer (ex: "tomar água")
 - hora: formato ISO (ex: "2025-12-31T17:00:00")

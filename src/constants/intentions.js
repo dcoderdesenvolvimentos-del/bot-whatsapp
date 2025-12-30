@@ -1,4 +1,5 @@
 export const INTENTIONS = {
+  SAUDACAO: "saudacao",
   CRIAR_LEMBRETE: "criar_lembrete",
   LISTAR_LEMBRETES: "listar_lembretes",
   EXCLUIR_LEMBRETE: "excluir_lembrete",
