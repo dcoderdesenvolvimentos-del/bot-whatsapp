@@ -10,6 +10,9 @@ import {
 } from "./state.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { askName, isAskingName, clearAskName } from "./state.js";
+import { interpretMessage } from "./ai/interpretMessage.js";
+import { INTENTIONS } from "./constants/intentions.js";
+
 function isCommand(cmds, normalized) {
   return cmds.some((cmd) => normalized === cmd || normalized.includes(cmd));
 }
@@ -178,6 +181,28 @@ function formatMultiplePreview(reminders) {
 
 export async function routeIntent(user, text) {
   console.log("🧭 intentRouter", { user, text });
+
+  const interpretation = await interpretMessage(text);
+
+  switch (interpretation.intencao) {
+    case INTENTIONS.CRIAR_LEMBRETE:
+      return criarLembrete(user, interpretation);
+
+    case INTENTIONS.LISTAR_LEMBRETES:
+      return listarLembretes(user);
+
+    case INTENTIONS.PIADA:
+      return responderPiada(user);
+
+    case INTENTIONS.CONVERSA_SOLTA:
+      return responderConversaSolta(user);
+
+    case INTENTIONS.AJUDA:
+      return responderAjuda(user);
+
+    default:
+      return responderNaoEntendi(user);
+  }
 
   // 🔹 Normalização segura do texto
   const normalized = (text || "")
