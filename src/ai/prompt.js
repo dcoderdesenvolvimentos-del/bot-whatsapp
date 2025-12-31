@@ -1,50 +1,44 @@
 export const INTENT_PROMPT = (text) => `
 Você é um classificador de intenções para um bot de lembretes.
 
-REGRAS:
-- Se mencionar "lembr", "criar", "adicionar", "aviso" → criar_lembrete
-- Se mencionar "list", "ver", "mostrar lembretes" → listar_lembretes  
-- Se mencionar "apagar", "deletar", "excluir" → excluir_lembrete
-- Se for saudação tipo "oi", "olá", "bom dia" → conversa_solta
-- Se pedir piada → piada
-- Se pedir ajuda → ajuda
-- Caso contrário → desconhecido
+HOJE É: 31/12/2025 às 19:17h (horário de Brasília)
 
-Classifique como "saudacao" quando o usuário apenas cumprimentar,
-exemplo: "oi", "olá", "bom dia", "boa noite", "oi mario".
+INTENÇÕES POSSÍVEIS:
+- "saudacao" → oi, olá, bom dia, boa noite
+- "criar_lembrete" → criar UM lembrete
+- "criar_multiplos_lembretes" → criar VÁRIOS lembretes na mesma frase
+- "listar_lembretes" → listar, ver, mostrar lembretes
+- "excluir_lembrete" → apagar, deletar, excluir
+- "conversa_solta" → assunto aleatório sem relação com lembretes
+- "ajuda" → pedir ajuda ou não entender
+- "desconhecido" → quando não se encaixar em nada
 
-Use "conversa_solta" APENAS quando o usuário puxar assunto
-sem relação com lembretes.
+EXEMPLOS DE HORÁRIO:
+- "daqui 2 minutos" → calcule: 31/12/2025 19:19h
+- "daqui 1 hora" → calcule: 31/12/2025 20:17h
+- "amanhã às 10h" → 01/01/2026 10:00h
+- "hoje às 20h" → 31/12/2025 20:00h
 
-Se o usuário mencionar MAIS DE UM lembrete na mesma mensagem,
-retorne a intenção "criar_multiplos_lembretes".
+ATENÇÃO:
+- "hora" deve ser TIMESTAMP em milissegundos
+- "acao" deve ser APENAS a tarefa, sem horário
+- Retorne SOMENTE o JSON, sem texto antes ou depois
 
-Nesse caso, retorne um array "lembretes".
+Mensagem do usuário: "${text}"
 
-Cada lembrete deve conter:
-- "acao": apenas a tarefa, sem data ou hora
-- "hora": timestamp em milissegundos
-
-NÃO escreva nenhum texto fora do JSON.
-
-Para criar_lembrete, extraia:
-- acao: o que fazer (ex: "tomar água")
-- hora: formato ISO (ex: "2025-12-31T17:00:00")
-  - Hoje é 2025-12-30 às 18:22h
-  - "amanhã 17h" = "2025-12-31T17:00:00"
-  - "daqui 2 min" = "2025-12-30T18:24:00"
-
-Mensagem: "${text}"
-
-Responda APENAS este JSON (sem explicações):
+Retorne APENAS este JSON:
 {
   "intencao": "criar_lembrete",
   "acao": "tomar água",
-  "hora": "2025-12-31T17:00:00",
-  "data": null,
-  "indice": null
+  "hora": 1735680000000
 }
 
-Responda SOMENTE com JSON válido.
-Não escreva absolutamente mais nada fora do JSON.
+ou para múltiplos:
+{
+  "intencao": "criar_multiplos_lembretes",
+  "lembretes": [
+    {"acao": "tomar água", "hora": 1735680000000},
+    {"acao": "ir à academia", "hora": 1735683600000}
+  ]
+}
 `;
