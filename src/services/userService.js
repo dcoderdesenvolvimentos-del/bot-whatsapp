@@ -1,43 +1,32 @@
-import { db } from "../config/firebase.js";
+import { db } from "../firebase.js";
 
-export async function getUser(user) {
-  const ref = db.collection("users").doc(user);
+export async function getUser(userId) {
+  if (!userId || typeof userId !== "string") {
+    console.error("❌ userId inválido:", userId);
+    return null;
+  }
+
+  const ref = db.collection("users").doc(userId);
   const snap = await ref.get();
 
-  if (!snap.exists) {
-    await ref.set({
-      stage: "new",
-      createdAt: Date.now(),
-    });
-    return { stage: "new" };
-  }
+  if (!snap.exists) return null;
 
   return snap.data();
 }
 
-export async function updateUser(id, data) {
-  await db.collection("users").doc(id).set(data, { merge: true });
-}
+export async function updateUser(userId, data) {
+  if (!userId || typeof userId !== "string") {
+    console.error("❌ userId inválido:", userId);
+    return;
+  }
 
-export async function saveUserName(userId, name) {
-  await db.collection("users").doc(userId).set(
+  const ref = db.collection("users").doc(userId);
+
+  await ref.set(
     {
-      name,
-      createdAt: Date.now(),
+      ...data,
+      updatedAt: Date.now(),
     },
     { merge: true }
   );
-}
-
-export async function getUserByPendingPayment(paymentId) {
-  const snapshot = await db
-    .collection("users")
-    .where("pendingPayment", "==", paymentId)
-    .limit(1)
-    .get();
-
-  if (snapshot.empty) return null;
-
-  const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() };
 }
