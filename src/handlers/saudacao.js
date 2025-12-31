@@ -1,7 +1,7 @@
 import { getUser } from "../services/userService.js";
 
 export function responderSaudacao(userData) {
-  const userData = getUser(user);
+  const userData = getUser(userData);
   const name = userData?.name || "";
 
   const hora = new Date().getHours();
