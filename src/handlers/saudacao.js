@@ -10,11 +10,11 @@ export function responderSaudacao(userData) {
 
   return (
     `👋 *Oi, ${name}!*\n\n` +
-    "Relaxa 😊 eu cuido dos seus lembretes pra você.\n\n" +
-    "📌 É só me dizer coisas como:\n" +
+    "Relaxa 😊 eu te ajudo a não esquecer de nada.\n\n" +
+    "📌 É só me dizer:\n" +
     "• me lembra daqui 10 minutos\n" +
     "• amanhã às 17h30 ir à academia\n" +
     "• listar ou excluir lembretes\n\n" +
-    "🎤 Pode mandar áudio ou texto. Eu entendo tudo 😉"
+    "🎤 Pode mandar áudio ou texto. Eu entendo 😉"
   );
 }

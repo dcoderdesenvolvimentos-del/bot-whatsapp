@@ -1,7 +1,9 @@
+import { getUser } from "../services/userService.js";
 import { interpretMessage } from "../ai/interpretMessage.js";
 import { intentMap } from "./intentMap.js";
 
 export async function routeIntent(user, text) {
+  const userData = await getUser(user);
   const interpretation = await interpretMessage(text);
 
   console.log("🧠 Intenção:", interpretation.intencao);
@@ -9,7 +11,5 @@ export async function routeIntent(user, text) {
 
   const handler = intentMap[interpretation.intencao] || intentMap.desconhecido;
 
-  const userData = { phone: user, text };
-
-  return handler(userData, interpretation);
+  return handler(user, userData, interpretation);
 }
