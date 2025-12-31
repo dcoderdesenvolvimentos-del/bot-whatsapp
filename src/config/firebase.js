@@ -1,7 +1,8 @@
 import admin from "firebase-admin";
+import fs from "fs";
 
 const serviceAccount = JSON.parse(
-  process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+  fs.readFileSync("./serviceAccount.json", "utf8")
 );
 
 if (!admin.apps.length) {
@@ -10,8 +11,4 @@ if (!admin.apps.length) {
   });
 }
 
-console.log("🔥 Firebase app:", admin.apps[0]?.options?.credential?.projectId);
-
 export const db = admin.firestore();
-
-console.log("🗄️ Firestore DB:", db._settings?.databaseId);
