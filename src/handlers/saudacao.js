@@ -1,6 +1,6 @@
 import { getUser } from "../services/userService.js";
 
-export async function responderSaudacao(userData) {
+export async function responderSaudacao(user) {
   const userData = await getUser(user);
   const name = userData?.name || "";
 
@@ -12,7 +12,7 @@ export async function responderSaudacao(userData) {
   else saudacao = "🌙 Boa noite";
 
   return (
-    `👋 *Oi, ${name}!*\n\n` +
+    `${saudacao}, ${name}! 👋\n\n` +
     "Relaxa 😊 eu te ajudo a não esquecer de nada.\n\n" +
     "📌 É só me dizer:\n" +
     "• me lembra daqui 10 minutos\n" +
