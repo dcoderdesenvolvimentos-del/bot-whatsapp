@@ -41,11 +41,11 @@ export async function createReminder(user, userData, data) {
 
   // Formatar data e hora
 
-  const formattedDate = dateObj.toLocaleDateString("pt-BR", {
+  const dataFormatada = dateObj.toLocaleDateString("pt-BR", {
     timeZone: "America/Sao_Paulo",
   });
 
-  const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
+  const horaFormatada = dateObj.toLocaleTimeString("pt-BR", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
