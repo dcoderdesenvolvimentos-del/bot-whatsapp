@@ -16,6 +16,16 @@ exemplo: "oi", "olá", "bom dia", "boa noite", "oi mario".
 Use "conversa_solta" APENAS quando o usuário puxar assunto
 sem relação com lembretes.
 
+Se o usuário mencionar MAIS DE UM lembrete na mesma mensagem,
+retorne a intenção "criar_multiplos_lembretes".
+
+Nesse caso, retorne um array "lembretes".
+
+Cada lembrete deve conter:
+- "acao": apenas a tarefa, sem data ou hora
+- "hora": timestamp em milissegundos
+
+NÃO escreva nenhum texto fora do JSON.
 
 Para criar_lembrete, extraia:
 - acao: o que fazer (ex: "tomar água")

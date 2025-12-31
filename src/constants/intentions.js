@@ -7,4 +7,5 @@ export const INTENTIONS = {
   CONVERSA_SOLTA: "conversa_solta",
   AJUDA: "ajuda",
   DESCONHECIDO: "desconhecido",
+  CRIAR_MULTIPLOS_LEMBRETES: "criar_multiplos_lembretes",
 };

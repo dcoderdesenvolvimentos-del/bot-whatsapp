@@ -1,5 +1,5 @@
 export function responderSaudacao(userData) {
-  const name = userData?.name || "😊";
+  const name = userData?.name || "";
 
   const hora = new Date().getHours();
   let saudacao = "👋 Olá";

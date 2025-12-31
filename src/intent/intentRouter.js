@@ -7,6 +7,7 @@ import { createReminder } from "../handlers/createReminder.js";
 import { listReminders } from "../handlers/listReminders.js";
 import { smallTalk } from "../handlers/smallTalk.js";
 import { help } from "../handlers/help.js";
+import { createMultipleReminders } from "../handlers/createMultipleReminders.js";
 
 export async function routeIntent(user, text) {
   // 🔹 BUSCA USUÁRIO (IGUAL AO SEU CÓDIGO ANTIGO)
@@ -41,6 +42,9 @@ export async function routeIntent(user, text) {
 
     case INTENTIONS.AJUDA:
       return help();
+
+    case INTENTIONS.CRIAR_MULTIPLOS_LEMBRETES:
+      return createMultipleReminders(user, userData, interpretation);
 
     default:
       return help();
