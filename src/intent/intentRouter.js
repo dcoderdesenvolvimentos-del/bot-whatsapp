@@ -11,56 +11,52 @@ import { createMultipleReminders } from "../handlers/createMultipleReminders.js"
 
 export async function routeIntent(user, text) {
   let userData = await getUser(user);
-  const normalized = text.toLowerCase().trim();
 
-  // =========================
-  // ONBOARDING / CAPTAÇÃO DE NOME
-  // =========================
+  // 1️⃣ USUÁRIO NÃO EXISTE
+  if (!userData) {
+    await updateUser(user, {
+      stage: "awaiting_name",
+      remindersUsed: 0,
+      createdAt: Date.now(),
+    });
 
-  // PRIMEIRO CONTATO
-  if (userData.stage === "first_contact") {
-    await updateUser(user, { stage: "awaiting_name" });
-    return "👋 Oi! Antes de tudo, qual é o seu nome? 😊";
+    return "👋 Oi! Tudo bem? 😊\n\nAntes de tudo, como posso te chamar?";
   }
 
-  // USUÁRIO RESPONDENDO O NOME
+  // 2️⃣ AGUARDANDO NOME
   if (userData.stage === "awaiting_name") {
     const name = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
     await updateUser(user, {
-      stage: "confirming_name",
-      tempName: name,
+      name,
+      stage: "active",
     });
 
     return (
-      `✨ Só confirmando rapidinho...\n\n` +
-      `Seu nome é *${name}*?\n\n` +
-      `Responda com:\n` +
-      `✅ sim\n❌ não`
+      `Perfeito, ${name}! 😄\n\n` +
+      "Agora posso cuidar dos seus lembretes.\n\n" +
+      "📌 Exemplos:\n" +
+      "• me lembra daqui 10 minutos\n" +
+      "• amanhã às 17h30 ir à academia\n" +
+      "• listar lembretes"
     );
   }
 
-  // CONFIRMAÇÃO DO NOME
-  if (userData.stage === "confirming_name") {
-    if (["sim", "isso", "correto", "pode ser"].includes(text)) {
-      await updateUser(user, {
-        name: userData.tempName,
-        tempName: null,
-        stage: "active",
-      });
+  const interpretation = await interpretMessage(text);
 
-      return (
-        `🎉 Perfeito, *${userData.tempName}*! Seja bem-vindo(a) 😊\n\n` +
-        `Agora é só me dizer o que você quer lembrar 😉`
-      );
-    }
+  switch (interpretation.intencao) {
+    case INTENTIONS.SAUDACAO:
+      return responderSaudacao(userData);
 
-    if (["nao", "não"].includes(text)) {
-      await updateUser(user, { stage: "awaiting_name", tempName: null });
-      return "Sem problema 😄 Qual é o seu nome então?";
-    }
+      // 👇👇👇
+      // SÓ DAQUI PRA BAIXO ENTRA IA
 
-    return "Responda apenas *sim* ou *não*, por favor 🙂";
+      if (["nao", "não"].includes(text)) {
+        await updateUser(user, { stage: "awaiting_name", tempName: null });
+        return "Sem problema 😄 Qual é o seu nome então?";
+      }
+
+      return "Responda apenas *sim* ou *não*, por favor 🙂";
   }
 
   // 🟢 STAGE: active
@@ -72,7 +68,6 @@ export async function routeIntent(user, text) {
   // =========================
   // 🧠 IA (só agora)
   // =========================
-  const interpretation = await interpretMessage(text);
 
   switch (interpretation.intencao) {
     case INTENTIONS.SAUDACAO:
