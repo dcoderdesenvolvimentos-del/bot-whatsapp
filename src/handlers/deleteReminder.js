@@ -17,9 +17,12 @@ export async function deleteReminder(userData, data) {
   }
 
   // Formatar data e hora
-  const dataHora = new Date(lembrete.datetime);
-  const dataFormatada = dataHora.toLocaleDateString("pt-BR");
-  const horaFormatada = dataHora.toLocaleTimeString("pt-BR", {
+  const formattedDate = dateObj.toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+  });
+
+  const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
   });

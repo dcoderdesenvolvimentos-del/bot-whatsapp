@@ -30,8 +30,12 @@ export function startScheduler() {
           dateObj = new Date(reminder.when);
         }
 
-        const formattedDate = dateObj.toLocaleDateString("pt-BR");
+        const formattedDate = dateObj.toLocaleDateString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+        });
+
         const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
           hour: "2-digit",
           minute: "2-digit",
         });
