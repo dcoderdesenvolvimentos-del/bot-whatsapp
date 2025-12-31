@@ -40,7 +40,7 @@ export async function createReminder(user, userData, data) {
   });
 
   // Formatar data e hora
-
+  const dateObj = new Date(when);
   const dataFormatada = dateObj.toLocaleDateString("pt-BR", {
     timeZone: "America/Sao_Paulo",
   });
