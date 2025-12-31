@@ -102,9 +102,6 @@ export async function routeIntent(user, text) {
   const interpretation = await interpretMessage(text);
 
   switch (interpretation.intencao) {
-    case INTENTIONS.SAUDACAO:
-      return responderSaudacao(userData);
-
     case INTENTIONS.CRIAR_LEMBRETE:
       return createReminder(user, userData, interpretation);
 
@@ -114,11 +111,12 @@ export async function routeIntent(user, text) {
     case INTENTIONS.LISTAR_LEMBRETES:
       return listReminders(user);
 
-    case INTENTIONS.CONVERSA_SOLTA:
-      return smallTalk();
-
     case INTENTIONS.AJUDA:
       return help();
+
+    case INTENTIONS.CONVERSA_SOLTA:
+    case INTENTIONS.SAUDACAO:
+      return responderSaudacao(userData);
 
     default:
       return help();
