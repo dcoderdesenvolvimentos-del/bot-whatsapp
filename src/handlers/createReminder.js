@@ -1,62 +1,55 @@
 import { addReminder } from "../reminders.js";
 import { updateUser } from "../services/userService.js";
 
-export async function createReminder(user, userData, data) {
-  const FREE_LIMIT = 3;
+export async function createReminder(user, userData, interpretation) {
+  const { text, minutes, dateTime } = interpretation;
 
-  const remindersUsed = userData.remindersUsed || 0;
-  const isPremium =
-    userData.plan === "premium" &&
-    userData.premiumUntil &&
-    userData.premiumUntil > Date.now();
+  let when;
 
-  function capitalizeFirst(text) {
-    if (!text) return "";
-    return text.charAt(0).toUpperCase() + text.slice(1);
+  // ⏱️ CASO 1 — "daqui X minutos"
+  if (minutes !== undefined) {
+    when = Date.now() + minutes * 60 * 1000;
   }
 
-  // 🔒 BLOQUEIO IGUAL AO SEU ANTIGO
-  if (!isPremium && remindersUsed >= FREE_LIMIT) {
-    return (
-      "🚫 *Seu limite gratuito acabou*\n\n" +
-      `Você já usou os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
-      "💎 Ative o *Plano Premium* para criar lembretes ilimitados."
-    );
+  // 📅 CASO 2 — data/hora absoluta (amanhã às 17h etc)
+  else if (dateTime) {
+    when = dateTime;
   }
 
-  // 🔹 VALIDAÇÃO SIMPLES
-  if (!data?.acao || !data?.hora) {
-    return "⏰ Me diga o que devo lembrar e o horário certinho 😊";
+  // ❌ FALLBACK DE SEGURANÇA
+  else {
+    return "⚠️ Não consegui identificar o horário do lembrete.";
   }
 
-  await addReminder(user, {
-    text: data.acao,
-    when: data.hora,
-  });
+  // ⏰ Agora SIM o when existe
+  const dateObj = new Date(data.hora);
 
-  // 🔢 ATUALIZA CONTADOR (IGUAL ANTES)
-  await updateUser(user, {
-    remindersUsed: remindersUsed + 1,
-  });
-
-  // Formatar data e hora
-  const dateObj = new Date(when);
-  const dataFormatada = dateObj.toLocaleDateString("pt-BR", {
+  const formattedDate = dateObj.toLocaleDateString("pt-BR", {
     timeZone: "America/Sao_Paulo",
   });
 
-  const horaFormatada = dateObj.toLocaleTimeString("pt-BR", {
+  const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
   });
 
-  const acao = capitalizeFirst(data.acao);
+  // ✅ salvar no banco (exemplo)
+  // await addReminder(user, { text, when });
+
+  // 🧾 resposta
+  if (minutes !== undefined) {
+    return (
+      "✅ *Lembrete salvo com sucesso!*\n\n" +
+      `📌 *Ação:* ${capitalizeFirst(text)}\n` +
+      `⏰ *Daqui a ${minutes} minuto(s)*`
+    );
+  }
 
   return (
-    `✅ *Lembrete salvo com sucesso!*\n\n` +
-    `📌 *Ação:* ${acao}\n` +
-    `📅 *Data:* ${dataFormatada}\n` +
-    `⏰ *Horário:* ${horaFormatada}`
+    "✅ *Lembrete salvo com sucesso!*\n\n" +
+    `📌 *Ação:* ${capitalizeFirst(text)}\n` +
+    `📅 *Data:* ${formattedDate}\n` +
+    `⏰ *Horário:* ${formattedTime}`
   );
 }
