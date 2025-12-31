@@ -1,3 +1,5 @@
+import { getUser } from "../services/userService.js";
+
 export async function responderSaudacao(userData) {
   const userData = await getUser(user);
   const name = userData?.name || "";
