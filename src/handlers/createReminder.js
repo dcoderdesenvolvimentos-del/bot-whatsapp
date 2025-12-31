@@ -10,6 +10,11 @@ export async function createReminder(user, userData, data) {
     userData.premiumUntil &&
     userData.premiumUntil > Date.now();
 
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
   // 🔒 BLOQUEIO IGUAL AO SEU ANTIGO
   if (!isPremium && remindersUsed >= FREE_LIMIT) {
     return (
