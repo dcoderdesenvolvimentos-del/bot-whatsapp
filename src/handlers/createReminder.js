@@ -2,6 +2,7 @@ import { addReminder } from "../services/reminderService.js";
 
 export async function createReminder(user, userData, interpretation) {
   const { text, minutes, dateTime } = interpretation;
+  console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
 
   function capitalizeFirst(text) {
     if (!text) return "";
