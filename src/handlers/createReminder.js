@@ -1,26 +1,30 @@
 import { addReminder } from "../services/reminderService.js";
+import { updateUser } from "../services/userService.js";
 
-export async function createReminder(user, userData, interpretation) {
-  const { text, minutes, dateTime } = interpretation;
+export async function createReminder(user, userData, data) {
   console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
+
+  const FREE_LIMIT = 3;
 
   function capitalizeFirst(text) {
     if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
-  // 🚨 PASSO 1 — DEFINIR when (OBRIGATÓRIO)
-  let when;
-
-  if (typeof minutes === "number") {
-    when = Date.now() + minutes * 60 * 1000;
-  } else if (typeof dateTime === "number") {
-    when = dateTime;
-  } else {
+  // 🚨 VALIDAÇÃO: hora tem que existir
+  if (!data.hora) {
     return "⚠️ Não consegui identificar o horário do lembrete.";
   }
 
-  // 🚨 PASSO 2 — AGORA SIM pode usar when
+  // 🚨 CONVERTE pra número se vier como string
+  const when = typeof data.hora === "string" ? parseInt(data.hora) : data.hora;
+
+  // 🚨 VALIDA se é timestamp válido
+  if (isNaN(when) || when < Date.now()) {
+    return "⚠️ Horário inválido ou no passado.";
+  }
+
+  // 📅 FORMATAR DATA E HORA
   const dateObj = new Date(when);
 
   const formattedDate = dateObj.toLocaleDateString("pt-BR", {
@@ -33,24 +37,20 @@ export async function createReminder(user, userData, interpretation) {
     minute: "2-digit",
   });
 
-  // 🚨 PASSO 3 — SALVAR
+  // 💾 SALVAR LEMBRETE
   await addReminder(user, {
-    text: capitalizeFirst(text),
+    text: capitalizeFirst(data.acao),
     when,
   });
 
-  // 🚨 PASSO 4 — RESPONDER
-  if (minutes !== undefined) {
-    return (
-      "✅ *Lembrete salvo com sucesso!*\n\n" +
-      `📌 *Ação:* ${capitalizeFirst(text)}\n` +
-      `⏰ *Daqui a ${minutes} minuto(s)*`
-    );
-  }
+  // 🔢 ATUALIZAR CONTADOR
+  const remindersUsed = (userData.remindersUsed || 0) + 1;
+  await updateUser(user, { remindersUsed });
 
+  // ✅ RESPOSTA
   return (
     "✅ *Lembrete salvo com sucesso!*\n\n" +
-    `📌 *Ação:* ${capitalizeFirst(text)}\n` +
+    `📌 *Ação:* ${capitalizeFirst(data.acao)}\n` +
     `📅 *Data:* ${formattedDate}\n` +
     `⏰ *Horário:* ${formattedTime}`
   );
