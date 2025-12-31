@@ -1,10 +1,10 @@
 import { db } from "../config/firebase.js";
 
-export async function addReminder({ phone, message, datetime }) {
+export async function addReminder(phone, { text, when }) {
   await db.collection("reminders").add({
     phone,
-    message,
-    datetime,
+    message: text,
+    datetime: new Date(when).toISOString(),
     sent: false,
     createdAt: new Date(),
   });

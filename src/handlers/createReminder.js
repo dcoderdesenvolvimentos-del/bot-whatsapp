@@ -46,7 +46,7 @@ export async function createReminder(user, userData, data) {
   });
 
   // 💾 SALVAR LEMBRETE
-  await addReminder(user, {
+  await addReminder(user.phone, {
     text: capitalizeFirst(data.acao),
     when,
   });
