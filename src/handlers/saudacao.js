@@ -1,4 +1,5 @@
-export function responderSaudacao(userData) {
+export async function responderSaudacao(userData) {
+  const userData = await getUser(user);
   const name = userData?.name || "";
 
   const hora = new Date().getHours();

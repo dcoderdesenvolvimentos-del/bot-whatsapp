@@ -44,4 +44,7 @@ Responda APENAS este JSON (sem explicações):
   "data": null,
   "indice": null
 }
+
+Responda SOMENTE com JSON válido.
+Não escreva absolutamente mais nada fora do JSON.
 `;
