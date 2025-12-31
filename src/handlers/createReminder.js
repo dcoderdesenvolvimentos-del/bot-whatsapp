@@ -1,8 +1,12 @@
-import { capitalizeFirst } from "../utils/text.js";
 import { addReminder } from "../services/reminderService.js";
 
 export async function createReminder(user, userData, interpretation) {
   const { text, minutes, dateTime } = interpretation;
+
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   // 🚨 PASSO 1 — DEFINIR when (OBRIGATÓRIO)
   let when;
