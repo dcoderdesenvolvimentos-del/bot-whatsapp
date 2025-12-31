@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { INTENT_PROMPT } from "./prompt.js";
+import { INTENTIONS } from "../constants/intentions.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

@@ -1,7 +1,20 @@
-export const INTENT_PROMPT = (text) => `
+export const INTENT_PROMPT = (text) => {
+  // 🕐 PEGA HORA ATUAL DINAMICAMENTE
+  const agora = new Date();
+  const dataHoraAtual = agora.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `
 Você é um classificador de intenções para um bot de lembretes.
 
-HOJE É: 31/12/2025 às 19:17h (horário de Brasília)
+HOJE É: ${dataHoraAtual} (horário de Brasília)
+TIMESTAMP ATUAL: ${Date.now()}
 
 INTENÇÕES POSSÍVEIS:
 - "saudacao" → oi, olá, bom dia, boa noite
@@ -13,15 +26,16 @@ INTENÇÕES POSSÍVEIS:
 - "ajuda" → pedir ajuda ou não entender
 - "desconhecido" → quando não se encaixar em nada
 
-EXEMPLOS DE HORÁRIO:
-- "daqui 2 minutos" → calcule: 31/12/2025 19:19h
-- "daqui 1 hora" → calcule: 31/12/2025 20:17h
-- "amanhã às 10h" → 01/01/2026 10:00h
-- "hoje às 20h" → 31/12/2025 20:00h
+EXEMPLOS DE HORÁRIO (use o TIMESTAMP ATUAL como base):
+- "daqui 2 minutos" → TIMESTAMP ATUAL + (2 * 60 * 1000)
+- "daqui 1 hora" → TIMESTAMP ATUAL + (60 * 60 * 1000)
+- "amanhã às 10h" → calcule baseado na data/hora atual
+- "hoje às 20h" → calcule baseado na data/hora atual
 
 ATENÇÃO:
-- "hora" deve ser TIMESTAMP em milissegundos
+- "hora" deve ser TIMESTAMP em milissegundos (número inteiro)
 - "acao" deve ser APENAS a tarefa, sem horário
+- Use o TIMESTAMP ATUAL fornecido acima como referência
 - Retorne SOMENTE o JSON, sem texto antes ou depois
 
 Mensagem do usuário: "${text}"
@@ -42,3 +56,4 @@ ou para múltiplos:
   ]
 }
 `;
+};
