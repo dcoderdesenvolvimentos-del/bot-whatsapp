@@ -10,6 +10,10 @@ import { help } from "../handlers/help.js";
 import { createMultipleReminders } from "../handlers/createMultipleReminders.js";
 
 export async function routeIntent(user, text) {
+  console.log("🚨 ROUTE INTENT EXECUTADO");
+  console.log("👤 USER:", user);
+  console.log("💬 TEXT:", text);
+
   let userData = await getUser(user);
   const normalized = text.toLowerCase().trim();
 
