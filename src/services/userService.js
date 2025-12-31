@@ -1,10 +1,7 @@
 import { db } from "../firebase.js";
 
 export async function getUser(userId) {
-  if (!userId || typeof userId !== "string") {
-    console.error("❌ userId inválido:", userId);
-    return null;
-  }
+  if (!userId || typeof userId !== "string") return null;
 
   const ref = db.collection("users").doc(userId);
   const snap = await ref.get();
@@ -15,10 +12,7 @@ export async function getUser(userId) {
 }
 
 export async function updateUser(userId, data) {
-  if (!userId || typeof userId !== "string") {
-    console.error("❌ userId inválido:", userId);
-    return;
-  }
+  if (!userId || typeof userId !== "string") return;
 
   const ref = db.collection("users").doc(userId);
 
