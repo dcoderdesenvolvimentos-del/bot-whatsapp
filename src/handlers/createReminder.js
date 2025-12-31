@@ -1,14 +1,37 @@
-import { addReminder } from "../services/reminderService.js";
+import { addReminder } from "../reminders.js";
+import { updateUser } from "../services/userService.js";
 
-export async function createReminder(userData, data) {
-  if (!data.hora) {
-    return "⏰ Qual horário você deseja para o lembrete?";
+export async function createReminder(user, userData, data) {
+  const FREE_LIMIT = 3;
+
+  const remindersUsed = userData.remindersUsed || 0;
+  const isPremium =
+    userData.plan === "premium" &&
+    userData.premiumUntil &&
+    userData.premiumUntil > Date.now();
+
+  // 🔒 BLOQUEIO IGUAL AO SEU ANTIGO
+  if (!isPremium && remindersUsed >= FREE_LIMIT) {
+    return (
+      "🚫 *Seu limite gratuito acabou*\n\n" +
+      `Você já usou os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
+      "💎 Ative o *Plano Premium* para criar lembretes ilimitados."
+    );
   }
 
-  await addReminder({
-    phone: userData.phone,
-    message: data.acao,
-    datetime: data.hora,
+  // 🔹 VALIDAÇÃO SIMPLES
+  if (!data?.acao || !data?.hora) {
+    return "⏰ Me diga o que devo lembrar e o horário certinho 😊";
+  }
+
+  await addReminder(user, {
+    text: data.acao,
+    when: data.hora,
+  });
+
+  // 🔢 ATUALIZA CONTADOR (IGUAL ANTES)
+  await updateUser(user, {
+    remindersUsed: remindersUsed + 1,
   });
 
   // Formatar data e hora
@@ -19,9 +42,11 @@ export async function createReminder(userData, data) {
     minute: "2-digit",
   });
 
+  const acao = capitalizeFirst(data.acao);
+
   return (
     `✅ *Lembrete salvo com sucesso!*\n\n` +
-    `📌 *Ação:* ${data.acao}\n` +
+    `📌 *Ação:* ${acao}\n` +
     `📅 *Data:* ${dataFormatada}\n` +
     `⏰ *Horário:* ${horaFormatada}`
   );

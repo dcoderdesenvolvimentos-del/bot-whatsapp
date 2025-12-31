@@ -1,15 +1,48 @@
-import { getUser } from "../services/userService.js";
+import { getUser, updateUser } from "../services/userService.js";
 import { interpretMessage } from "../ai/interpretMessage.js";
-import { intentMap } from "./intentMap.js";
+import { INTENTIONS } from "../constants/intentions.js";
+
+import { responderSaudacao } from "../handlers/saudacao.js";
+import { createReminder } from "../handlers/createReminder.js";
+import { listReminders } from "../handlers/listReminders.js";
+import { smallTalk } from "../handlers/smallTalk.js";
+import { help } from "../handlers/help.js";
 
 export async function routeIntent(user, text) {
-  const userData = await getUser(user);
+  // 🔹 BUSCA USUÁRIO (IGUAL AO SEU CÓDIGO ANTIGO)
+  let userData = await getUser(user);
+
+  // 🔹 PRIMEIRO CONTATO (igual antes)
+  if (!userData) {
+    await updateUser(user, {
+      stage: "first_contact",
+      remindersUsed: 0,
+      createdAt: Date.now(),
+    });
+
+    return "👋 Oi! Tudo bem? 😊";
+  }
+
+  // 🔹 IA SÓ INTERPRETA
   const interpretation = await interpretMessage(text);
 
-  console.log("🧠 Intenção:", interpretation.intencao);
-  console.log("📋 Dados:", interpretation);
+  switch (interpretation.intencao) {
+    case INTENTIONS.SAUDACAO:
+      return responderSaudacao(user, userData);
 
-  const handler = intentMap[interpretation.intencao] || intentMap.desconhecido;
+    case INTENTIONS.CRIAR_LEMBRETE:
+      return createReminder(user, userData, interpretation);
 
-  return handler(user, userData, interpretation);
+    case INTENTIONS.LISTAR_LEMBRETES:
+      return listReminders(user);
+
+    case INTENTIONS.CONVERSA_SOLTA:
+      return smallTalk();
+
+    case INTENTIONS.AJUDA:
+      return help();
+
+    default:
+      return help();
+  }
 }
