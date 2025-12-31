@@ -1,28 +1,22 @@
-import { addReminder } from "../reminders.js";
-import { updateUser } from "../services/userService.js";
+import { capitalizeFirst } from "../utils/text.js";
+import { addReminder } from "../services/reminderService.js";
 
 export async function createReminder(user, userData, interpretation) {
   const { text, minutes, dateTime } = interpretation;
 
+  // 🚨 PASSO 1 — DEFINIR when (OBRIGATÓRIO)
   let when;
 
-  // ⏱️ CASO 1 — "daqui X minutos"
-  if (minutes !== undefined) {
+  if (typeof minutes === "number") {
     when = Date.now() + minutes * 60 * 1000;
-  }
-
-  // 📅 CASO 2 — data/hora absoluta (amanhã às 17h etc)
-  else if (dateTime) {
+  } else if (typeof dateTime === "number") {
     when = dateTime;
-  }
-
-  // ❌ FALLBACK DE SEGURANÇA
-  else {
+  } else {
     return "⚠️ Não consegui identificar o horário do lembrete.";
   }
 
-  // ⏰ Agora SIM o when existe
-  const dateObj = new Date(data.hora);
+  // 🚨 PASSO 2 — AGORA SIM pode usar when
+  const dateObj = new Date(when);
 
   const formattedDate = dateObj.toLocaleDateString("pt-BR", {
     timeZone: "America/Sao_Paulo",
@@ -34,10 +28,13 @@ export async function createReminder(user, userData, interpretation) {
     minute: "2-digit",
   });
 
-  // ✅ salvar no banco (exemplo)
-  // await addReminder(user, { text, when });
+  // 🚨 PASSO 3 — SALVAR
+  await addReminder(user, {
+    text: capitalizeFirst(text),
+    when,
+  });
 
-  // 🧾 resposta
+  // 🚨 PASSO 4 — RESPONDER
   if (minutes !== undefined) {
     return (
       "✅ *Lembrete salvo com sucesso!*\n\n" +
