@@ -59,14 +59,16 @@ export async function routeIntent(user, text) {
   // =========================
   if (userData.stage === "confirming_name") {
     if (["sim", "s", "isso"].includes(normalized)) {
+      const name = userData.tempName; // 👈 usa a variável local
+
       await updateUser(user, {
         stage: "active",
-        name: userData.tempName,
+        name,
         tempName: null,
       });
 
       return (
-        `✨ Perfeito, ${userData.tempName}! Seja bem-vindo(a) 😊\n\n` +
+        `✨ Perfeito, ${name}! Seja bem-vindo(a) 😊\n\n` +
         "A partir de agora, eu cuido dos seus lembretes.\n\n" +
         "📌 Exemplos:\n" +
         "• me lembra daqui 10 minutos\n" +
