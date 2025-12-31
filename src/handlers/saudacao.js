@@ -1,7 +1,7 @@
 import { getUser } from "../services/userService.js";
 
-export async function responderSaudacao(user) {
-  const userData = await getUser(user);
+export function responderSaudacao(userData) {
+  const userData = getUser(user);
   const name = userData?.name || "";
 
   const hora = new Date().getHours();
