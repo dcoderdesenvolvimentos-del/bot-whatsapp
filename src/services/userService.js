@@ -1,12 +1,4 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-  });
-}
-
-const db = admin.firestore();
+import { db } from "../config/firebase.js";
 
 export async function getUser(userId) {
   if (!userId || typeof userId !== "string") return null;
