@@ -8,6 +8,34 @@ const openai = new OpenAI({
 });
 
 export async function interpretMessage(text) {
+  function extractAction(text) {
+    if (!text) return "";
+
+    return (
+      text
+        .toLowerCase()
+        // remove chamadas
+        .replace(/cara|mano|ei|por favor|pfv/gi, "")
+        // remove comandos
+        .replace(
+          /me lembra|me lembre|lembra|lembrar|quero que você me lembre/gi,
+          ""
+        )
+        // remove tempo comum
+        .replace(/amanhã|hoje|depois de amanhã/gi, "")
+        .replace(/daqui\s+\d+\s+(minuto|minutos|hora|horas)/gi, "")
+        .replace(/às?\s*\d{1,2}(:\d{1,2})?/gi, "")
+        .replace(/dia\s+\d{1,2}/gi, "")
+        .replace(
+          /próxima?\s+(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo)/gi,
+          ""
+        )
+        // limpeza final
+        .replace(/\s+/g, " ")
+        .trim()
+    );
+  }
+
   const hora = parseTime(text);
 
   if (hora) {
