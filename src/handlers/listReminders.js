@@ -1,7 +1,7 @@
 import { getUserReminders } from "../services/reminderService.js";
 
 export async function listReminders(userData) {
-  const reminders = await getUserReminders(userData.phone);
+  const reminders = await getUserReminders(user);
 
   if (!reminders.length) {
     return "📭 Você não tem lembretes salvos.";

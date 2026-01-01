@@ -11,14 +11,15 @@ export async function addReminder(phone, data) {
 }
 
 export async function getUserReminders(phone) {
-  const snapshot = await db
+  if (!phone) {
+    throw new Error("Phone não informado em getUserReminders");
+  }
+
+  return db
     .collection("reminders")
     .where("phone", "==", phone)
     .where("sent", "==", false)
-    .orderBy("datetime", "asc")
     .get();
-
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function deleteUserReminder(phone, index) {
