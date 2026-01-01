@@ -1,12 +1,23 @@
 import OpenAI from "openai";
 import { INTENT_PROMPT } from "./prompt.js";
 import { INTENTIONS } from "../constants/intentions.js";
+import { parseTime } from "../utils/timeParser.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function interpretMessage(text) {
+  const hora = parseTime(text);
+
+  if (hora) {
+    return {
+      intencao: INTENTIONS.CRIAR_LEMBRETE,
+      acao: extractAction(text),
+      hora,
+    };
+  }
+
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 0,
