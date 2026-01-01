@@ -1,10 +1,10 @@
 import { db } from "../config/firebase.js";
 
-export async function addReminder(phone, { text, when }) {
+export async function addReminder(phone, data) {
   await db.collection("reminders").add({
-    phone: user, // 🔥 É AQUI. É ISSO.
-    action: capitalizeFirst(data.acao),
-    time: data.hora,
+    phone, // ✅ agora existe
+    action: data.action,
+    time: data.time,
     sent: false,
     createdAt: Date.now(),
   });
