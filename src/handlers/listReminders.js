@@ -1,6 +1,6 @@
 import { getUserReminders } from "../services/reminderService.js";
 
-export async function listReminders(userData) {
+export async function listReminders(user) {
   const reminders = await getUserReminders(user);
 
   if (!reminders.length) {
