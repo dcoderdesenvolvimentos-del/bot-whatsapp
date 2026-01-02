@@ -8,6 +8,8 @@ const openai = new OpenAI({
 });
 
 export async function interpretMessage(text) {
+  const lower = text.toLowerCase(); // 🔥 FALTAVA ISSO
+
   const hora = parseTime(text);
 
   function extractAction(text) {
