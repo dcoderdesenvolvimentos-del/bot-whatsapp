@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { INTENT_PROMPT } from "./prompt.js";
 import { INTENTIONS } from "../constants/intentions.js";
 import { parseTime } from "../utils/timeParser.js";
+import { parseDateFromText } from "../utils/parseDateFromText.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
