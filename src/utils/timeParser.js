@@ -103,5 +103,102 @@ export function parseTime(text) {
     return date.getTime();
   }
 
+  // src/utils/timeParser.js
+
+  /**
+   * Constrói uma data baseada em dias + hora/minuto
+   */
+  function buildDate(daysToAdd, hour = 9, minute = 0) {
+    const now = new Date();
+
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + daysToAdd,
+      hour,
+      minute,
+      0,
+      0
+    ).getTime();
+  }
+
+  /**
+   * Extrai timestamp a partir de texto livre em PT-BR
+   * Retorna number (timestamp) ou null
+   */
+
+  // =========================
+  // 1️⃣ DAQUI X MINUTOS / HORAS (PRIORIDADE MÁXIMA)
+  // =========================
+  const relativeMatch = lower.match(
+    /daqui\s+(\d+)\s*(minuto|minutos|hora|horas)/i
+  );
+
+  if (relativeMatch) {
+    const value = Number(relativeMatch[1]);
+    const unit = relativeMatch[2];
+
+    let ms = value * 60000; // minutos
+    if (unit.startsWith("hora")) ms = value * 60 * 60000;
+
+    return Date.now() + ms;
+  }
+
+  // =========================
+  // Extrair hora/minuto (se existir)
+  // =========================
+  const hourMatch = lower.match(/(\d{1,2})(?:[:h ](\d{1,2}))?/);
+  const hour = hourMatch ? Number(hourMatch[1]) : 9;
+  const minute = hourMatch?.[2] ? Number(hourMatch[2]) : 0;
+
+  // =========================
+  // 2️⃣ HOJE
+  // =========================
+  if (lower.includes("hoje")) {
+    return buildDate(0, hour, minute);
+  }
+
+  // =========================
+  // 3️⃣ AMANHÃ
+  // =========================
+  if (lower.includes("amanhã")) {
+    return buildDate(1, hour, minute);
+  }
+
+  // =========================
+  // 4️⃣ DEPOIS DE AMANHÃ
+  // =========================
+  if (lower.includes("depois de amanhã")) {
+    return buildDate(2, hour, minute);
+  }
+
+  // =========================
+  // 5️⃣ DIAS DA SEMANA
+  // =========================
+  const weekdays = {
+    domingo: 0,
+    segunda: 1,
+    terça: 2,
+    terca: 2,
+    quarta: 3,
+    quinta: 4,
+    sexta: 5,
+    sábado: 6,
+    sabado: 6,
+  };
+
+  for (const [day, index] of Object.entries(weekdays)) {
+    if (lower.includes(day)) {
+      const now = new Date();
+      let diff = index - now.getDay();
+      if (diff <= 0) diff += 7;
+
+      return buildDate(diff, hour, minute);
+    }
+  }
+
+  // =========================
+  // ❌ Não encontrou data
+  // =========================
   return null;
 }

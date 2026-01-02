@@ -8,35 +8,66 @@ const openai = new OpenAI({
 });
 
 export async function interpretMessage(text) {
+  const hora = parseDateFromText(text);
+
   function extractAction(text) {
     if (!text) return "";
 
     return (
       text
         .toLowerCase()
-        // remove chamadas
-        .replace(/cara|mano|ei|por favor|pfv/gi, "")
-        // remove comandos
+
+        // palavras de chamada
+        .replace(/\b(cara|mano|ei|mario|parceiro|por favor|pfv)\b/gi, "")
+
+        // comandos
         .replace(
-          /me lembra|me lembre|lembra|lembrar|quero que você me lembre/gi,
+          /\b(me lembra|me lembre|lembra|lembrar|lembre|lembre|quero que você me lembre)\b/gi,
           ""
         )
-        // remove tempo comum
-        .replace(/amanhã|hoje|depois de amanhã/gi, "")
-        .replace(/daqui\s+\d+\s+(minuto|minutos|hora|horas)/gi, "")
-        .replace(/às?\s*\d{1,2}(:\d{1,2})?/gi, "")
-        .replace(/dia\s+\d{1,2}/gi, "")
+
+        // datas relativas
+        .replace(/\b(hoje|amanhã|depois de amanhã)\b/gi, "")
+
+        // dias da semana
         .replace(
-          /próxima?\s+(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo)/gi,
+          /\b(domingo|segunda|terça|terca|quarta|quinta|sexta|sábado|sabado)\b/gi,
           ""
         )
+
+        // expressões de tempo
+        .replace(/\b(daqui\s+\d+\s+(minuto|minutos|hora|horas))\b/gi, "")
+        .replace(/\b(\d{1,2})\s*(horas?|h)\b/gi, "")
+        .replace(/\bàs?\s*\d{1,2}(:\d{1,2})?\b/gi, "")
+
+        // palavras soltas inúteis
+        .replace(/\b(de|para|pra|que|às|umas)\b/gi, "")
+
         // limpeza final
         .replace(/\s+/g, " ")
         .trim()
     );
   }
 
-  const hora = parseTime(text);
+  if (lower.includes("amanhã")) {
+    const hourMatch = lower.match(/(\d{1,2})(?:[:h ](\d{1,2}))?/);
+    const hour = hourMatch ? Number(hourMatch[1]) : 9;
+    const minute = hourMatch && hourMatch[2] ? Number(hourMatch[2]) : 0;
+
+    const now = new Date();
+
+    const date = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1, // 🔥 amanhã REAL
+      hour,
+      minute,
+      0,
+      0
+    );
+
+    return date.getTime();
+  }
 
   if (hora) {
     return {

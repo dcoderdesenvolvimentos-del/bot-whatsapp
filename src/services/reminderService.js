@@ -1,6 +1,7 @@
 import { db } from "../config/firebase.js";
 
 export async function addReminder(phone, data) {
+  console.log("🔥 Salvando lembrete:", phone, action, time);
   await db.collection("reminders").add({
     phone, // ✅ agora existe
     action: data.action,
@@ -8,6 +9,7 @@ export async function addReminder(phone, data) {
     sent: false,
     createdAt: Date.now(),
   });
+  console.log("✅ Lembrete salvo no Firestore");
 }
 
 export async function getUserReminders(phone) {
