@@ -34,5 +34,9 @@ export async function createReminder(userDoc, data) {
     timeZone: "America/Sao_Paulo", // ✅ ADICIONADO
   });
 
+  console.log("🔍 HORA RECEBIDA:", data.hora);
+  console.log("🔍 DATE OBJECT:", new Date(data.hora));
+  console.log("🔍 FORMATADO:", dataFormatada);
+
   return `✅ Lembrete criado!\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
 }
