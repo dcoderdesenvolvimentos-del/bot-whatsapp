@@ -24,11 +24,11 @@ export async function routeIntent(userDoc, text) {
         break;
 
       case "listar_lembretes":
-        response = await listReminders(user);
+        response = await listReminders(userDoc, data);
         break;
 
       case "excluir_lembrete":
-        response = await deleteReminder(user, data);
+        response = await deleteReminder(userDoc, data);
         break;
 
       case "saudacao":
