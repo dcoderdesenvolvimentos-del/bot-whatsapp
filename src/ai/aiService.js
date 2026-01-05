@@ -8,7 +8,7 @@ export async function analyzeIntent(text) {
   try {
     const agora = new Date();
     const agoraEmSP = new Date(
-      agora.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+      agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
     );
 
     const hoje = agoraEmSP.toLocaleDateString("pt-BR");
