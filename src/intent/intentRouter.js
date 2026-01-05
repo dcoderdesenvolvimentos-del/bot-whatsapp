@@ -1,128 +1,73 @@
-import { getUser, updateUser } from "../services/userService.js";
-import { interpretMessage } from "../ai/interpretMessage.js";
-import { INTENTIONS } from "../constants/intentions.js";
-
-import { responderSaudacao } from "../handlers/saudacao.js";
-import { createReminder } from "../handlers/createReminder.js";
-import { listReminders } from "../handlers/listReminders.js";
-import { smallTalk } from "../handlers/smallTalk.js";
-import { help } from "../handlers/help.js";
-import { createMultipleReminders } from "../handlers/createMultipleReminders.js";
+import { analyzeIntent } from "../ai/aiService.js";
+import { createReminder } from "./createReminder.js";
+import { listReminders } from "./listReminders.js";
+import { deleteReminder } from "./deleteReminder.js";
+import { getOrCreateUser } from "../services/userService.js";
 
 export async function routeIntent(user, text) {
   console.log("🚨 ROUTE INTENT EXECUTADO");
-  console.log("👤 USER:", user);
+  console.log("👤 USER:", user.phone || user.id);
   console.log("💬 TEXT:", text);
 
-  let userData = await getUser(user);
-  const normalized = text.toLowerCase().trim();
+  try {
+    // 🧠 Analisa intenção com IA
+    const data = await analyzeIntent(text);
 
-  // =========================
-  //🆕 PRIMEIRO CONTATO
-  // =========================
-  if (!userData) {
-    await updateUser(user, {
-      stage: "first_contact",
-      remindersUsed: 0,
-      createdAt: Date.now(),
-    });
+    console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
 
-    return "👋 Oi! Tudo bem com você? 😊";
-  }
+    // 👤 Busca dados do usuário
+    const userData = user.data ? user.data() : user;
 
-  // =========================
-  // 🟢 STAGE: first_contact
-  // =========================
-  if (userData.stage === "first_contact") {
-    await updateUser(user, { stage: "awaiting_name" });
-    return "👋 Antes de continuarmos, me diz: qual é o seu nome? 😊";
-  }
+    let response = "";
 
-  // =========================
-  // 🟡 STAGE: awaiting_name
-  // =========================
-  if (userData.stage === "awaiting_name") {
-    const tempName = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    switch (data.intencao) {
+      case "criar_lembrete":
+        response = await createReminder(user, userData, data);
+        break;
 
-    await updateUser(user, {
-      stage: "confirming_name",
-      tempName,
-    });
+      case "listar_lembretes":
+        response = await listReminders(user);
+        break;
 
-    return (
-      "✨ Só confirmando rapidinho…\n\n" +
-      `👉 Seu nome é *${tempName}*?\n\n` +
-      "Responda com:\n" +
-      "✅ sim — para confirmar\n" +
-      "❌ não — para corrigir"
-    );
-  }
+      case "excluir_lembrete":
+        response = await deleteReminder(user, data);
+        break;
 
-  // =========================
-  // 🟠 STAGE: confirming_name
-  // =========================
-  if (userData.stage === "confirming_name") {
-    if (["sim", "s", "isso"].includes(normalized)) {
-      const name = userData.tempName; // 👈 usa a variável local
+      case "saudacao":
+        response =
+          "👋 Olá! Sou seu assistente de lembretes!\n\n" +
+          "📋 Posso te ajudar com:\n\n" +
+          "• ✅ Criar lembretes\n" +
+          "• 📝 Listar lembretes\n" +
+          "• 🗑️ Excluir lembretes\n\n" +
+          "Exemplo: 'me lembra de comprar pão amanhã às 10h'";
+        break;
 
-      await updateUser(user, {
-        stage: "active",
-        name,
-        tempName: null,
-      });
+      case "ajuda":
+        response =
+          "🤖 *Como usar o bot de lembretes:*\n\n" +
+          "📌 *Criar:* 'me lembra de tomar água daqui 2 minutos'\n" +
+          "📋 *Listar:* 'quais são meus lembretes?'\n" +
+          "🗑️ *Excluir:* 'apaga o lembrete 1'\n\n" +
+          "💡 *Dica:* Use linguagem natural!";
+        break;
 
-      return (
-        `✨ Perfeito, ${name}! Seja bem-vindo(a) 😊\n\n` +
-        "A partir de agora, eu cuido dos seus lembretes.\n\n" +
-        "📌 Exemplos:\n" +
-        "• me lembra daqui 10 minutos\n" +
-        "• amanhã às 17h30 ir à academia\n" +
-        "• listar lembretes"
-      );
+      case "despedida":
+        response = "👋 Até logo! Estou aqui quando precisar! 😊";
+        break;
+
+      default:
+        response =
+          "🤔 Desculpa, não entendi.\n\n" +
+          "Tente:\n" +
+          "• 'me lembra de X amanhã às 10h'\n" +
+          "• 'lista meus lembretes'\n" +
+          "• 'apaga o lembrete 1'";
     }
 
-    if (["não", "nao"].includes(normalized)) {
-      await updateUser(user, {
-        stage: "awaiting_name",
-        tempName: null,
-      });
-
-      return "Sem problema 😊 Qual é o seu nome então?";
-    }
-
-    return "Responda apenas *sim* ou *não*, por favor 🙂";
-  }
-
-  // =========================
-  // 🟢 STAGE: active
-  // =========================
-  if (userData.stage !== "active") {
-    await updateUser(user, { stage: "active" });
-  }
-
-  // =========================
-  // 🧠 IA (só agora)
-  // =========================
-  const interpretation = await interpretMessage(text);
-
-  switch (interpretation.intencao) {
-    case INTENTIONS.CRIAR_LEMBRETE:
-      return createReminder(user, userData, interpretation);
-
-    case INTENTIONS.CRIAR_MULTIPLOS_LEMBRETES:
-      return createMultipleReminders(user, userData, interpretation);
-
-    case INTENTIONS.LISTAR_LEMBRETES:
-      return listReminders(user);
-
-    case INTENTIONS.AJUDA:
-      return help();
-
-    case INTENTIONS.CONVERSA_SOLTA:
-    case INTENTIONS.SAUDACAO:
-      return responderSaudacao(userData);
-
-    default:
-      return help();
+    return response;
+  } catch (error) {
+    console.error("❌ Erro no routeIntent:", error);
+    return "❌ Ops! Algo deu errado. Tente novamente.";
   }
 }
