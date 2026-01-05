@@ -5,44 +5,25 @@ import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUser } from "./services/userService.js";
 
-// trava anti-duplicação
 const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
-  // 👤 BUSCA OU CRIA USUÁRIO NO FIREBASE
-  const userDoc = await getOrCreateUser({ phone: user });
-
-  console.log("🔍 USER DOC:", userDoc.id); // ← ADICIONA ESSE LOG
-
-  // 🔁 CHAMA O ROUTE INTENT
-  const response = await routeIntent(userDoc, text.toLowerCase());
-
-  // 🔔 Detecta se é webhook do Mercado Pago
   if (payload?.action?.includes("payment") || payload?.type === "payment") {
     console.log("🔔 Webhook do Mercado Pago detectado!");
     await handleMpWebhook(payload);
-    return null; // não processa como mensagem
+    return null;
   }
 
   try {
     const messageId =
       payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
-
-    if (!messageId) {
-      // payload sem ID útil (ack/status/etc)
-      return;
-    }
-
+    if (!messageId) return;
     if (processedMessages.has(messageId)) {
       console.log("⚠️ Mensagem duplicada ignorada:", messageId);
       return;
     }
-
     processedMessages.add(messageId);
-
     if (!payload || payload.fromMe) return;
-
-    // ignora ACKs, status, edições, etc
     if (
       payload.type === "DeliveryCallback" ||
       payload.type === "ReadCallback" ||
@@ -55,59 +36,48 @@ export async function handleWebhook(payload, sendMessage) {
     const user = payload.phone;
     let text = "";
 
-    // 🔊 ÁUDIO
     if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
-
       const rawText = await audioToText(payload.audio.audioUrl);
       console.log("📝 Texto transcrito (cru):", rawText);
-
       text = normalizeSpeech(rawText);
       console.log("🧹 Texto normalizado:", text);
-    }
-
-    // 📝 TEXTO
-    else if (payload.text?.message) {
+    } else if (payload.text?.message) {
       text = payload.text.message.trim();
-    }
-
-    // 🔘 BOTÃO (Z-API)
-    else if (payload.buttonsResponseMessage?.buttonId) {
+    } else if (payload.buttonsResponseMessage?.buttonId) {
       text = payload.buttonsResponseMessage.buttonId;
       console.log("🔘 Botão clicado:", text);
     }
+
     if (!text) {
       console.log("⚠️ Nenhum texto processável encontrado.");
-      console.log("📦 Payload recebido:", JSON.stringify(payload, null, 2));
       return;
     }
 
     console.log("👤 User:", user);
     console.log("💬 Texto:", text);
 
-    // 🔁 CHAMA O ROUTE INTENT
-    const response = await routeIntent(user, text.toLowerCase());
+    const userDoc = await getOrCreateUser({ phone: user });
+    console.log("🔍 USER DOC ID:", userDoc.id);
 
-    // ⚠️ resposta realmente vazia
+    const response = await routeIntent(userDoc, text.toLowerCase());
+
     if (response === null || response === undefined || response === "") {
       console.log("⚠️ Resposta vazia. Ignorada.");
       return;
     }
 
-    // 🔘 BUTTON LIST (Z-API)
     if (typeof response === "object" && response.type === "buttons") {
       await sendButtonList(user, response.text, response.buttons);
       return;
     }
 
-    // 💳 PIX
     if (typeof response === "object" && response.type === "pix") {
       await sendMessage(user, response.intro);
       await sendMessage(user, response.code);
       return;
     }
 
-    // 💬 TEXTO NORMAL
     if (typeof response === "string") {
       await sendMessage(user, response);
       return;
