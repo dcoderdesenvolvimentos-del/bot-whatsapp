@@ -6,7 +6,6 @@ const openai = new OpenAI({
 
 export async function analyzeIntent(text) {
   try {
-    // Pega hora atual em São Paulo
     const agoraUTC = new Date();
     const agoraSP = new Date(
       agoraUTC.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
@@ -21,57 +20,44 @@ export async function analyzeIntent(text) {
     const mesAtual = agoraSP.getMonth();
     const diaAtual = agoraSP.getDate();
 
-    const prompt = `
-Você é um assistente que analisa mensagens e identifica a intenção do usuário.
-
-*CONTEXTO ATUAL (São Paulo - America/Sao_Paulo):*
-- Data: ${hoje}
-- Hora: ${horaAtual}
-- Ano: ${anoAtual}
-- Mês: ${mesAtual + 1}
-- Dia: ${diaAtual}
-- Timestamp atual: ${Date.now()}
-
-Retorne APENAS um JSON válido, sem markdown.
-
-*Intenções:*
-- criar_lembrete
-- listar_lembretes
-- excluir_lembrete
-- saudacao
-- ajuda
-- despedida
-
-*REGRAS IMPORTANTES:*
-
-1. Quando o usuário mencionar múltiplos horários e especificar qual quer (ex: "primeiro", "segundo", "terceiro"), conte a partir do PRIMEIRO horário mencionado:
-   - "horários 17, 18 e 19, quero o segundo" → segundo = 18h ✅
-   - "às 10, 11 e 12, me lembra no primeiro" → primeiro = 10h ✅
-
-2. SEMPRE identifique corretamente a posição ordinal (primeiro=1º, segundo=2º, terceiro=3º)
-
-*CÁLCULO DE TIMESTAMPS:*
-
-"hoje às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
-"amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
-"daqui X minutos" → ${Date.now()} + (X * 60000)
-
-*Exemplos:*
-
-"me lembra de tomar água às 17, 18 e 19, quero o segundo horário"
-→ {"intencao":"criar_lembrete","acao":"tomar água","hora":${Date.UTC(
+    const hojeTimestamp = new Date(
       anoAtual,
       mesAtual,
       diaAtual,
-      21,
+      18,
       0,
       0,
       0
-    )}}
+    ).getTime();
+    const amanhaTimestamp = new Date(
+      anoAtual,
+      mesAtual,
+      diaAtual + 1,
+      18,
+      0,
+      0,
+      0
+    ).getTime();
 
-Mensagem do usuário: "${text}"
+    const prompt = `Analise a mensagem e retorne JSON sem markdown.
 
-Retorne APENAS o JSON:`;
+CONTEXTO: Hoje ${hoje}, ${horaAtual}, timestamp ${Date.now()}
+
+INTENÇÕES: criar_lembrete, listar_lembretes, excluir_lembrete, saudacao, ajuda, despedida
+
+REGRA: "17, 18 e 19, segundo" = 18h
+
+TIMESTAMPS:
+- Hoje 18h: ${hojeTimestamp}
+- Amanhã 18h: ${amanhaTimestamp}
+- Daqui 10min: ${Date.now() + 600000}
+
+EXEMPLOS:
+"17, 18 e 19, segundo" → {"intencao":"criar_lembrete","acao":"lembrete","hora":${hojeTimestamp}}
+"amanhã 15h ligar" → {"intencao":"criar_lembrete","acao":"ligar","hora":${amanhaTimestamp}}
+
+Mensagem: "${text}"
+JSON:`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
