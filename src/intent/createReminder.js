@@ -31,6 +31,7 @@ export async function createReminder(userDoc, data) {
   const dataFormatada = new Date(data.hora).toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
+    timeZone: "America/Sao_Paulo", // ✅ ADICIONADO
   });
 
   return `✅ Lembrete criado!\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
