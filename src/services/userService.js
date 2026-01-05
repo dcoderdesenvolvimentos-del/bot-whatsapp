@@ -1,25 +1,16 @@
 import { db } from "../config/firebase.js";
 
-export async function getUser(userId) {
-  if (!userId || typeof userId !== "string") return null;
+export async function getOrCreateUser({ phone }) {
+  const userRef = db.collection("users").doc(phone);
+  const doc = await userRef.get();
 
-  const snap = await db.collection("users").doc(userId).get();
-  if (!snap.exists) return null;
+  if (!doc.exists) {
+    await userRef.set({
+      phone,
+      createdAt: new Date(),
+      active: true,
+    });
+  }
 
-  return snap.data();
-}
-
-export async function updateUser(userId, data) {
-  if (!userId || typeof userId !== "string") return;
-
-  await db
-    .collection("users")
-    .doc(userId)
-    .set(
-      {
-        ...data,
-        updatedAt: Date.now(),
-      },
-      { merge: true }
-    );
+  return userRef;
 }

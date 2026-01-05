@@ -3,6 +3,7 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendMessage, sendButtonList } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
+import { getOrCreateUser } from "./services/userService.js";
 
 // trava anti-duplicação
 const processedMessages = new Set();

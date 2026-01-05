@@ -4,25 +4,23 @@ import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { getOrCreateUser } from "../services/userService.js";
 
-export async function routeIntent(user, text) {
+export async function routeIntent(userDoc, text) {
   console.log("🚨 ROUTE INTENT EXECUTADO");
-  console.log("👤 USER:", user.phone || user.id);
+
+  const phone = userDoc.id; // ← pega o ID do documento (que é o telefone)
+  console.log("👤 USER:", phone);
   console.log("💬 TEXT:", text);
 
   try {
-    // 🧠 Analisa intenção com IA
     const data = await analyzeIntent(text);
-
     console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
 
-    // 👤 Busca dados do usuário
-    const userData = user.data ? user.data() : user;
-
+    // passa o userDoc pros handlers
     let response = "";
 
     switch (data.intencao) {
       case "criar_lembrete":
-        response = await createReminder(user, userData, data);
+        response = await createReminder(userDoc, data); // ← só 2 params
         break;
 
       case "listar_lembretes":
