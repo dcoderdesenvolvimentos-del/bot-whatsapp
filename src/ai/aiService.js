@@ -6,35 +6,37 @@ const openai = new OpenAI({
 
 export async function analyzeIntent(text) {
   try {
-    const agora = new Date();
-    const agoraEmSP = new Date(
-      agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
+    // Pega hora atual em São Paulo
+    const agoraUTC = new Date();
+    const agoraSP = new Date(
+      agoraUTC.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
     );
 
-    const hoje = agoraEmSP.toLocaleDateString("pt-BR");
-    const horaAtual = agoraEmSP.toLocaleTimeString("pt-BR", {
+    const hoje = agoraSP.toLocaleDateString("pt-BR");
+    const horaAtual = agoraSP.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const anoAtual = agoraEmSP.getFullYear();
-    const mesAtual = agoraEmSP.getMonth();
-    const diaAtual = agoraEmSP.getDate();
+    const anoAtual = agoraSP.getFullYear();
+    const mesAtual = agoraSP.getMonth();
+    const diaAtual = agoraSP.getDate();
+    const horaAtualNum = agoraSP.getHours();
+    const minutoAtualNum = agoraSP.getMinutes();
 
     const prompt = `
 Você é um assistente que analisa mensagens e identifica a intenção do usuário.
 
-INFORMAÇÕES ATUAIS (FUSO: America/Sao_Paulo / UTC-3):
-- Data de hoje: ${hoje}
-- Hora atual: ${horaAtual}
+CONTEXTO ATUAL (São Paulo - America/Sao_Paulo):
+- Data: ${hoje}
+- Hora: ${horaAtual}
 - Ano: ${anoAtual}
 - Mês: ${mesAtual + 1}
 - Dia: ${diaAtual}
+- Timestamp atual: ${Date.now()}
 
-⚠️ OBRIGATÓRIO: Todos os timestamps devem ser calculados considerando o fuso horário America/Sao_Paulo (UTC-3).
+Retorne APENAS um JSON válido, sem markdown.
 
-Retorne APENAS um JSON válido, sem markdown, sem explicações.
-
-Intenções possíveis:
+Intenções:
 - criar_lembrete
 - listar_lembretes
 - excluir_lembrete
@@ -42,41 +44,51 @@ Intenções possíveis:
 - ajuda
 - despedida
 
-Para "criar_lembrete", extraia:
-- acao: o que fazer
-- hora: timestamp em milissegundos NO FUSO America/Sao_Paulo
+Para criar_lembrete:
+- acao: texto da ação
+- hora: timestamp em milissegundos
 
-CÁLCULO CORRETO DE TIMESTAMPS (America/Sao_Paulo):
+REGRAS DE CÁLCULO:
 
-Para "hoje às 18h":
-\\\`javascript
-// Cria data em São Paulo
-const date = new Date();
-date.setFullYear(${anoAtual});
-date.setMonth(${mesAtual});
-date.setDate(${diaAtual});
-date.setHours(18);
-date.setMinutes(0);
-date.setSeconds(0);
-date.setMilliseconds(0);
+1. "daqui X minutos" → ${Date.now()} + (X * 60000)
 
-// Ajusta para UTC-3 (soma 3 horas no timestamp)
-const timestamp = date.getTime() + (3 * 60 * 60 * 1000);
-\\\`
+2. "daqui X horas" → ${Date.now()} + (X * 3600000)
 
-Para "amanhã às 18h":
-\\\`javascript
-const date = new Date();
-date.setFullYear(${anoAtual});
-date.setMonth(${mesAtual});
-date.setDate(${diaAtual + 1});
-date.setHours(18);
-date.setMinutes(0);
-date.setSeconds(0);
-date.setMilliseconds(0);
-const timestamp = date.getTime() + (3 * 60 * 60 * 1000);
-\\\
-`;
+3. "hoje às HH:MM" → Use Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
+   - IMPORTANTE: Some 3 horas na hora solicitada para compensar UTC-3
+   - Exemplo: "hoje às 18h" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, 21, 0, 0, 0)
+
+4. "amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${
+      diaAtual + 1
+    }, HH+3, MM, 0, 0)
+
+Exemplos:
+
+"me lembra de tomar água amanhã às 18h"
+→ {"intencao":"criar_lembrete","acao":"tomar água","hora":${Date.UTC(
+      anoAtual,
+      mesAtual,
+      diaAtual + 1,
+      21,
+      0,
+      0,
+      0
+    )}}
+
+"me lembra de ligar pro João hoje às 15h"
+→ {"intencao":"criar_lembrete","acao":"ligar pro João","hora":${Date.UTC(
+      anoAtual,
+      mesAtual,
+      diaAtual,
+      18,
+      0,
+      0,
+      0
+    )}}
+
+Mensagem do usuário: "${text}"
+
+Retorne APENAS o JSON:`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
