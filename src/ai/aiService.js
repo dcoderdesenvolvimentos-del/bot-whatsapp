@@ -7,23 +7,34 @@ const openai = new OpenAI({
 export async function analyzeIntent(text) {
   try {
     const agora = new Date();
-    const hoje = agora.toLocaleDateString("pt-BR");
-    const horaAtual = agora.toLocaleTimeString("pt-BR", {
+    const agoraEmSP = new Date(
+      agora.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+    );
+
+    const hoje = agoraEmSP.toLocaleDateString("pt-BR");
+    const horaAtual = agoraEmSP.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
     });
+    const anoAtual = agoraEmSP.getFullYear();
+    const mesAtual = agoraEmSP.getMonth();
+    const diaAtual = agoraEmSP.getDate();
 
     const prompt = `
 Você é um assistente que analisa mensagens e identifica a intenção do usuário.
 
-*Data e hora atual:*
-- Hoje: ${hoje}
+INFORMAÇÕES ATUAIS (FUSO: America/Sao_Paulo / UTC-3):
+- Data de hoje: ${hoje}
 - Hora atual: ${horaAtual}
-- Timestamp atual: ${Date.now()}
+- Ano: ${anoAtual}
+- Mês: ${mesAtual + 1}
+- Dia: ${diaAtual}
+
+⚠️ OBRIGATÓRIO: Todos os timestamps devem ser calculados considerando o fuso horário America/Sao_Paulo (UTC-3).
 
 Retorne APENAS um JSON válido, sem markdown, sem explicações.
 
-*Intenções possíveis:*
+Intenções possíveis:
 - criar_lembrete
 - listar_lembretes
 - excluir_lembrete
@@ -31,42 +42,40 @@ Retorne APENAS um JSON válido, sem markdown, sem explicações.
 - ajuda
 - despedida
 
-*Para "criar_lembrete", extraia:*
-- acao: o que fazer (ex: "tomar água")
-- hora: timestamp em milissegundos
+Para "criar_lembrete", extraia:
+- acao: o que fazer
+- hora: timestamp em milissegundos NO FUSO America/Sao_Paulo
 
-*Regras de cálculo de tempo:*
-- "daqui X minutos" → Date.now() + (X * 60 * 1000)
-- "daqui X horas" → Date.now() + (X * 60 * 60 * 1000)
-- "amanhã às 17h" → próximo dia + 17:00
-- "depois de amanhã às 17h" → daqui 2 dias + 17:00
-- "segunda às 10h" → próxima segunda-feira + 10:00
+CÁLCULO CORRETO DE TIMESTAMPS (America/Sao_Paulo):
 
-*Exemplos:*
+Para "hoje às 18h":
+\\\`javascript
+// Cria data em São Paulo
+const date = new Date();
+date.setFullYear(${anoAtual});
+date.setMonth(${mesAtual});
+date.setDate(${diaAtual});
+date.setHours(18);
+date.setMinutes(0);
+date.setSeconds(0);
+date.setMilliseconds(0);
 
-Entrada: "me lembra de tomar água daqui 2 minutos"
-Saída: {"intencao":"criar_lembrete","acao":"tomar água","hora":${
-      Date.now() + 2 * 60 * 1000
-    }}
+// Ajusta para UTC-3 (soma 3 horas no timestamp)
+const timestamp = date.getTime() + (3 * 60 * 60 * 1000);
+\\\`
 
-Entrada: "me lembra de ligar pro João amanhã às 15h"
-Saída: {"intencao":"criar_lembrete","acao":"ligar pro João","hora":${new Date(
-      agora.getTime() + 24 * 60 * 60 * 1000
-    ).setHours(15, 0, 0, 0)}}
-
-Entrada: "me lembra de ir na academia depois de amanhã às 17h"
-Saída: {"intencao":"criar_lembrete","acao":"ir na academia","hora":${new Date(
-      agora.getTime() + 48 * 60 * 60 * 1000
-    ).setHours(17, 0, 0, 0)}}
-
-Entrada: "lista meus lembretes"
-Saída: {"intencao":"listar_lembretes"}
-
-Entrada: "apaga o lembrete 1"
-Saída: {"intencao":"excluir_lembrete","indice":1}
-
-Agora analise:
-"${text}"
+Para "amanhã às 18h":
+\\\`javascript
+const date = new Date();
+date.setFullYear(${anoAtual});
+date.setMonth(${mesAtual});
+date.setDate(${diaAtual + 1});
+date.setHours(18);
+date.setMinutes(0);
+date.setSeconds(0);
+date.setMilliseconds(0);
+const timestamp = date.getTime() + (3 * 60 * 60 * 1000);
+\\\
 `;
 
     const completion = await openai.chat.completions.create({
