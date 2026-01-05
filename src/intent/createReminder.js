@@ -12,31 +12,36 @@ export async function createReminder(userDoc, data) {
     return "❌ Erro ao identificar usuário.";
   }
 
-  // Valida timestamp
   if (!data.hora || typeof data.hora !== "number") {
     return "❌ Não consegui entender o horário. Tente: 'me lembra de X daqui 10 minutos'";
   }
 
-  // Valida se não é passado
   if (data.hora < Date.now()) {
     return "❌ Esse horário já passou! Tente um horário futuro.";
   }
 
-  // Salva usando o service
   await addReminder(phone, {
     text: data.acao,
     when: data.hora,
   });
 
-  const dataFormatada = new Date(data.hora).toLocaleString("pt-BR", {
+  // 🔍 DEBUG COMPLETO
+  const dateObj = new Date(data.hora);
+  console.log("🔍 TIMESTAMP RECEBIDO:", data.hora);
+  console.log("🔍 DATE OBJECT:", dateObj);
+  console.log("🔍 ISO STRING:", dateObj.toISOString());
+  console.log(
+    "🔍 TIMEZONE SERVIDOR:",
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+
+  const dataFormatada = dateObj.toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
-    timeZone: "America/Sao_Paulo", // ✅ ADICIONADO
+    timeZone: "America/Sao_Paulo",
   });
 
-  console.log("🔍 HORA RECEBIDA:", data.hora);
-  console.log("🔍 DATE OBJECT:", new Date(data.hora));
-  console.log("🔍 FORMATADO:", dataFormatada);
+  console.log("🔍 FORMATADO FINAL:", dataFormatada);
 
   return `✅ Lembrete criado!\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
 }
