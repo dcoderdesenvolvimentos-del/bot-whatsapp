@@ -53,9 +53,7 @@ Retorne APENAS um JSON válido, sem markdown.
 *CÁLCULO DE TIMESTAMPS:*
 
 "hoje às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
-"amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${
-      diaAtual + 1
-    }, HH+3, MM, 0, 0)
+"amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
 "daqui X minutos" → ${Date.now()} + (X * 60000)
 
 *Exemplos:*
@@ -64,7 +62,7 @@ Retorne APENAS um JSON válido, sem markdown.
 → {"intencao":"criar_lembrete","acao":"tomar água","hora":${Date.UTC(
       anoAtual,
       mesAtual,
-      diaAtual + 1,
+      diaAtual,
       21,
       0,
       0,
