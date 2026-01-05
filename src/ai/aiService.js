@@ -20,13 +20,11 @@ export async function analyzeIntent(text) {
     const anoAtual = agoraSP.getFullYear();
     const mesAtual = agoraSP.getMonth();
     const diaAtual = agoraSP.getDate();
-    const horaAtualNum = agoraSP.getHours();
-    const minutoAtualNum = agoraSP.getMinutes();
 
     const prompt = `
 Você é um assistente que analisa mensagens e identifica a intenção do usuário.
 
-CONTEXTO ATUAL (São Paulo - America/Sao_Paulo):
+*CONTEXTO ATUAL (São Paulo - America/Sao_Paulo):*
 - Data: ${hoje}
 - Hora: ${horaAtual}
 - Ano: ${anoAtual}
@@ -36,7 +34,7 @@ CONTEXTO ATUAL (São Paulo - America/Sao_Paulo):
 
 Retorne APENAS um JSON válido, sem markdown.
 
-Intenções:
+*Intenções:*
 - criar_lembrete
 - listar_lembretes
 - excluir_lembrete
@@ -44,43 +42,30 @@ Intenções:
 - ajuda
 - despedida
 
-Para criar_lembrete:
-- acao: texto da ação
-- hora: timestamp em milissegundos
+*REGRAS IMPORTANTES:*
 
-REGRAS DE CÁLCULO:
+1. Quando o usuário mencionar múltiplos horários e especificar qual quer (ex: "primeiro", "segundo", "terceiro"), conte a partir do PRIMEIRO horário mencionado:
+   - "horários 17, 18 e 19, quero o segundo" → segundo = 18h ✅
+   - "às 10, 11 e 12, me lembra no primeiro" → primeiro = 10h ✅
 
-1. "daqui X minutos" → ${Date.now()} + (X * 60000)
+2. SEMPRE identifique corretamente a posição ordinal (primeiro=1º, segundo=2º, terceiro=3º)
 
-2. "daqui X horas" → ${Date.now()} + (X * 3600000)
+*CÁLCULO DE TIMESTAMPS:*
 
-3. "hoje às HH:MM" → Use Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
-   - IMPORTANTE: Some 3 horas na hora solicitada para compensar UTC-3
-   - Exemplo: "hoje às 18h" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, 21, 0, 0, 0)
-
-4. "amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${
+"hoje às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${diaAtual}, HH+3, MM, 0, 0)
+"amanhã às HH:MM" → Date.UTC(${anoAtual}, ${mesAtual}, ${
       diaAtual + 1
     }, HH+3, MM, 0, 0)
+"daqui X minutos" → ${Date.now()} + (X * 60000)
 
-Exemplos:
+*Exemplos:*
 
-"me lembra de tomar água amanhã às 18h"
+"me lembra de tomar água às 17, 18 e 19, quero o segundo horário"
 → {"intencao":"criar_lembrete","acao":"tomar água","hora":${Date.UTC(
       anoAtual,
       mesAtual,
       diaAtual + 1,
       21,
-      0,
-      0,
-      0
-    )}}
-
-"me lembra de ligar pro João hoje às 15h"
-→ {"intencao":"criar_lembrete","acao":"ligar pro João","hora":${Date.UTC(
-      anoAtual,
-      mesAtual,
-      diaAtual,
-      18,
       0,
       0,
       0
@@ -92,30 +77,16 @@ Retorne APENAS o JSON:`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Você retorna APENAS JSON válido, sem markdown, sem explicações. Calcule timestamps corretamente com base na data/hora atual fornecida.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
     });
 
-    const response = completion.choices[0].message.content.trim();
-    const cleanResponse = response.replace(/json\n?/g, "").replace(/\n?/g, "");
+    const resposta = completion.choices[0].message.content.trim();
+    const json = resposta.replace(/json|/g, "").trim();
 
-    const parsed = JSON.parse(cleanResponse);
-
-    console.log("🧠 IA RETORNOU:", parsed);
-
-    return parsed;
+    return JSON.parse(json);
   } catch (error) {
     console.error("❌ Erro na IA:", error);
-    return { intencao: "erro" };
+    return { intencao: "desconhecida" };
   }
 }
