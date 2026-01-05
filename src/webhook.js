@@ -9,6 +9,14 @@ import { getOrCreateUser } from "./services/userService.js";
 const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
+  // 👤 BUSCA OU CRIA USUÁRIO NO FIREBASE
+  const userDoc = await getOrCreateUser({ phone: user });
+
+  console.log("🔍 USER DOC:", userDoc.id); // ← ADICIONA ESSE LOG
+
+  // 🔁 CHAMA O ROUTE INTENT
+  const response = await routeIntent(userDoc, text.toLowerCase());
+
   // 🔔 Detecta se é webhook do Mercado Pago
   if (payload?.action?.includes("payment") || payload?.type === "payment") {
     console.log("🔔 Webhook do Mercado Pago detectado!");

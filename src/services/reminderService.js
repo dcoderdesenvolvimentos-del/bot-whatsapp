@@ -1,14 +1,16 @@
 import { db } from "../config/firebase.js";
 
 export async function addReminder(phone, data) {
-  console.log("🔥 Salvando lembrete:", phone, action, time);
+  console.log("🔥 Salvando lembrete:", phone, data);
+
   await db.collection("reminders").add({
-    phone, // ✅ agora existe
-    action: data.action,
-    time: data.time,
+    phone,
+    text: data.text, // ← MUDOU DE action PARA text
+    when: data.when, // ← MUDOU DE time PARA when
     sent: false,
     createdAt: Date.now(),
   });
+
   console.log("✅ Lembrete salvo no Firestore");
 }
 
@@ -17,15 +19,19 @@ export async function getUserReminders(phone) {
     throw new Error("Phone não informado em getUserReminders");
   }
 
-  return db
+  const snapshot = await db
     .collection("reminders")
     .where("phone", "==", phone)
     .where("sent", "==", false)
+    .orderBy("when", "asc") // ← ADICIONA ORDEM
     .get();
+
+  return snapshot;
 }
 
 export async function deleteUserReminder(phone, index) {
-  const reminders = await getUserReminders(phone);
+  const snapshot = await getUserReminders(phone);
+  const reminders = snapshot.docs;
 
   if (reminders[index - 1]) {
     await db
@@ -36,10 +42,11 @@ export async function deleteUserReminder(phone, index) {
 }
 
 export async function getPendingReminders() {
-  const now = new Date().toISOString();
+  const now = Date.now();
+
   const snapshot = await db
     .collection("reminders")
-    .where("datetime", "<=", now)
+    .where("when", "<=", now) // ← MUDOU DE datetime PARA when
     .where("sent", "==", false)
     .get();
 
