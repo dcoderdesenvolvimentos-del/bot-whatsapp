@@ -1,5 +1,5 @@
+process.env.TZ = "America/Sao_Paulo";
 import "dotenv/config";
-
 import http from "http";
 import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
