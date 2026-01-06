@@ -6,19 +6,15 @@ const openai = new OpenAI({
 
 export async function analyzeIntent(text) {
   try {
-    const agoraUTC = new Date();
-    const agoraSP = new Date(
-      agoraUTC.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
-    );
-
-    const hoje = agoraSP.toLocaleDateString("pt-BR");
-    const horaAtual = agoraSP.toLocaleTimeString("pt-BR", {
+    const agora = new Date();
+    const hoje = agora.toLocaleDateString("pt-BR");
+    const horaAtual = agora.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const anoAtual = agoraSP.getFullYear();
-    const mesAtual = agoraSP.getMonth();
-    const diaAtual = agoraSP.getDate();
+    const anoAtual = agora.getFullYear();
+    const mesAtual = agora.getMonth();
+    const diaAtual = agora.getDate();
 
     const hojeTimestamp = new Date(
       anoAtual,
