@@ -157,10 +157,8 @@ export async function routeIntent(userDocId, text) {
     return {
       type: "pix",
       text:
-        "💳 *Pagamento via PIX*\n\n" +
-        "📲 PIX Copia e Cola\n\n" +
-        pix.pix_copia_e_cola +
-        "\n\n⏳ Pagamento confirmado ativa o plano automaticamente 💎",
+        "💳 *Pagamento via PIX - Copia e Cola*\n\n" +
+        "⏳ Após pagamento confirmado, o plano ativa automaticamente 💎",
       pixCode: pix.pix_copia_e_cola,
     };
   }
