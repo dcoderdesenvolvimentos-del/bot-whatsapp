@@ -150,7 +150,7 @@ export async function routeIntent(userDocId, text) {
     const pix = await createPixPayment(userDocId, planKey);
 
     await updateUser(userDocId, {
-      pendingPayment: pix.id,
+      pendingPayment: pix.payment_id,
       pendingPlan: planKey,
     });
 
