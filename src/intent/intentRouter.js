@@ -76,6 +76,93 @@ export async function routeIntent(userDocId, text) {
   const normalized = normalize(text);
   const userData = await getUser(userDocId);
 
+  // 1️⃣ Buscar dados do usuário PRIMEIRO
+
+  const stage = userData.stage || "new";
+  const name = userData.name || "";
+
+  // 2️⃣ Delay humano DEPOIS que as variáveis existem
+  await new Promise((r) => setTimeout(r, 1500));
+
+  // 🟢 PRIMEIRO CONTATO (anti-ban)
+  if (!userData) {
+    await updateUser(user, {
+      stage: "first_contact",
+      messages: 1,
+      createdAt: Date.now(),
+    });
+
+    return "Oi! 😊Tudo bem com você?";
+  }
+
+  // 🟢 USUÁRIO EXISTE MAS ESTÁ "NEW"
+  if (userData.stage === "new") {
+    await updateUser(user, { stage: "first_contact" });
+    return "Oi! 😊Tudo bem com você?";
+  }
+
+  // 🟡 SEGUNDA INTERAÇÃO → pergunta nome
+  if (userData.stage === "first_contact") {
+    await updateUser(user, {
+      stage: "awaiting_name",
+      messages: (userData.messages || 1) + 1,
+    });
+
+    return "*👋 Antes de continuarmos, me diz, qual é o seu nome? 😊";
+  }
+
+  // 🧑 USUÁRIO RESPONDEU O NOME
+  if (userData.stage === "awaiting_name") {
+    const displayName =
+      normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
+    await updateUser(user, {
+      stage: "confirming_name",
+      tempName: displayName,
+    });
+    return (
+      `✨ *Só confirmando rapidinho...*\n\n` +
+      `👉 Seu nome é *${displayName}*?\n\n` +
+      `Responda com:\n` +
+      `✅ *sim* — para confirmar\n` +
+      `❌ *não* — para corrigir\n`
+    );
+  }
+
+  if (userData.stage === "confirming_name") {
+    if (["sim", "isso", "correto", "pode ser"].includes(normalized)) {
+      await saveUserName(user, userData.tempName);
+      await updateUser(user, {
+        stage: "active",
+        tempName: null,
+      });
+
+      return (
+        `✨ *Perfeito, ${userData.tempName}! Seja bem-vindo(a)* 😊\n\n` +
+        `A partir de agora, eu cuido dos seus lembretes.\n\n` +
+        `📌 *Você pode me pedir coisas como:*\n` +
+        `• me lembra daqui 10 minutos\n` +
+        `• amanhã às 17h30 ir para a academia\n` +
+        `• listar lembretes\n\n` +
+        `• excluir lembretes\n\n` +
+        `🎤 Prefere áudio? Pode mandar.\n` +
+        `📋 Prefere texto? Também funciona.\n\n` +
+        `É só me dizer 😉`
+      );
+    }
+
+    if (["nao", "não", "errado"].includes(normalized)) {
+      await updateUser(user, {
+        stage: "awaiting_name",
+        tempName: null,
+      });
+
+      return "Sem problema 😊 Qual é o seu nome então?";
+    }
+
+    return "Responda apenas *sim* ou *não*, por favor 🙂";
+  }
+
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO
   // =========================
