@@ -191,15 +191,15 @@ export async function routeIntent(userDocId, text) {
 
     switch (data.intencao) {
       case "criar_lembrete":
-        response = await createReminder(userDoc, data); // ← só 2 params
+        response = await createReminder(userDocId, data); // ← só 2 params
         break;
 
       case "listar_lembretes":
-        response = await listReminders(userDoc, data);
+        response = await listReminders(userDocId, data);
         break;
 
       case "excluir_lembrete":
-        response = await deleteReminder(userDoc, data);
+        response = await deleteReminder(userDocId, data);
         break;
 
       case "saudacao":
