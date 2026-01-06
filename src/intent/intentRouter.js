@@ -177,7 +177,8 @@ export async function routeIntent(userDocId, text) {
 
   console.log("🚨 ROUTE INTENT EXECUTADO");
 
-  const phone = userDoc.id; // ← pega o ID do documento (que é o telefone)
+  const phone = userDocId; // ✅ CERTO (já é o ID!) ← pega o ID do documento (que é o telefone)
+  console.log("👤 USER:", phone);
   console.log("👤 USER:", phone);
   console.log("💬 TEXT:", text);
 
