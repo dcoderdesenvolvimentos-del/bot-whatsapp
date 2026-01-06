@@ -230,6 +230,68 @@ export async function routeIntent(userDocId, text) {
     );
   }
 
+  // =========================
+  // NORMALIZAÇÃO NÍVEL 1 (HORAS)
+  // =========================
+
+  // "8 horas" → "8h"
+  let fixed = normalized.replace(/(\d{1,2})\s*horas?/g, "$1h");
+
+  // "8h da manhã" → "8h"
+  fixed = fixed.replace(/(\d{1,2})h\s*da\s*manhã/g, "$1h");
+
+  // "8h da noite" → "20h"
+  fixed = fixed.replace(
+    /(\d{1,2})h\s*da\s*noite/g,
+    (_, h) => `${Number(h) + 12}h`
+  );
+
+  // "8h da tarde" → "20h"
+  fixed = fixed.replace(
+    /(\d{1,2})h\s*da\s*tarde/g,
+    (_, h) => `${Number(h) + 12}h`
+  );
+
+  // usa o texto corrigido
+  const normalizedFixed = fixed;
+
+  console.log("🚫 BLOQUEADO PELO PLANO");
+
+  function canCreateReminder(userData, qty = 1) {
+    const FREE_LIMIT = 3;
+
+    const remindersUsed = userData.remindersUsed ?? 0;
+
+    const isPremium =
+      userData.plan === "premium" &&
+      userData.premiumUntil &&
+      userData.premiumUntil > Date.now();
+
+    if (isPremium) return { ok: true };
+
+    if (remindersUsed + qty > FREE_LIMIT) {
+      return {
+        ok: false,
+        response: {
+          type: "buttons",
+          text:
+            "🚫 *Seu limite gratuito acabou*\n\n" +
+            `Você aproveitou todos os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
+            "⏰ Para continuar se organizando sem interrupções, ative o *Plano Premium*.\n" +
+            "Com ele, seus lembretes não têm limite.\n" +
+            "✨ Ativação rápida • Pagamento via Pix • Liberação automática\n\n" +
+            "💎 Selecione uma opção abaixo e continue agora mesmo",
+          buttons: [
+            { id: "premium", title: "💎 Premium" },
+            { id: "saiba_mais", title: "ℹ️ Saiba mais" },
+          ],
+        },
+      };
+    }
+
+    return { ok: true };
+  }
+
   /* =========================
      6️⃣ IA (SÓ USUÁRIO ATIVO)
   ========================= */
