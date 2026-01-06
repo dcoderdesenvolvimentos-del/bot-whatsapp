@@ -86,7 +86,7 @@ export async function routeIntent(userDocId, text) {
 
   // 🟢 PRIMEIRO CONTATO (anti-ban)
   if (!userData) {
-    await updateUser(user, {
+    await updateUser(userDocId, {
       stage: "first_contact",
       messages: 1,
       createdAt: Date.now(),
@@ -103,7 +103,7 @@ export async function routeIntent(userDocId, text) {
 
   // 🟡 SEGUNDA INTERAÇÃO → pergunta nome
   if (userData.stage === "first_contact") {
-    await updateUser(user, {
+    await updateUser(userDocId, {
       stage: "awaiting_name",
       messages: (userData.messages || 1) + 1,
     });
@@ -116,7 +116,7 @@ export async function routeIntent(userDocId, text) {
     const displayName =
       normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
-    await updateUser(user, {
+    await updateUser(userDocId, {
       stage: "confirming_name",
       tempName: displayName,
     });
@@ -131,8 +131,8 @@ export async function routeIntent(userDocId, text) {
 
   if (userData.stage === "confirming_name") {
     if (["sim", "isso", "correto", "pode ser"].includes(normalized)) {
-      await saveUserName(user, userData.tempName);
-      await updateUser(user, {
+      await saveUserName(userDocId, userData.tempName);
+      await updateUser(userDocId, {
         stage: "active",
         tempName: null,
       });
@@ -152,7 +152,7 @@ export async function routeIntent(userDocId, text) {
     }
 
     if (["nao", "não", "errado"].includes(normalized)) {
-      await updateUser(user, {
+      await updateUser(userDocId, {
         stage: "awaiting_name",
         tempName: null,
       });
@@ -183,11 +183,11 @@ export async function routeIntent(userDocId, text) {
   if (planMap[normalized]) {
     const planKey = planMap[normalized];
 
-    const pix = await createPixPayment(user, planKey);
+    const pix = await createPixPayment(userDocId, planKey);
 
     console.log("🧾 pix.payment_id salvo no usuário:", pix.payment_id);
 
-    await updateUser(user, {
+    await updateUser(userDocId, {
       pendingPayment: pix.payment_id,
       pendingPlan: planKey,
     });
