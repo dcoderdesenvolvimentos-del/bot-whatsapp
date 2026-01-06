@@ -131,7 +131,6 @@ export async function routeIntent(userDocId, text) {
 
   if (userData.stage === "confirming_name") {
     if (["sim", "isso", "correto", "pode ser"].includes(normalized)) {
-      await saveUserName(userDocId, userData.tempName);
       await updateUser(userDocId, {
         stage: "active",
         tempName: null,
