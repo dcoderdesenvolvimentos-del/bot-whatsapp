@@ -67,7 +67,7 @@ function canCreateReminder(userData, qty = 1) {
 
 export async function routeIntent(userDoc, text) {
   const normalized = normalize(text);
-  const userData = await getUser(user);
+  const userData = await getUser(userDoc);
 
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO
