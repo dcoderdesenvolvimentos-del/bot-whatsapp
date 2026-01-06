@@ -147,18 +147,18 @@ export async function routeIntent(userDocId, text) {
   if (planMap[normalized]) {
     const planKey = planMap[normalized];
 
-    const pix = await createPixPayment(user, planKey);
+    const pix = await createPixPayment(userDocId, planKey);
 
-    await updateUser(user, {
+    await updateUser(userDocId, {
       pendingPayment: pix.id,
       pendingPlan: planKey,
     });
 
     return {
       type: "pix",
-      message:
-        "📲 PIX Copia e Cola\n\nCopie o código abaixo e cole no app do seu banco 👇",
-      pixCode: pix.qrCode,
+      intro:
+        "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
+      code: pix.pix_copia_e_cola,
     };
   }
 
