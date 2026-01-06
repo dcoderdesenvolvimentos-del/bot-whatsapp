@@ -155,7 +155,7 @@ export async function routeIntent(userDocId, text) {
     });
 
     return {
-      type: "text",
+      type: "pix",
       text:
         "📲 PIX Copia e Cola\n\n" +
         pix.pix_copia_e_cola +
