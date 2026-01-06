@@ -65,9 +65,16 @@ function canCreateReminder(userData, qty = 1) {
    ROUTER PRINCIPAL
 ========================= */
 
-export async function routeIntent(userDoc, text) {
+export async function routeIntent(userDocId, text) {
+  console.log("🔥 routeIntent - userDocId recebido:", userDocId); // DEBUG
+
+  if (!userDocId) {
+    console.error("❌ userDocId está vazio!");
+    return { message: "Erro ao identificar usuário" };
+  }
+
   const normalized = normalize(text);
-  const userData = await getUser(userDoc);
+  const userData = await getUser(userDocId);
 
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO

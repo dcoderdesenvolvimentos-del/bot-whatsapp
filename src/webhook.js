@@ -60,7 +60,7 @@ export async function handleWebhook(payload, sendMessage) {
     const userDoc = await getOrCreateUser({ phone: user });
     console.log("🔍 USER DOC ID:", userDoc.id);
 
-    const response = await routeIntent(userDoc, text.toLowerCase());
+    const response = await routeIntent(userDoc.id, text.toLowerCase());
 
     if (response === null || response === undefined || response === "") {
       console.log("⚠️ Resposta vazia. Ignorada.");
