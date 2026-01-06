@@ -5,7 +5,7 @@ export async function createReminder(userDocId, data) {
   console.log("🔥 USER DOC ID:", userDocId);
   console.log("🔥 DATA COMPLETO:", data);
 
-  const phone = userDoc.id;
+  const phone = userDocId;
 
   if (!phone) {
     console.error("❌ PHONE UNDEFINED!");
