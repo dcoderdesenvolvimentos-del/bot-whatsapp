@@ -62,24 +62,33 @@ export async function handleWebhook(payload, sendMessage) {
 
     const response = await routeIntent(userDoc.id, text.toLowerCase());
 
+    // ✅ TRATAMENTO DE RESPOSTAS
     if (response === null || response === undefined || response === "") {
       console.log("⚠️ Resposta vazia. Ignorada.");
       return;
     }
 
+    // 🔘 Botões
     if (typeof response === "object" && response.type === "buttons") {
       await sendButtonList(user, response.text, response.buttons);
       return;
     }
 
+    // 💳 Pix
     if (typeof response === "object" && response.type === "pix") {
-      await sendMessage(user, response.intro);
-      await sendMessage(user, response.code);
+      await sendMessage(user, response.text);
+      await sendMessage(user, response.pixCode);
       return;
     }
 
+    // 💬 Mensagem simples (string OU objeto com "message")
     if (typeof response === "string") {
       await sendMessage(user, response);
+      return;
+    }
+
+    if (typeof response === "object" && response.message) {
+      await sendMessage(user, response.message);
       return;
     }
 
