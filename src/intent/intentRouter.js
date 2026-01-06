@@ -155,10 +155,11 @@ export async function routeIntent(userDocId, text) {
     });
 
     return {
-      type: "pix",
-      intro:
-        "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
-      code: pix.pix_copia_e_cola,
+      type: "text",
+      text:
+        "📲 PIX Copia e Cola\n\n" +
+        pix.pix_copia_e_cola +
+        "\n\n⏳ Pagamento confirmado ativa o plano automaticamente 💎",
     };
   }
 
