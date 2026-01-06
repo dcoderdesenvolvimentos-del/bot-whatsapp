@@ -159,8 +159,9 @@ export async function routeIntent(userDocId, text) {
       text:
         "💳 *Pagamento via PIX*\n\n" +
         "📲 PIX Copia e Cola\n\n" +
-        pix.pix_copia_e_cola.trim() +
+        pix.pix_copia_e_cola +
         "\n\n⏳ Pagamento confirmado ativa o plano automaticamente 💎",
+      code: pix.pix_copia_e_cola,
     };
   }
 
