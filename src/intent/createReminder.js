@@ -1,8 +1,8 @@
 import { addReminder } from "../services/reminderService.js";
 
-export async function createReminder(userDoc, data) {
+export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
-  console.log("🔥 USER DOC ID:", userDoc.id);
+  console.log("🔥 USER DOC ID:", userDocId);
   console.log("🔥 DATA COMPLETO:", data);
 
   const phone = userDoc.id;
