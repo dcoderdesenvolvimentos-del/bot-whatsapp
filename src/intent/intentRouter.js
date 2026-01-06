@@ -4,8 +4,7 @@ import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { getOrCreateUser } from "../services/userService.js";
 import { createPixPayment } from "./mercadoPago.js";
-import { createPendingReminders } from "./reminders/createPendingReminders.js";
-import { getUser, updateUser } from "./services/userService.js";
+import { getUser, updateUser } from "../services/userService.js";
 
 function normalize(text = "") {
   return text

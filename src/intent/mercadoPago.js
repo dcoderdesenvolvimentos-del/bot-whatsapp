@@ -1,6 +1,6 @@
 import axios from "axios";
 import crypto from "crypto";
-import { PLANS } from "./plans.js";
+import { PLANS } from "../plans.js";
 
 /**
  * ⚠️ IMPORTANTE
