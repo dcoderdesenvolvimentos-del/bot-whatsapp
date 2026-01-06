@@ -44,9 +44,9 @@ function canCreateReminder(userData, qty = 1) {
       response: {
         type: "buttons",
         text:
-          "🚫 *Seu limite gratuito acabou*\n\n" +
-          `Você aproveitou todos os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
-          "⏰ Para continuar se organizando sem interrupções, ative o *Plano Premium*.\n" +
+          "🚫 Seu limite gratuito acabou\n\n" +
+          "Você aproveitou todos os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n" +
+          "⏰ Para continuar se organizando sem interrupções, ative o Plano Premium.\n" +
           "Com ele, seus lembretes não têm limite.\n" +
           "✨ Ativação rápida • Pagamento via Pix • Liberação automática\n\n" +
           "💎 Selecione uma opção abaixo e continue agora mesmo",
@@ -66,7 +66,7 @@ function canCreateReminder(userData, qty = 1) {
 ========================= */
 
 export async function routeIntent(userDocId, text) {
-  console.log("🔥 routeIntent - userDocId recebido:", userDocId); // DEBUG
+  console.log("🔥 routeIntent - userDocId recebido:", userDocId);
 
   if (!userDocId) {
     console.error("❌ userDocId está vazio!");
@@ -74,45 +74,53 @@ export async function routeIntent(userDocId, text) {
   }
 
   const normalized = normalize(text);
-  const userData = await getUser(userDocId);
 
-  // 1️⃣ Buscar dados do usuário PRIMEIRO
+  // ✅ Buscar ou criar usuário
+  let userData = await getUser(userDocId);
+
+  // Se não existe, criar com stage "new"
+  if (!userData) {
+    await updateUser(userDocId, {
+      stage: "new",
+      messages: 0,
+      createdAt: Date.now(),
+    });
+    userData = await getUser(userDocId);
+  }
 
   const stage = userData.stage || "new";
   const name = userData.name || "";
 
-  // 2️⃣ Delay humano DEPOIS que as variáveis existem
+  console.log("📊 STAGE:", stage);
+  console.log("👤 NAME:", name);
+
+  // 2️⃣ Delay humano
   await new Promise((r) => setTimeout(r, 1500));
 
-  // 🟢 PRIMEIRO CONTATO (anti-ban)
-  if (!userData) {
+  // ✅ VERIFICAÇÕES DE STAGE ANTES DA IA
+
+  // 🟢 PRIMEIRO CONTATO
+  if (stage === "new") {
     await updateUser(userDocId, {
       stage: "first_contact",
       messages: 1,
-      createdAt: Date.now(),
     });
-
-    return "Oi! 😊Tudo bem com você?";
-  }
-
-  // 🟢 USUÁRIO EXISTE MAS ESTÁ "NEW"
-  if (userData.stage === "new") {
-    await updateUser(user, { stage: "first_contact" });
-    return "Oi! 😊Tudo bem com você?";
+    return { message: "Oi! 😊 Tudo bem com você?" };
   }
 
   // 🟡 SEGUNDA INTERAÇÃO → pergunta nome
-  if (userData.stage === "first_contact") {
+  if (stage === "first_contact") {
     await updateUser(userDocId, {
       stage: "awaiting_name",
       messages: (userData.messages || 1) + 1,
     });
-
-    return "*👋 Antes de continuarmos, me diz, qual é o seu nome? 😊";
+    return {
+      message: "👋 Antes de continuarmos, me diz, qual é o seu nome? 😊",
+    };
   }
 
   // 🧑 USUÁRIO RESPONDEU O NOME
-  if (userData.stage === "awaiting_name") {
+  if (stage === "awaiting_name") {
     const displayName =
       normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
@@ -120,210 +128,135 @@ export async function routeIntent(userDocId, text) {
       stage: "confirming_name",
       tempName: displayName,
     });
-    return (
-      `✨ *Só confirmando rapidinho...*\n\n` +
-      `👉 Seu nome é *${displayName}*?\n\n` +
-      `Responda com:\n` +
-      `✅ *sim* — para confirmar\n` +
-      `❌ *não* — para corrigir\n`
-    );
+    return {
+      message:
+        "✨ *Só confirmando rapidinho...*\n\n" +
+        "👉 Seu nome é *${displayName}*?\n\n" +
+        "Responda com:\n" +
+        "✅ *sim* — para confirmar\n" +
+        "❌ *não* — para corrigir",
+    };
   }
 
-  if (userData.stage === "confirming_name") {
+  // ✅ CONFIRMAÇÃO DO NOME
+  if (stage === "confirming_name") {
     if (["sim", "isso", "correto", "pode ser"].includes(normalized)) {
-      await saveUserName(userDocId, userData.tempName);
       await updateUser(userDocId, {
+        name: userData.tempName,
         stage: "active",
         tempName: null,
       });
 
-      return (
-        `✨ *Perfeito, ${userData.tempName}! Seja bem-vindo(a)* 😊\n\n` +
-        `A partir de agora, eu cuido dos seus lembretes.\n\n` +
-        `📌 *Você pode me pedir coisas como:*\n` +
-        `• me lembra daqui 10 minutos\n` +
-        `• amanhã às 17h30 ir para a academia\n` +
-        `• listar lembretes\n\n` +
-        `• excluir lembretes\n\n` +
-        `🎤 Prefere áudio? Pode mandar.\n` +
-        `📋 Prefere texto? Também funciona.\n\n` +
-        `É só me dizer 😉`
-      );
+      return {
+        message:
+          "✨ *Perfeito, ${userData.tempName}! Seja bem-vindo(a)* 😊\n\n " +
+          "A partir de agora, eu cuido dos seus lembretes.\n\n " +
+          "📌 *Você pode me pedir coisas como:*\n" +
+          "• me lembra daqui 10 minutos\n " +
+          "• amanhã às 17h30 ir para a academia\n" +
+          "• listar lembretes\n\n" +
+          "Bora começar? 🚀",
+      };
     }
 
-    if (["nao", "não", "errado"].includes(normalized)) {
-      await updateUser(userDocId, {
-        stage: "awaiting_name",
-        tempName: null,
-      });
-
-      return "Sem problema 😊 Qual é o seu nome então?";
-    }
-
-    return "Responda apenas *sim* ou *não*, por favor 🙂";
+    // Se disse "não"
+    await updateUser(userDocId, { stage: "awaiting_name" });
+    return { message: "Sem problemas! Qual é o seu nome então? 😊" };
   }
 
-  // =========================
-  // AQUI O CLIENTE ESCOLHE UM PLANO
-  // =========================
-
-  const planMap = {
-    plano_mensal: "monthly",
-    plano_trimestral: "quarterly",
-    plano_semestral: "semiannual",
-    plano_anual: "annual",
-
-    // fallback se o usuário digitar
-    mensal: "monthly",
-    trimestral: "quarterly",
-    semestral: "semiannual",
-    anual: "annual",
-  };
-
-  if (planMap[normalized]) {
-    const planKey = planMap[normalized];
-
-    const pix = await createPixPayment(userDocId, planKey);
-
-    console.log("🧾 pix.payment_id salvo no usuário:", pix.payment_id);
-
-    await updateUser(userDocId, {
-      pendingPayment: pix.payment_id,
-      pendingPlan: planKey,
-    });
-
+  // 🤖 AGORA SIM CHAMA A IA (só para usuários ACTIVE)
+  if (stage !== "active") {
     return {
-      type: "pix",
-      intro:
-        "📲 *PIX Copia e Cola*\n\nCopie o código abaixo e cole no app do seu banco 👇",
-      code: pix.pix_copia_e_cola,
+      message: "Ops, algo deu errado. Digite 'reiniciar' para começar de novo.",
     };
   }
 
-  // =========================
-  // AQUI O CLIENTE QUER CONTRATAR UM PLANO
-  // =========================
+  // ✅ ANÁLISE DE INTENÇÃO
+  const data = await analyzeIntent(text);
+  const phone = userDocId;
 
-  // 💎 CLIQUE NO BOTÃO PREMIUM
-  if (normalized === "premium") {
+  console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
+
+  // 🔘 BOTÕES
+  if (data.intencao === "premium") {
     return {
       type: "buttons",
       text:
-        "💎 *Plano Premium — Bot de Lembretes*\n\n" +
-        "Chega de se preocupar com limites e perda de horários importantes ⏰\n\n" +
-        "✨ *Com o Premium você desbloqueia:*\n\n" +
-        "✅ *Lembretes ilimitados* — crie quantos quiser\n" +
-        "🔔 Alertas sempre no horário certo\n" +
-        "📅 Mais organização no seu dia a dia\n" +
-        "⚡ Uso sem bloqueios ou interrupções\n\n" +
-        "👇 *Selecione um plano abaixo:*\n",
-
+        "💎 Plano Premium\n\n" +
+        "✨ Lembretes ilimitados\n" +
+        "⏰ Sem interrupções\n" +
+        "🔔 Notificações garantidas\n\n" +
+        "💰 *Escolha seu plano:*",
       buttons: [
-        { id: "plano_mensal", title: "🗓️ Mensal — R$ 9,90" },
-        { id: "plano_trimestral", title: "📆 Trimestral — R$ 27,90" },
-        { id: "plano_semestral", title: "🧾 Semestral — R$ 49,90" },
-        { id: "plano_anual", title: "🏆 Anual — R$ 89,90" },
+        { id: "mensal_9.90", title: "📅 Mensal - R$ 9,90" },
+        { id: "anual_89.90", title: "🎯 Anual - R$ 89,90" },
+        { id: "voltar", title: "⬅️ Voltar" },
       ],
     };
   }
 
-  // 🗓️ PLANO MENSAL
-  if (normalized === "plano_mensal") {
-    return "🗓️ *Plano Mensal selecionado*\n\nValor: *R$ 9,90*\n\nGerando pagamento… 💳";
-  }
+  if (data.intencao === "mensal_9.90" || data.intencao === "anual_89.90") {
+    const plano = data.intencao === "mensal_9.90" ? "mensal" : "anual";
+    const valor = plano === "mensal" ? 9.9 : 89.9;
 
-  // 📆 PLANO TRIMESTRAL
-  if (normalized === "plano_trimestral") {
-    return "📆 *Plano Trimestral selecionado*\n\nValor: *R$ 27,90*\n\nGerando pagamento… 💳";
-  }
+    const pixData = await createPixPayment(phone, plano, valor);
 
-  // 🧾 PLANO SEMESTRAL
-  if (normalized === "plano_semestral") {
-    return "🧾 *Plano Semestral selecionado*\n\nValor: *R$ 49,90*\n\nGerando pagamento… 💳";
-  }
-
-  // 🏆 PLANO ANUAL
-  if (normalized === "plano_anual") {
-    return "🏆 *Plano Anual selecionado*\n\nValor: *R$ 89,90*\n\nGerando pagamento… 💳";
-  }
-
-  // ℹ️ CLIQUE NO BOTÃO SAIBA MAIS
-  if (normalized === "saiba_mais") {
-    return (
-      "ℹ️ *Sobre o Plano Premium*\n\n" +
-      "O Premium foi pensado para quem usa lembretes no dia a dia e quer mais tranquilidade 😊\n\n" +
-      "🎯 *Ideal para você que:*\n\n" +
-      "🚀 Cria lembretes com frequência\n" +
-      "📅 Quer se organizar melhor\n" +
-      "⏰ Não quer correr o risco de esquecer compromissos\n" +
-      "🔕 Não quer travas ou limitações\n\n" +
-      "Com o Premium, você usa o bot sem preocupações e deixa ele cuidar dos seus horários 😉\n\n" +
-      "💎 Quando quiser ativar, é só digitar *premium*"
-    );
-  }
-
-  console.log("🚨 ROUTE INTENT EXECUTADO");
-
-  const phone = userDocId; // ✅ CERTO (já é o ID!) ← pega o ID do documento (que é o telefone)
-  console.log("👤 USER:", phone);
-  console.log("👤 USER:", phone);
-  console.log("💬 TEXT:", text);
-
-  try {
-    const data = await analyzeIntent(text);
-    console.log("📦 DATA RECEBIDO:", JSON.stringify(data, null, 2));
-
-    // passa o userDoc pros handlers
-    let response = "";
-
-    switch (data.intencao) {
-      case "criar_lembrete":
-        response = await createReminder(userDocId, data); // ← só 2 params
-        break;
-
-      case "listar_lembretes":
-        response = await listReminders(userDocId, data);
-        break;
-
-      case "excluir_lembrete":
-        response = await deleteReminder(userDocId, data);
-        break;
-
-      case "saudacao":
-        response =
-          "👋 Olá! Sou seu assistente de lembretes!\n\n" +
-          "📋 Posso te ajudar com:\n\n" +
-          "• ✅ Criar lembretes\n" +
-          "• 📝 Listar lembretes\n" +
-          "• 🗑️ Excluir lembretes\n\n" +
-          "Exemplo: 'me lembra de comprar pão amanhã às 10h'";
-        break;
-
-      case "ajuda":
-        response =
-          "🤖 *Como usar o bot de lembretes:*\n\n" +
-          "📌 *Criar:* 'me lembra de tomar água daqui 2 minutos'\n" +
-          "📋 *Listar:* 'quais são meus lembretes?'\n" +
-          "🗑️ *Excluir:* 'apaga o lembrete 1'\n\n" +
-          "💡 *Dica:* Use linguagem natural!";
-        break;
-
-      case "despedida":
-        response = "👋 Até logo! Estou aqui quando precisar! 😊";
-        break;
-
-      default:
-        response =
-          "🤔 Desculpa, não entendi.\n\n" +
-          "Tente:\n" +
-          "• 'me lembra de X amanhã às 10h'\n" +
-          "• 'lista meus lembretes'\n" +
-          "• 'apaga o lembrete 1'";
+    if (!pixData || !pixData.qrCode) {
+      return { message: "❌ Erro ao gerar pagamento. Tente novamente." };
     }
 
-    return response;
-  } catch (error) {
-    console.error("❌ Erro no routeIntent:", error);
-    return "❌ Ops! Algo deu errado. Tente novamente.";
+    return {
+      type: "pix",
+      text:
+        `💳 *Pagamento via Pix*\n\n` +
+        `📦 Plano: *${plano === "mensal" ? "Mensal" : "Anual"}*\n` +
+        `💰 Valor: *R$ ${valor.toFixed(2)}*\n\n` +
+        `👇 Escaneie o QR Code ou copie o código Pix abaixo:`,
+      qrCodeBase64: pixData.qrCodeBase64,
+      pixCode: pixData.qrCode,
+    };
   }
+
+  // 📋 CRIAR LEMBRETE
+  if (data.intencao === "criar_lembrete") {
+    const check = canCreateReminder(userData);
+    if (!check.ok) return check.response;
+
+    return await createReminder(data, userDocId);
+  }
+
+  // 📝 LISTAR LEMBRETES
+  if (data.intencao === "listar_lembretes") {
+    return await listReminders(userDocId);
+  }
+
+  // 🗑️ EXCLUIR LEMBRETE
+  if (data.intencao === "excluir_lembrete") {
+    return await deleteReminder(data, userDocId);
+  }
+
+  // ℹ️ AJUDA
+  if (data.intencao === "ajuda" || data.intencao === "saudacao") {
+    return {
+      message:
+        `👋 Olá${
+          name ? `, ${name}` : ""
+        }! Sou seu assistente de lembretes!\n\n` +
+        `📋 Posso te ajudar com:\n\n` +
+        `• ✅ Criar lembretes\n` +
+        `• 📝 Listar lembretes\n` +
+        `• 🗑️ Excluir lembretes\n\n` +
+        `Exemplo: 'me lembra de comprar pão amanhã às 10h'`,
+    };
+  }
+
+  // ❓ NÃO ENTENDEU
+  return {
+    message:
+      "🤔 Desculpa, não entendi direito.\n\n" +
+      "Tenta algo como:\n" +
+      "• me lembra de ligar pro João amanhã às 14h\n" +
+      "• listar lembretes\n" +
+      "• excluir lembrete",
+  };
 }
