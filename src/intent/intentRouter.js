@@ -313,9 +313,6 @@ export async function routeIntent(userDocId, text) {
         userId: userDocId,
         data: aiResponse,
       });
-
-    default:
-      return "❌ Não entendi o que você quer fazer.";
   }
 
   /* =========================
