@@ -37,10 +37,11 @@ export async function createReminder(userDocId, data) {
     });
 
     const dateObj = new Date(when);
+    const actionText = capitalizeFirst(data.acao);
 
     return (
       `✅ *Lembrete criado!*\n\n` +
-      `📌 ${data.acao}\n` +
+      `📌 ${actionText}\n` +
       `🕐 ${dateObj.toLocaleString("pt-BR", {
         timeZone: "America/Sao_Paulo",
       })}`
