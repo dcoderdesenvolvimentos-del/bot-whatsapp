@@ -105,13 +105,14 @@ export async function routeIntent(userDocId, text) {
       });
 
       return (
-        `✨ *Perfeito, ${userData.tempName}! Seja bem-vindo(a)* 😊\n\n` +
-        `📌 Você pode me pedir coisas como:\n\n` +
+        `✨ *Bem-vindo(a), ${userData.tempName}!* 😊\n\n` +
+        `Agora eu cuido dos seus lembretes para que você possa focar no que importa ⏰✨\n\n` +
+        `📌 *Você pode me pedir coisas como:*\n\n` +
         `• me lembra daqui 10 minutos\n` +
         `• amanhã às 17h30 ir para a academia\n` +
         `• listar lembretes\n` +
         `• excluir lembretes\n\n` +
-        `🎤 Pode mandar áudio ou texto 😉`
+        `🎤 Pode falar comigo por áudio ou texto, do jeito que preferir 😉`
       );
     }
 
@@ -336,7 +337,7 @@ export async function routeIntent(userDocId, text) {
         break;
 
       case "despedida":
-        response = `👋 Até , ${userData.tempName}! Estou aqui quando precisar 😊`;
+        response = `👋 Até mais, ${userData.tempName}! Estou aqui quando precisar 😊`;
         break;
 
       default:
