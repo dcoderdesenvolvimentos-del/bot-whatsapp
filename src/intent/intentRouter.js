@@ -333,6 +333,16 @@ export async function routeIntent(userDocId, text) {
         response = await createReminder(userDocId, data);
         break;
 
+      case "criar_lista":
+
+      case "adicionar_item_lista":
+
+      case "listar_itens_lista":
+        return handleShoppingListIntent({
+          userId: userDocId,
+          data,
+        });
+
       case "listar_lembretes":
         response = await listReminders(userDocId);
         break;
