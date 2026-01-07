@@ -25,23 +25,35 @@ REGRAS:
 - Se pedir ajuda → ajuda
 - Caso contrário → desconhecido
 
-Para criar_lembrete, extraia:
-- acao: o que fazer (ex: "tomar água")
-- hora: formato ISO (ex: "2025-12-31T17:00:00")
-  - Hoje é 2025-12-30 às 18:22h
-  - "amanhã 17h" = "2025-12-31T17:00:00"
-  - "daqui 2 min" = "2025-12-30T18:24:00"
+Analise a mensagem e retorne APENAS JSON válido.
 
-Mensagem: "${text}"
+NUNCA retorne datas completas, timestamps ou strings ISO.
 
-Responda APENAS este JSON (sem explicações):
+Retorne somente:
+- intencao
+- acao
+- offset_dias (0=hoje, 1=amanhã, 2=depois de amanhã)
+- hora (número 0–23)
+- minuto (número 0–59)
+
+REGRAS:
+- Se o usuário mencionar vários horários e disser "primeiro", "segundo" ou "terceiro",
+  escolha o horário correspondente.
+- Exemplo: "17, 18 e 19, segundo" → hora = 18
+- Se não houver minuto explícito, use 0.
+
+Exemplo:
+"amanhã às 17 horas" →
 {
   "intencao": "criar_lembrete",
   "acao": "tomar água",
-  "hora": "2025-12-31T17:00:00",
-  "data": null,
-  "indice": null
+  "offset_dias": 1,
+  "hora": 17,
+  "minuto": 0
 }
+
+Mensagem: "${text}"
+JSON:
 `;
 
     const completion = await openai.chat.completions.create({
