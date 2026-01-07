@@ -4,7 +4,7 @@ import {
   listItems,
   markDone,
   clearList,
-} from "../services/shoppingList.service.js";
+} from "../../services/shoppingList.service.js";
 
 export function handleShoppingListIntent({ userId, data }) {
   switch (data.intent) {
