@@ -41,7 +41,9 @@ export async function createReminder(userDocId, data) {
     return (
       `✅ *Lembrete criado!*\n\n` +
       `📌 ${data.acao}\n` +
-      `🕐 ${dateObj.toLocaleString("pt-BR")}`
+      `🕐 ${dateObj.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      })}`
     );
   }
 
