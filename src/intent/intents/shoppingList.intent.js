@@ -1,30 +1,35 @@
 import {
+  createList,
   addItem,
-  removeItem,
   listItems,
-  markDone,
+  removeItem,
   clearList,
 } from "../../services/shoppingList.service.js";
 
 export function handleShoppingListIntent({ userId, data }) {
-  switch (data.intent) {
-    case "add_item":
-      addItem(userId, data.list || "principal", data.items);
-      return "🛒 Itens adicionados à sua lista com sucesso!";
+  const listName = data.lista || data.list || "principal";
 
-    case "list_items":
-      return listItems(userId, data.list || "principal");
+  switch (data.intencao) {
+    case "criar_lista":
+      createList(userId, listName);
+      return `🛒 Lista *${listName}* criada com sucesso!`;
 
-    case "remove_item":
-      removeItem(userId, data.list || "principal", data.item);
+    case "adicionar_item_lista":
+      addItem(userId, listName, data.itens || []);
+      return "🛒 Itens adicionados à lista!";
+
+    case "listar_itens_lista":
+      return listItems(userId, listName);
+
+    case "remover_item_lista":
+      removeItem(userId, listName, data.item);
       return "🗑️ Item removido da lista.";
 
-    case "mark_done":
-      markDone(userId, data.list || "principal", data.item);
-      return "✅ Item marcado como comprado.";
-
-    case "clear_list":
-      clearList(userId, data.list || "principal");
+    case "limpar_lista":
+      clearList(userId, listName);
       return "🧹 Lista limpa com sucesso.";
+
+    default:
+      return "🤔 Não entendi o que fazer com a lista.";
   }
 }
