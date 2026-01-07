@@ -5,7 +5,7 @@ import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { handleShoppingListIntent } from "./intents/shoppingList.intent.js";
-import { interpretMessage } from "../ai/interpretMessage.js";
+import { interpretMessage } from "../ai/prompt.js";
 
 /* ===========================
    HELPERS
@@ -25,7 +25,7 @@ function normalize(text = "") {
 
 export async function routeIntent(userDocId, text) {
   // 1️⃣ IA interpreta
-  const aiResponse = await interpretMessage(text);
+  const aiResponse = await prompt(text);
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
@@ -298,14 +298,14 @@ export async function routeIntent(userDocId, text) {
   }
 
   switch (aiResponse.intent) {
-    case "add_item":
-    case "remove_item":
-    case "list_items":
-    case "mark_done":
-    case "clear_list":
+    case "criar_lista":
+    case "adicionar_item_lista":
+    case "listar_itens_lista":
+    case "remover_item_lista":
+    case "limpar_lista":
       return handleShoppingListIntent({
         userId: userDocId,
-        data: aiResponse,
+        data,
       });
 
     case "create_reminder":

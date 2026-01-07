@@ -1,5 +1,4 @@
 export const INTENT_PROMPT = (text) => {
-  // 🕐 PEGA HORA ATUAL DINAMICAMENTE
   const agora = new Date();
   const dataHoraAtual = agora.toLocaleString("pt-BR", {
     timeZone: "America/Sao_Paulo",
@@ -11,49 +10,92 @@ export const INTENT_PROMPT = (text) => {
   });
 
   return `
-Você é um classificador de intenções para um bot de lembretes.
+Você é um classificador de intenções para um bot de WhatsApp
+que possui lembretes E listas de compras.
 
 HOJE É: ${dataHoraAtual} (horário de Brasília)
 TIMESTAMP ATUAL: ${Date.now()}
 
-INTENÇÕES POSSÍVEIS:
-- "saudacao" → oi, olá, bom dia, boa noite
-- "criar_lembrete" → criar UM lembrete
-- "criar_multiplos_lembretes" → criar VÁRIOS lembretes na mesma frase
-- "listar_lembretes" → listar, ver, mostrar lembretes
-- "excluir_lembrete" → apagar, deletar, excluir
-- "conversa_solta" → assunto aleatório sem relação com lembretes
-- "ajuda" → pedir ajuda ou não entender
-- "desconhecido" → quando não se encaixar em nada
+============================
+INTENÇÕES POSSÍVEIS
+============================
 
-EXEMPLOS DE HORÁRIO (use o TIMESTAMP ATUAL como base):
-- "daqui 2 minutos" → TIMESTAMP ATUAL + (2 * 60 * 1000)
-- "daqui 1 hora" → TIMESTAMP ATUAL + (60 * 60 * 1000)
-- "amanhã às 10h" → calcule baseado na data/hora atual
-- "hoje às 20h" → calcule baseado na data/hora atual
+🔔 LEMBRETES
+- "saudacao"
+- "criar_lembrete"
+- "criar_multiplos_lembretes"
+- "listar_lembretes"
+- "excluir_lembrete"
 
-ATENÇÃO:
-- "hora" deve ser TIMESTAMP em milissegundos (número inteiro)
-- "acao" deve ser APENAS a tarefa, sem horário
-- Use o TIMESTAMP ATUAL fornecido acima como referência
-- Retorne SOMENTE o JSON, sem texto antes ou depois
+🛒 LISTAS DE COMPRAS
+- "criar_lista"
+- "adicionar_item_lista"
+- "listar_itens_lista"
+- "remover_item_lista"
+- "limpar_lista"
 
-Mensagem do usuário: "${text}"
+💬 OUTROS
+- "ajuda"
+- "conversa_solta"
+- "desconhecido"
 
-Retorne APENAS este JSON:
+============================
+REGRAS IMPORTANTES
+============================
+
+- "lista de compras", "lista de mercado", "supermercado"
+  → NUNCA é lembrete.
+  → Use "criar_lista" ou ações de lista.
+
+- Se o usuário pedir para "adicionar", "colocar", "incluir"
+  itens em uma lista → "adicionar_item_lista".
+
+- Se o usuário pedir para "ver", "mostrar", "listar"
+  uma lista → "listar_itens_lista".
+
+- Se houver horário ou data explícita → lembrete.
+- Se NÃO houver horário → provavelmente lista.
+
+- "acao" deve ser APENAS a tarefa, sem horário.
+- "hora" deve ser TIMESTAMP em milissegundos.
+- Use sempre o TIMESTAMP ATUAL como base.
+
+Retorne SOMENTE JSON válido.
+Nunca escreva texto fora do JSON.
+
+============================
+MENSAGEM DO USUÁRIO
+============================
+"${text}"
+
+============================
+FORMATOS DE RETORNO
+============================
+
+🔔 Criar lembrete:
 {
   "intencao": "criar_lembrete",
   "acao": "tomar água",
   "hora": 1735680000000
 }
 
-ou para múltiplos:
+🛒 Criar lista:
 {
-  "intencao": "criar_multiplos_lembretes",
-  "lembretes": [
-    {"acao": "tomar água", "hora": 1735680000000},
-    {"acao": "ir à academia", "hora": 1735683600000}
-  ]
+  "intencao": "criar_lista",
+  "lista": "supermercado"
+}
+
+🛒 Adicionar item:
+{
+  "intencao": "adicionar_item_lista",
+  "lista": "supermercado",
+  "itens": ["arroz", "feijão"]
+}
+
+🛒 Listar itens:
+{
+  "intencao": "listar_itens_lista",
+  "lista": "supermercado"
 }
 `;
 };
