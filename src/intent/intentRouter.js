@@ -275,7 +275,7 @@ export async function routeIntent(userDocId, text) {
         response: {
           type: "buttons",
           text:
-            "🚫 *Seu limite gratuito acabou*\n\n" +
+            `🚫 *${userData.tempName}, Seu limite gratuito acabou*\n\n` +
             `Você aproveitou todos os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
             "⏰ Para continuar se organizando sem interrupções, ative o *Plano Premium*.\n" +
             "Com ele, seus lembretes não têm limite.\n" +
@@ -319,7 +319,7 @@ export async function routeIntent(userDocId, text) {
 
       case "saudacao":
         response =
-          "👋 Olá!\n\n" +
+          `👋 Olá, ${userData.tempName}!\n\n` +
           "Posso te ajudar com:\n" +
           "• criar lembretes\n" +
           "• listar lembretes\n" +
@@ -329,21 +329,22 @@ export async function routeIntent(userDocId, text) {
 
       case "ajuda":
         response =
-          "🤖 *Como usar:*\n\n" +
+          "🤖 *Como usar?:*\n\n" +
           "• criar: me lembra de beber água daqui 10 minutos\n" +
           "• listar: listar lembretes\n" +
           "• excluir: apagar lembrete 1";
         break;
 
       case "despedida":
-        response = "👋 Até logo! Estou aqui quando precisar 😊";
+        response = `👋 Até , ${userData.tempName}! Estou aqui quando precisar 😊`;
         break;
 
       default:
         response =
-          "🤔 Não entendi.\n\n" +
+          "🤔Ops! Não consegui entender.\n\n" +
           "Tente algo como:\n" +
           "• me lembra de X amanhã\n" +
+          "• excluir lembretes\n\n" +
           "• listar lembretes";
     }
 
