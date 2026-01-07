@@ -5,7 +5,7 @@ import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { handleShoppingListIntent } from "./intents/shoppingList.intent.js";
-import { prompt } from "../ai/prompt.js";
+import { INTENT_PROMPT } from "../ai/prompt.js";
 
 /* ===========================
    HELPERS
@@ -25,7 +25,7 @@ function normalize(text = "") {
 
 export async function routeIntent(userDocId, text) {
   // 1️⃣ IA interpreta
-  const aiResponse = await prompt(text);
+  const aiResponse = await INTENT_PROMPT(text);
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
