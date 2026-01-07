@@ -6,7 +6,7 @@ import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { handleShoppingListIntent } from "./intent/shoppingList.intent.js";
 
-/* =========================
+/* ===========================
    HELPERS
 ========================= */
 
