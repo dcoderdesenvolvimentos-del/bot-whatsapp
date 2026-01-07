@@ -1,4 +1,5 @@
 import { addReminder } from "../services/reminderService.js";
+import { createTimestampBR } from "../utils/dateUtils.js";
 
 export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
@@ -12,36 +13,48 @@ export async function createReminder(userDocId, data) {
     return "❌ Erro ao identificar usuário.";
   }
 
-  if (!data.hora || typeof data.hora !== "number") {
-    return "❌ Não consegui entender o horário. Tente: 'me lembra de X daqui 10 minutos'";
+  // 🔒 Validação obrigatória
+  if (
+    typeof data.offset_dias !== "number" ||
+    typeof data.hora !== "number" ||
+    typeof data.minuto !== "number"
+  ) {
+    return "❌ Não consegui entender o horário. Tente: 'me lembra de beber água amanhã às 17h'";
   }
 
-  if (data.hora < Date.now()) {
+  // 🕒 CRIA O TIMESTAMP CORRETO (BR → UTC)
+  const when = createTimestampBR({
+    offset_dias: data.offset_dias,
+    hora: data.hora,
+    minuto: data.minuto,
+  });
+
+  // ⛔ Bloqueia passado
+  if (when < Date.now()) {
     return "❌ Esse horário já passou! Tente um horário futuro.";
   }
 
+  // 💾 Salva no Firestore
   await addReminder(phone, {
     text: data.acao,
-    when: data.hora,
+    when,
   });
 
-  // 🔍 DEBUG COMPLETO
-  const dateObj = new Date(data.hora);
-  console.log("🔍 TIMESTAMP RECEBIDO:", data.hora);
-  console.log("🔍 DATE OBJECT:", dateObj);
+  // 🔍 DEBUG FINAL (AGORA CONFIÁVEL)
+  const dateObj = new Date(when);
+  console.log("🔍 TIMESTAMP FINAL:", when);
   console.log("🔍 ISO STRING:", dateObj.toISOString());
   console.log(
     "🔍 TIMEZONE SERVIDOR:",
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
+  console.log("🔍 LOCAL BR:", dateObj.toLocaleString("pt-BR"));
 
+  // 📅 FORMATAÇÃO FINAL (SEM TIMEZONE MANUAL)
   const dataFormatada = dateObj.toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
-    timeZone: "America/Sao_Paulo",
   });
 
-  console.log("🔍 FORMATADO FINAL:", dataFormatada);
-
-  return `✅ Lembrete criado!\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
+  return `✅ *Lembrete criado!*\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
 }
