@@ -22,6 +22,29 @@ export async function createReminder(userDocId, data) {
     return "❌ Não consegui entender o horário. Tente: 'me lembra de beber água amanhã às 17h'";
   }
 
+  // ⏱️ CASO "DAQUI X MINUTOS"
+  if (
+    data.offset_dias === 0 &&
+    data.hora === 0 &&
+    typeof data.minuto === "number" &&
+    data.minuto > 0
+  ) {
+    const when = Date.now() + data.minuto * 60 * 1000;
+
+    await addReminder(phone, {
+      text: data.acao,
+      when,
+    });
+
+    const dateObj = new Date(when);
+
+    return (
+      `✅ *Lembrete criado!*\n\n` +
+      `📌 ${data.acao}\n` +
+      `🕐 ${dateObj.toLocaleString("pt-BR")}`
+    );
+  }
+
   // 🕒 CRIA O TIMESTAMP CORRETO (BR → UTC)
   const when = createTimestampBR({
     offset_dias: data.offset_dias,
