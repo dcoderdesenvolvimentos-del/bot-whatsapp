@@ -1,50 +1,61 @@
-const OpenAI = require("openai");
+import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function analyzeMessage(message, userContext = {}) {
+export async function analyzeIntent(text) {
   try {
-    const systemPrompt = `Você é um assistente que analisa mensagens de usuários e identifica intenções.
-
-Retorne SEMPRE um JSON válido com:
-{
-  "action": "criar_lembrete" | "listar_lembretes" | "deletar_lembrete" | "cancelar_plano" | "conversa_geral",
-  "data": {
-    "message": "texto do lembrete",
-    "datetime": "2025-12-30T10:00:00",
-    "reminder_id": "id se for deletar"
-  }
-}
-
-Exemplos:
-- "me lembra de comprar pão amanhã às 10h" → criar_lembrete
-- "quais meus lembretes?" → listar_lembretes
-- "apaga o lembrete 3" → deletar_lembrete
-- "cancela meu plano" → cancelar_plano
-
-Data/hora atual: ${new Date().toISOString()}`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message },
-      ],
-      temperature: 0.3,
-      response_format: { type: "json_object" },
+    const agora = new Date();
+    const hoje = agora.toLocaleDateString("pt-BR");
+    const horaAtual = agora.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    const result = JSON.parse(completion.choices[0].message.content);
-    return result;
+    const prompt = `
+Você é um classificador de intenções para um bot de lembretes.
+
+REGRAS:
+- Se mencionar "lembr", "criar", "adicionar", "aviso" → criar_lembrete
+- Se mencionar "list", "ver", "mostrar lembretes" → listar_lembretes  
+- Se mencionar "apagar", "deletar", "excluir" → excluir_lembrete
+- Se for saudação tipo "oi", "olá", "bom dia" → conversa_solta
+- Se pedir piada → piada
+- Se pedir ajuda → ajuda
+- Caso contrário → desconhecido
+
+Para criar_lembrete, extraia:
+- acao: o que fazer (ex: "tomar água")
+- hora: formato ISO (ex: "2025-12-31T17:00:00")
+  - Hoje é 2025-12-30 às 18:22h
+  - "amanhã 17h" = "2025-12-31T17:00:00"
+  - "daqui 2 min" = "2025-12-30T18:24:00"
+
+Mensagem: "${text}"
+
+Responda APENAS este JSON (sem explicações):
+{
+  "intencao": "criar_lembrete",
+  "acao": "tomar água",
+  "hora": "2025-12-31T17:00:00",
+  "data": null,
+  "indice": null
+}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+    });
+
+    const resposta = completion.choices[0].message.content.trim();
+    const json = resposta.replace(/json|/g, "").trim();
+
+    return JSON.parse(json);
   } catch (error) {
-    console.error("❌ Erro no AI Service:", error);
-    return {
-      action: "conversa_geral",
-      data: {},
-    };
+    console.error("❌ Erro na IA:", error);
+    return { intencao: "desconhecida" };
   }
 }
-
-module.exports = { analyzeMessage };
