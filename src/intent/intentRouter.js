@@ -375,9 +375,12 @@ export async function routeIntent(userDocId, text) {
 
       default:
         response =
-          "🤔 Ops! Não consegui entender.\n\n" +
-          "Tente algo como:\n" +
-          "• me lembra de X amanhã\n" +
+          "🤔 Ops! Não entendi muito bem o que você quis dizer.\n\n" +
+          "💡 Você pode tentar, por exemplo:\n\n" +
+          "• me lembra de tomar agua amanhã às 14h\n" +
+          "• criar uma lista de compras\n" +
+          "• adicionar arroz na lista\n" +
+          "• criar lembretes\n" +
           "• excluir lembretes\n" +
           "• listar lembretes";
     }
