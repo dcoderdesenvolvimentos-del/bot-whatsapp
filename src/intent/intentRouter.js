@@ -4,6 +4,7 @@ import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
+import { handleShoppingListIntent } from "./intents/shoppingList.intent.js";
 
 /* =========================
    HELPERS
@@ -22,6 +23,8 @@ function normalize(text = "") {
 ========================= */
 
 export async function routeIntent(userDocId, text) {
+  // 1️⃣ IA interpreta
+  const aiResponse = await interpretMessage(text);
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
@@ -293,6 +296,28 @@ export async function routeIntent(userDocId, text) {
     return { ok: true };
   }
 
+  switch (aiResponse.intent) {
+    case "add_item":
+    case "remove_item":
+    case "list_items":
+    case "mark_done":
+    case "clear_list":
+      return handleShoppingListIntent({
+        userId: userDocId,
+        data: aiResponse,
+      });
+
+    case "create_reminder":
+    case "list_reminders":
+      return handleReminderIntent({
+        userId: userDocId,
+        data: aiResponse,
+      });
+
+    default:
+      return "❌ Não entendi o que você quer fazer.";
+  }
+
   /* =========================
      6️⃣ IA (SÓ USUÁRIO ATIVO)
   ========================= */
@@ -342,10 +367,10 @@ export async function routeIntent(userDocId, text) {
 
       default:
         response =
-          "🤔Ops! Não consegui entender.\n\n" +
+          "🤔 Ops! Não consegui entender.\n\n" +
           "Tente algo como:\n" +
           "• me lembra de X amanhã\n" +
-          "• excluir lembretes\n\n" +
+          "• excluir lembretes\n" +
           "• listar lembretes";
     }
 
