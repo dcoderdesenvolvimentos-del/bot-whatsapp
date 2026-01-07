@@ -37,11 +37,18 @@ export function startScheduler() {
           minute: "2-digit",
         });
 
+        function capitalizeFirst(text) {
+          if (!text || typeof text !== "string") return "";
+          return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        const actionText = capitalizeFirst(reminder.text);
+
         const message = `━━━━━━━━━━━━━━
 ⏰ *LEMBRETE*
 ━━━━━━━━━━━━━━
 
-📌 *${reminder.text}*
+📌 *${actionText}*
 🗓 ${formattedDate}
 🕔 ${formattedTime}
 
