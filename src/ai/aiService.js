@@ -7,43 +7,69 @@ const openai = new OpenAI({
 export async function analyzeIntent(text) {
   try {
     const agora = new Date();
-    const hoje = agora.toLocaleDateString("pt-BR");
-    const horaAtual = agora.toLocaleTimeString("pt-BR", {
+    const dataHoraAtual = agora.toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
 
+    const timestampAtual = Date.now();
+
     const prompt = `
-Você é um classificador de intenções para um bot de lembretes.
+Você é um classificador de intenções para um bot de WhatsApp
+que possui DUAS funcionalidades:
+1) LEMBRETES
+2) LISTAS DE COMPRAS
 
-REGRAS:
-- Se mencionar "lembr", "criar", "adicionar", "aviso" → criar_lembrete
-- Se mencionar "list", "ver", "mostrar lembretes" → listar_lembretes  
-- Se mencionar "apagar", "deletar", "excluir" → excluir_lembrete
-- Se for saudação tipo "oi", "olá", "bom dia" → conversa_solta
-- Se pedir piada → piada
-- Se pedir ajuda → ajuda
-- Caso contrário → desconhecido
+============================
+CONTEXTO
+============================
+HOJE É: ${dataHoraAtual} (horário de Brasília)
+TIMESTAMP ATUAL: ${timestampAtual}
 
-Analise a mensagem e retorne APENAS JSON válido.
+============================
+REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
+============================
 
-NUNCA retorne datas completas, timestamps ou strings ISO.
+1️⃣ LISTAS DE COMPRAS (PRIORIDADE MÁXIMA)
+- Se mencionar "lista de compras", "lista de mercado" ou "supermercado":
+  → intencao = "criar_lista"
+- Se mencionar "adicionar", "colocar", "incluir" itens em uma lista:
+  → intencao = "adicionar_item_lista"
+- Se mencionar "ver", "mostrar", "listar" uma lista:
+  → intencao = "listar_itens_lista"
+- LISTA DE COMPRAS NUNCA É LEMBRETE
+- Mesmo que haja saudação ("oi", "olá"), IGNORE a saudação se houver pedido claro.
 
-Retorne somente:
-- intencao
-- acao
-- offset_dias (0=hoje, 1=amanhã, 2=depois de amanhã)
-- hora (número 0–23)
-- minuto (número 0–59)
+2️⃣ LEMBRETES
+- Se mencionar "lembrar", "lembre", "aviso", horário ou data:
+  → intencao = "criar_lembrete"
+- Se mencionar "listar lembretes":
+  → intencao = "listar_lembretes"
+- Se mencionar "apagar", "excluir lembrete":
+  → intencao = "excluir_lembrete"
 
-REGRAS:
-- Se o usuário mencionar vários horários e disser "primeiro", "segundo" ou "terceiro",
-  escolha o horário correspondente.
-- Exemplo: "17, 18 e 19, segundo" → hora = 18
-- Se não houver minuto explícito, use 0.
+3️⃣ OUTROS
+- Saudação SEM pedido → "conversa_solta"
+- Pedido de ajuda → "ajuda"
+- Caso contrário → "desconhecido"
 
-Exemplo:
-"amanhã às 17 horas" →
+============================
+REGRAS GERAIS
+============================
+- Retorne APENAS JSON válido
+- Nunca escreva texto fora do JSON
+- Não invente campos
+- Use SOMENTE os formatos abaixo
+
+============================
+FORMATOS DE RETORNO
+============================
+
+🔔 CRIAR LEMBRETE:
 {
   "intencao": "criar_lembrete",
   "acao": "tomar água",
@@ -52,19 +78,41 @@ Exemplo:
   "minuto": 0
 }
 
-Mensagem: "${text}"
+🛒 CRIAR LISTA:
+{
+  "intencao": "criar_lista",
+  "lista": "supermercado"
+}
+
+🛒 ADICIONAR ITENS:
+{
+  "intencao": "adicionar_item_lista",
+  "lista": "supermercado",
+  "itens": ["arroz", "feijão"]
+}
+
+🛒 LISTAR ITENS:
+{
+  "intencao": "listar_itens_lista",
+  "lista": "supermercado"
+}
+
+============================
+MENSAGEM DO USUÁRIO
+============================
+"${text}"
+
 JSON:
 `;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
+      temperature: 0.2,
     });
 
     const respostaRaw = completion.choices[0].message.content;
 
-    // remove ```json, ``` e espaços extras
     const respostaLimpa = respostaRaw
       .replace(/```json/gi, "")
       .replace(/```/g, "")
@@ -72,9 +120,16 @@ JSON:
 
     console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
 
-    return JSON.parse(respostaLimpa);
+    const data = JSON.parse(respostaLimpa);
+
+    // 🔒 Fallback de segurança
+    if (!data.intencao) {
+      return { intencao: "desconhecido" };
+    }
+
+    return data;
   } catch (error) {
     console.error("❌ Erro na IA:", error);
-    return { intencao: "desconhecida" };
+    return { intencao: "desconhecido" };
   }
 }
