@@ -62,10 +62,17 @@ JSON:
       temperature: 0.3,
     });
 
-    const resposta = completion.choices[0].message.content.trim();
-    const json = resposta.replace(/json|/g, "").trim();
+    const respostaRaw = completion.choices[0].message.content;
 
-    return JSON.parse(json);
+    // remove ```json, ``` e espaços extras
+    const respostaLimpa = respostaRaw
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
+
+    return JSON.parse(respostaLimpa);
   } catch (error) {
     console.error("❌ Erro na IA:", error);
     return { intencao: "desconhecida" };
