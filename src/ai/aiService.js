@@ -101,9 +101,29 @@ FORMATOS DE RETORNO
 🛒 ADICIONAR ITENS:
 {
   "intencao": "adicionar_item_lista",
-  "lista": "supermercado",
-  "itens": ["arroz", "feijão"]
+  "data": {
+    "nomeLista": "supermercado",
+    "itens": ["arroz", "feijão"]
+  }
 }
+
+{
+  "intencao": "remover_item_lista",
+  "data": {
+    "nomeLista": "supermercado",
+    "itens": ["arroz"]
+  }
+}
+
+
+{
+  "intencao": "excluir_lista",
+  "data": {
+    "nomeLista": "materiais escolares"
+  }
+}
+
+
 
 🛒 LISTAR ITENS:
 {

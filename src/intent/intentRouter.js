@@ -7,11 +7,16 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { capitalize } from "../utils/textUtils.js";
 import {
-  createShoppingListWithItems,
-  addItemToShoppingList,
-  getShoppingList,
-  clearShoppingList,
+  createList,
+  addItemsToList,
+  addItemsToSpecificList,
+  removeItemsFromList,
+  deleteList,
+  getList,
+  getAllLists,
 } from "../services/shoppingListService.js";
+
+import { slugify, capitalize } from "../utils/textUtils.js";
 
 /* ===========================
    HELPERS
@@ -337,53 +342,90 @@ export async function routeIntent(userDocId, text) {
     switch (data.intencao) {
       case "criar_lista": {
         const payload = data.data || {};
-        const nomeLista = payload.nomeLista || "compras";
+        const nomeLista = payload.nomeLista;
         const itens = payload.itens || [];
 
-        await createShoppingListWithItems(userDocId, nomeLista, itens);
+        if (!nomeLista) {
+          return "❌ Qual o nome da lista?";
+        }
+
+        const listaId = await createList(userDocId, nomeLista);
 
         if (itens.length) {
-          return (
-            `🛒 *LISTA: ${capitalize(nomeLista)}*\n` +
-            "━━━━━━━━━━━━━━━━━━\n\n" +
-            "🧾 *Itens adicionados*\n\n" +
-            itens.map((i) => `• ${i}`).join("\n") +
-            "\n\n━━━━━━━━━━━━━━━━━━" +
-            `\n\n💡 *Você pode dizer:*\n• adicionar item *X* na lista *${capitalize(
-              nomeLista
-            )}*\n• listar lista *${capitalize(
-              nomeLista
-            )}*\n• limpar lista *${capitalize(nomeLista)}*`
-          );
+          await addItemsToList(userDocId, listaId, itens);
         }
 
         return (
-          `🛒 *Lista de: ${capitalize(nomeLista)}* criada!\n` +
-          "\nAgora só falta você adicionar itens a lista" +
-          "\n\n━━━━━━━━━━━━━━━━━━" +
-          `\n\n💡 *Você pode dizer:*\n• adicionar item *X* na lista *${capitalize(
-            nomeLista
-          )}*\n• listar lista *${capitalize(
-            nomeLista
-          )}*\n• limpar lista *${capitalize(nomeLista)}*`
+          `🛒 *LISTA: ${capitalize(nomeLista)}*\n` +
+          "━━━━━━━━━━━━━━━━━━\n\n" +
+          (itens.length
+            ? itens.map((i) => `• ${i}`).join("\n")
+            : "Lista criada vazia.") +
+          "\n\n━━━━━━━━━━━━━━━━━━\n" +
+          "💡 Você pode dizer:\n" +
+          "• adicionar item\n" +
+          "• listar listas"
         );
       }
 
       case "adicionar_item_lista": {
         const payload = data.data || {};
+        const nomeLista = payload.nomeLista;
         const itens = payload.itens || [];
 
-        if (!itens.length) {
-          return "❌ Não entendi qual item você quer adicionar.";
+        if (!nomeLista || !itens.length) {
+          return "❌ Diga o item e o nome da lista.";
         }
 
-        for (const item of itens) {
-          await addItemToShoppingList(userDocId, item);
-        }
+        const listaId = slugify(nomeLista);
+
+        await addItemsToSpecificList(userDocId, listaId, itens);
 
         return (
-          "🛒 Itens adicionados à lista:\n" +
+          `🛒 *LISTA: ${capitalize(nomeLista)}*\n` +
+          "━━━━━━━━━━━━━━━━━━\n\n" +
+          "Itens adicionados:\n" +
           itens.map((i) => `• ${i}`).join("\n")
+        );
+      }
+
+      case "remover_item_lista": {
+        const payload = data.data || {};
+        const nomeLista = payload.nomeLista;
+        const itens = payload.itens || [];
+
+        if (!nomeLista || !itens.length) {
+          return "❌ Diga quais itens remover e de qual lista.";
+        }
+
+        const listaId = slugify(nomeLista);
+
+        await removeItemsFromList(userDocId, listaId, itens);
+
+        return (
+          `🛒 *LISTA: ${capitalize(nomeLista)}*\n` +
+          "━━━━━━━━━━━━━━━━━━\n\n" +
+          "Itens removidos:\n" +
+          itens.map((i) => `• ${i}`).join("\n")
+        );
+      }
+
+      case "excluir_lista": {
+        const payload = data.data || {};
+        const nomeLista = payload.nomeLista;
+
+        if (!nomeLista) {
+          return "❌ Qual lista você quer excluir?";
+        }
+
+        const listaId = slugify(nomeLista);
+
+        await deleteList(userDocId, listaId);
+
+        return (
+          "🗑️ *LISTA EXCLUÍDA*\n" +
+          "━━━━━━━━━━━━━━━━━━\n\n" +
+          `A lista *${capitalize(nomeLista)}* foi removida com sucesso.`
         );
       }
 
