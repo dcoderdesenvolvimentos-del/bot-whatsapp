@@ -330,7 +330,8 @@ export async function routeIntent(userDocId, text) {
 
     switch (data.intencao) {
       case "criar_lista": {
-        const itens = data?.itens || [];
+        const payload = data.data || {};
+        const itens = payload.itens || [];
 
         await createShoppingListWithItems(userDocId, itens);
 
@@ -341,13 +342,9 @@ export async function routeIntent(userDocId, text) {
             itens.map((i) => `• ${i}`).join("\n")
           );
         }
-        console.log("🧠 INTENÇÃO:", intent);
-        console.log("📦 DATA:", data);
-        console.log("🛒 ITENS EXTRAÍDOS:", data?.itens);
 
         return "🛒 Lista de compras criada! Agora é só mandar os itens 😊";
       }
-
       case "adicionar_item_lista":
         await addItemToShoppingList(userDocId, data.item);
         return `🛒 *${data.item}* adicionado à sua lista de compras!`;
