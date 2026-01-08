@@ -332,7 +332,7 @@ export async function routeIntent(userDocId, text) {
       case "criar_lista": {
         const itens = data?.itens || [];
 
-        const result = await createShoppingListWithItems(userDocId, itens);
+        await createShoppingListWithItems(userDocId, itens);
 
         if (itens.length) {
           return (
