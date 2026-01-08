@@ -368,15 +368,18 @@ export async function routeIntent(userDocId, text) {
         );
       }
 
-      case "listar_lista":
+      case "listar_itens_lista": {
         const items = await getShoppingList(userDocId);
+
         if (!items.length) {
           return "🛒 Sua lista de compras está vazia.";
         }
+
         return (
           "🛒 *Sua lista de compras:*\n\n" +
-          items.map((i, idx) => `• ${idx + 1}. ${i.name}`).join("\n")
+          items.map((item, index) => `• ${index + 1}. ${item.name}`).join("\n")
         );
+      }
 
       case "limpar_lista":
         await clearShoppingList(userDocId);
