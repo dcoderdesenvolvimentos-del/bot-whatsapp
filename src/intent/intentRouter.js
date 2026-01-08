@@ -344,14 +344,15 @@ export async function routeIntent(userDocId, text) {
 
         if (itens.length) {
           return (
-            "🛒 *Lista de compras pronta!*\n\n" +
+            `🛒 *Lista de: ${capitalize(nomeLista)}*\n\n` +
             "Itens adicionados:\n" +
             itens.map((i) => `• ${i}`).join("\n")
           );
         }
 
-        return "🛒 Lista de compras criada! Agora é só mandar os itens 😊";
+        return `🛒 *Lista de: ${capitalize(nomeLista)}* criada!`;
       }
+
       case "adicionar_item_lista": {
         const payload = data.data || {};
         const itens = payload.itens || [];
