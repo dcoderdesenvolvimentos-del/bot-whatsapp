@@ -344,9 +344,12 @@ export async function routeIntent(userDocId, text) {
 
         if (itens.length) {
           return (
-            `🛒 *Lista de: ${capitalize(nomeLista)}*\n\n` +
-            "Itens adicionados:\n" +
-            itens.map((i) => `• ${i}`).join("\n")
+            `🛒 *LISTA: ${capitalize(nomeLista)}*\n` +
+            "━━━━━━━━━━━━━━━━━━\n\n" +
+            "🧾 *Itens adicionados*\n\n" +
+            itens.map((i) => `• ${i}`).join("\n") +
+            "\n\n━━━━━━━━━━━━━━━━━━" +
+            "\n\n💡 Você pode dizer:\n• adicionar item\n• listar lista\n• limpar lista"
           );
         }
 
