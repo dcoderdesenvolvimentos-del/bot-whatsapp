@@ -90,9 +90,13 @@ FORMATOS DE RETORNO
 
 🛒 CRIAR LISTA:
 {
-  "intencao": "criar_lista",
-  "lista": "supermercado"
+  intent: "criar_lista_compras",
+  data: {
+    nomeLista: "supermercado",
+    itens: ["arroz", "açúcar", "óleo"]
+  }
 }
+
 
 🛒 ADICIONAR ITENS:
 {

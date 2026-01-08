@@ -6,6 +6,11 @@ import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { handleShoppingListIntent } from "./intents/shoppingList.intent.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
+import {
+  addItemToShoppingList,
+  getShoppingList,
+  clearShoppingList,
+} from "./services/shoppingListService.js";
 
 /* ===========================
    HELPERS
@@ -329,19 +334,58 @@ export async function routeIntent(userDocId, text) {
     let response = "";
 
     switch (data.intencao) {
+      case "criar_lista_compras": {
+        const itens = data?.itens || [];
+
+        const result = await createShoppingListWithItems(userDocId, itens);
+
+        if (result.created && itens.length) {
+          return (
+            "🛒 *Lista de compras criada!* \n\n" +
+            "Itens adicionados:\n" +
+            itens.map((i) => `• ${i}`).join("\n")
+          );
+        }
+
+        if (!result.created && itens.length) {
+          return (
+            "🛒 Sua lista já existia.\n\n" +
+            "Itens adicionados:\n" +
+            itens.map((i) => `• ${i}`).join("\n")
+          );
+        }
+
+        return (
+          "🛒 Lista de compras pronta!\n" +
+          "Agora é só dizer:\n• adicionar feijão\n• listar lista"
+        );
+      }
+
+      case "adicionar_item_lista":
+        await addItemToShoppingList(userDocId, data.item);
+        return `🛒 *${data.item}* adicionado à sua lista de compras!`;
+
+      case "listar_lista":
+        const items = await getShoppingList(userDocId);
+        if (!items.length) {
+          return "🛒 Sua lista de compras está vazia.";
+        }
+        return (
+          "🛒 *Sua lista de compras:*\n\n" +
+          items.map((i, idx) => `• ${idx + 1}. ${i.name}`).join("\n")
+        );
+
+      case "limpar_lista":
+        await clearShoppingList(userDocId);
+        return "🧹 Sua lista de compras foi limpa!";
+
+      /* =========================
+     6️⃣ Logica dos lembretes
+  ========================= */
+
       case "criar_lembrete":
         response = await createReminder(userDocId, data);
         break;
-
-      case "criar_lista":
-
-      case "adicionar_item_lista":
-
-      case "listar_itens_lista":
-        return handleShoppingListIntent({
-          userId: userDocId,
-          data,
-        });
 
       case "listar_lembretes":
         response = await listReminders(userDocId);
