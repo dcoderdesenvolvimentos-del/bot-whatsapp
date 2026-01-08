@@ -341,6 +341,9 @@ export async function routeIntent(userDocId, text) {
             itens.map((i) => `• ${i}`).join("\n")
           );
         }
+        console.log("🧠 INTENÇÃO:", intent);
+        console.log("📦 DATA:", data);
+        console.log("🛒 ITENS EXTRAÍDOS:", data?.itens);
 
         return "🛒 Lista de compras criada! Agora é só mandar os itens 😊";
       }
