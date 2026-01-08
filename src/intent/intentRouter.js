@@ -349,7 +349,11 @@ export async function routeIntent(userDocId, text) {
             "🧾 *Itens adicionados*\n\n" +
             itens.map((i) => `• ${i}`).join("\n") +
             "\n\n━━━━━━━━━━━━━━━━━━" +
-            "\n\n💡 Você pode dizer:\n• adicionar item\n• listar lista\n• limpar lista"
+            `\n\n💡 *Você pode dizer:*\n• adicionar item *X* na lista ${capitalize(
+              nomeLista
+            )}\n• listar lista ${capitalize(
+              nomeLista
+            )}\n• limpar lista ${capitalize(nomeLista)}`
           );
         }
 
