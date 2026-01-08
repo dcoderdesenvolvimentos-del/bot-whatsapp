@@ -4,13 +4,9 @@ import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
-import { handleShoppingListIntent } from "../intents/shoppingList.intent.js";
+import { handleShoppingListIntent } from ".6./intents/shoppingList.intent.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
-import {
-  addItemToShoppingList,
-  getShoppingList,
-  clearShoppingList,
-} from "../services/shoppingListService.js";
+import { createShoppingListWithItems } from "../services/shoppingListService.js";
 
 /* ===========================
    HELPERS
@@ -20,7 +16,7 @@ function normalize(text = "") {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u03[]f]/g, "")
     .trim();
 }
 
@@ -339,26 +335,15 @@ export async function routeIntent(userDocId, text) {
 
         const result = await createShoppingListWithItems(userDocId, itens);
 
-        if (result.created && itens.length) {
+        if (itens.length) {
           return (
-            "🛒 *Lista de compras criada!* \n\n" +
+            "🛒 *Lista de compras pronta!*\n\n" +
             "Itens adicionados:\n" +
             itens.map((i) => `• ${i}`).join("\n")
           );
         }
 
-        if (!result.created && itens.length) {
-          return (
-            "🛒 Sua lista já existia.\n\n" +
-            "Itens adicionados:\n" +
-            itens.map((i) => `• ${i}`).join("\n")
-          );
-        }
-
-        return (
-          "🛒 Lista de compras pronta!\n" +
-          "Agora é só dizer:\n• adicionar feijão\n• listar lista"
-        );
+        return "🛒 Lista de compras criada! Agora é só mandar os itens 😊";
       }
 
       case "adicionar_item_lista":
