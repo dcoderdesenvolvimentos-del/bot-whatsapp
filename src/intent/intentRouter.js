@@ -429,15 +429,31 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "listar_itens_lista": {
-        const lista = await getShoppingList(userDocId);
-        if (!lista || !lista.items?.length) {
-          return "🛒 Sua lista está vazia.";
+        const nomeLista =
+          data.data?.nomeLista ||
+          data.lista || // a IA está mandando assim
+          null;
+
+        if (!nomeLista) {
+          return "❌ Qual lista você quer ver?";
         }
+
+        const listaId = slugify(nomeLista);
+        const lista = await getList(userDocId, listaId);
+
+        if (!lista || !lista.items?.length) {
+          return `🛒 A lista *${capitalize(
+            nomeLista
+          )}* está vazia ou não existe.`;
+        }
+
         return (
-          `🛒 *Lista de: ${capitalize(lista.nome)}*\n\n` +
+          `🛒 *LISTA: ${capitalize(lista.nome)}*\n` +
+          "━━━━━━━━━━━━━━━━━━\n\n" +
           lista.items
-            .map((item, index) => `• ${index + 1}. ${item.name}`)
-            .join("\n")
+            .map((item, idx) => `• ${idx + 1}. ${item.name}`)
+            .join("\n") +
+          "\n\n━━━━━━━━━━━━━━━━━━"
         );
       }
 
