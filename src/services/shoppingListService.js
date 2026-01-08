@@ -27,6 +27,30 @@ export async function createList(userId, nomeLista) {
   return listaId;
 }
 
+export async function addItemsToList(userId, listaId, items = []) {
+  if (!items.length) return;
+
+  const ref = db
+    .collection("shopping_lists")
+    .doc(userId)
+    .collection("listas")
+    .doc(listaId);
+
+  const snap = await ref.get();
+  if (!snap.exists) return;
+
+  const novos = items.map((item) => ({
+    name: item.toLowerCase(),
+    checked: false,
+    createdAt: new Date(),
+  }));
+
+  await ref.update({
+    items: [...snap.data().items, ...novos],
+    updatedAt: new Date(),
+  });
+}
+
 /**
  * Adiciona itens em uma lista específica
  */
