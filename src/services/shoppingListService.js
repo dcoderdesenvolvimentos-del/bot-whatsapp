@@ -1,6 +1,5 @@
 // services/shoppingListService.js
 import { db } from "../firebase.js";
-import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 
 export async function createShoppingListWithItems(userId, items = []) {
   const ref = doc(db, "shopping_lists", userId);
