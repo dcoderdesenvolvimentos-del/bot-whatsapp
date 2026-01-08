@@ -34,6 +34,11 @@ export async function createShoppingListWithItems(userId, items = []) {
 }
 
 export async function addItemToShoppingList(userId, item) {
+  if (!item || typeof item !== "string") {
+    console.warn("⚠️ addItemToShoppingList chamado sem item válido:", item);
+    return;
+  }
+
   const ref = db.collection("shopping_lists").doc(userId);
   const snap = await ref.get();
 

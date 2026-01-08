@@ -350,9 +350,23 @@ export async function routeIntent(userDocId, text) {
 
         return "🛒 Lista de compras criada! Agora é só mandar os itens 😊";
       }
-      case "adicionar_item_lista":
-        await addItemToShoppingList(userDocId, data.item);
-        return `🛒 *${data.item}* adicionado à sua lista de compras!`;
+      case "adicionar_item_lista": {
+        const payload = data.data || {};
+        const itens = payload.itens || [];
+
+        if (!itens.length) {
+          return "❌ Não entendi qual item você quer adicionar.";
+        }
+
+        for (const item of itens) {
+          await addItemToShoppingList(userDocId, item);
+        }
+
+        return (
+          "🛒 Itens adicionados à lista:\n" +
+          itens.map((i) => `• ${i}`).join("\n")
+        );
+      }
 
       case "listar_lista":
         const items = await getShoppingList(userDocId);
