@@ -1,7 +1,11 @@
 // src/services/shoppingListService.js
 import { db } from "../firebase.js";
 
-export async function createShoppingListWithItems(userId, items = []) {
+export async function createShoppingListWithItems(
+  userId,
+  nomeLista = "compras",
+  items = []
+) {
   const ref = db.collection("shopping_lists").doc(userId);
   const snap = await ref.get();
 
@@ -11,26 +15,26 @@ export async function createShoppingListWithItems(userId, items = []) {
     createdAt: new Date(),
   }));
 
-  // 🔹 Se a lista ainda não existe
   if (!snap.exists) {
     await ref.set({
+      nome: nomeLista,
       items: formattedItems,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    return { created: true, added: formattedItems.length };
+    return { created: true, nomeLista, items: formattedItems };
   }
 
-  // 🔹 Se já existe, adiciona os novos itens
-  const existingItems = snap.data().items || [];
+  const existingData = snap.data();
 
   await ref.update({
-    items: [...existingItems, ...formattedItems],
+    nome: nomeLista || existingData.nome,
+    items: [...(existingData.items || []), ...formattedItems],
     updatedAt: new Date(),
   });
 
-  return { created: false, added: formattedItems.length };
+  return { created: false, nomeLista, items: formattedItems };
 }
 
 export async function addItemToShoppingList(userId, item) {
@@ -70,10 +74,10 @@ export async function getShoppingList(userId) {
   const snap = await ref.get();
 
   if (!snap.exists) {
-    return [];
+    return null;
   }
 
-  return snap.data().items || [];
+  return snap.data(); // { nome, items }
 }
 
 export async function clearShoppingList(userId) {

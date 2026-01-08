@@ -336,9 +336,10 @@ export async function routeIntent(userDocId, text) {
     switch (data.intencao) {
       case "criar_lista": {
         const payload = data.data || {};
+        const nomeLista = payload.nomeLista || "compras";
         const itens = payload.itens || [];
 
-        await createShoppingListWithItems(userDocId, itens);
+        await createShoppingListWithItems(userDocId, nomeLista, itens);
 
         if (itens.length) {
           return (
@@ -369,15 +370,15 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "listar_itens_lista": {
-        const items = await getShoppingList(userDocId);
-
-        if (!items.length) {
-          return "🛒 Sua lista de compras está vazia.";
+        const lista = await getShoppingList(userDocId);
+        if (!lista || !lista.items?.length) {
+          return "🛒 Sua lista está vazia.";
         }
-
         return (
-          "🛒 *Sua lista de compras:*\n\n" +
-          items.map((item, index) => `• ${index + 1}. ${item.name}`).join("\n")
+          `🛒 *Lista de: ${capitalize(lista.nome)}*\n\n` +
+          lista.items
+            .map((item, index) => `• ${index + 1}. ${item.name}`)
+            .join("\n")
         );
       }
 
