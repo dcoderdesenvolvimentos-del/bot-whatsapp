@@ -10,7 +10,7 @@ import {
   addItemToShoppingList,
   getShoppingList,
   clearShoppingList,
-} from "./services/shoppingListService.js";
+} from "../services/shoppingListService.js";
 
 /* ===========================
    HELPERS
