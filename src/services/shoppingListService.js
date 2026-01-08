@@ -1,9 +1,9 @@
-// services/shoppingListService.js
+// src/services/shoppingListService.js
 import { db } from "../firebase.js";
 
 export async function createShoppingListWithItems(userId, items = []) {
-  const ref = doc(db, "shopping_lists", userId);
-  const snap = await getDoc(ref);
+  const ref = db.collection("shopping_lists").doc(userId);
+  const snap = await ref.get();
 
   const formattedItems = items.map((item) => ({
     name: item.toLowerCase(),
@@ -11,8 +11,9 @@ export async function createShoppingListWithItems(userId, items = []) {
     createdAt: new Date(),
   }));
 
-  if (!snap.exists()) {
-    await setDoc(ref, {
+  // 🔹 Se a lista ainda não existe
+  if (!snap.exists) {
+    await ref.set({
       items: formattedItems,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -21,52 +22,13 @@ export async function createShoppingListWithItems(userId, items = []) {
     return { created: true, added: formattedItems.length };
   }
 
-  if (formattedItems.length) {
-    await updateDoc(ref, {
-      items: arrayUnion(...formattedItems),
-      updatedAt: new Date(),
-    });
-  }
+  // 🔹 Se já existe, adiciona os novos itens
+  const existingItems = snap.data().items || [];
 
-  return { created: false, added: formattedItems.length };
-}
-
-export async function addItemToShoppingList(userId, item) {
-  const ref = doc(db, "shopping_lists", userId);
-  const snap = await getDoc(ref);
-
-  const newItem = {
-    name: item.toLowerCase(),
-    checked: false,
-    createdAt: new Date(),
-  };
-
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      items: [newItem],
-      updatedAt: new Date(),
-    });
-  } else {
-    await updateDoc(ref, {
-      items: arrayUnion(newItem),
-      updatedAt: new Date(),
-    });
-  }
-}
-
-export async function getShoppingList(userId) {
-  const ref = doc(db, "shopping_lists", userId);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) return [];
-
-  return snap.data().items || [];
-}
-
-export async function clearShoppingList(userId) {
-  const ref = doc(db, "shopping_lists", userId);
-  await setDoc(ref, {
-    items: [],
+  await ref.update({
+    items: [...existingItems, ...formattedItems],
     updatedAt: new Date(),
   });
+
+  return { created: false, added: formattedItems.length };
 }
