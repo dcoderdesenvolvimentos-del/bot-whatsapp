@@ -32,3 +32,53 @@ export async function createShoppingListWithItems(userId, items = []) {
 
   return { created: false, added: formattedItems.length };
 }
+
+export async function addItemToShoppingList(userId, item) {
+  const ref = db.collection("shopping_lists").doc(userId);
+  const snap = await ref.get();
+
+  const newItem = {
+    name: item.toLowerCase(),
+    checked: false,
+    createdAt: new Date(),
+  };
+
+  if (!snap.exists) {
+    await ref.set({
+      items: [newItem],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return;
+  }
+
+  const existingItems = snap.data().items || [];
+
+  await ref.update({
+    items: [...existingItems, newItem],
+    updatedAt: new Date(),
+  });
+}
+
+export async function getShoppingList(userId) {
+  const ref = db.collection("shopping_lists").doc(userId);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    return [];
+  }
+
+  return snap.data().items || [];
+}
+
+export async function clearShoppingList(userId) {
+  const ref = db.collection("shopping_lists").doc(userId);
+
+  await ref.set(
+    {
+      items: [],
+      updatedAt: new Date(),
+    },
+    { merge: true }
+  );
+}
