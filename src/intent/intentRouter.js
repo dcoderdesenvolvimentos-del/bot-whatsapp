@@ -4,7 +4,6 @@ import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
-import { handleShoppingListIntent } from "../intents/shoppingList.intent.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { createShoppingListWithItems } from "../services/shoppingListService.js";
 
