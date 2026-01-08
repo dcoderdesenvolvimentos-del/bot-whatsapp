@@ -5,7 +5,6 @@ import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
-import { capitalize } from "../utils/textUtils.js";
 import {
   createList,
   addItemsToList,
