@@ -26,7 +26,7 @@ function normalize(text = "") {
 
 /* =========================
    ROUTER PRINCIPAL
-========================= */
+=========================  */
 
 export async function routeIntent(userDocId, text) {
   // 1️⃣ IA interpreta
