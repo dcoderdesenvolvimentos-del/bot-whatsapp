@@ -38,7 +38,7 @@ export function listItems(userId, listName) {
   }
 
   return (
-    `🛒 *Lista ${listName}:*\n\n` +
+    `🛒 *Lista: ${listName}*\n\n` +
     list.map((i) => `${i.done ? "✅" : "⬜"} ${i.item}`).join("\n")
   );
 }

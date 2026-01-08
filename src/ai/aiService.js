@@ -63,7 +63,17 @@ REGRAS GERAIS
 - Retorne APENAS JSON válido
 - Nunca escreva texto fora do JSON
 - Não invente campos
-- Use SOMENTE os formatos abaixo
+- Use SOMENTE os formatos 
+
+IMPORTANTE:
+- Se o usuário disser "daqui X minutos" ou "daqui X horas":
+  retorne:
+  {
+    "intencao": "criar_lembrete",
+    "acao": "...",
+    "offset_ms": X * 60 * 1000
+  }
+- NÃO retorne hora, minuto ou offset_dias nesses casos.
 
 ============================
 FORMATOS DE RETORNO

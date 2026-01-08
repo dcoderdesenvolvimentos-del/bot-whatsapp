@@ -13,16 +13,39 @@ export async function createReminder(userDocId, data) {
     return "❌ Erro ao identificar usuário.";
   }
 
-  // 🔒 Validação obrigatória
-  if (
-    typeof data.offset_dias !== "number" ||
-    typeof data.hora !== "number" ||
-    typeof data.minuto !== "number"
-  ) {
-    return "❌ Não consegui entender o horário. Tente: 'me lembra de beber água amanhã às 17h'";
+  /**
+   * =====================================================
+   * ⏱️ CASO 1 — OFFSET RELATIVO (daqui X minutos / horas)
+   * =====================================================
+   * 👉 PRIORIDADE MÁXIMA
+   * Se existir offset_ms, ignora TODO o resto
+   */
+  if (typeof data.offset_ms === "number" && data.offset_ms > 0) {
+    const when = Date.now() + data.offset_ms;
+
+    await addReminder(phone, {
+      text: data.acao,
+      when,
+    });
+
+    const dateObj = new Date(when);
+
+    return (
+      `✅ *Lembrete criado!*\n\n` +
+      `📌 ${data.acao}\n` +
+      `🕐 ${dateObj.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      })}`
+    );
   }
 
-  // ⏱️ CASO "DAQUI X MINUTOS"
+  /**
+   * =====================================================
+   * 🧩 CASO 2 — REGRA ANTIGA "DAQUI X MINUTOS"
+   * =====================================================
+   * 👉 Mantida por compatibilidade
+   * 👉 Só entra se NÃO houver offset_ms
+   */
   if (
     data.offset_dias === 0 &&
     data.hora === 0 &&
@@ -36,25 +59,33 @@ export async function createReminder(userDocId, data) {
       when,
     });
 
-    function capitalizeFirst(text) {
-      if (!text || typeof text !== "string") return "";
-      return text.charAt(0).toUpperCase() + text.slice(1);
-    }
-
     const dateObj = new Date(when);
-    const actionText = capitalizeFirst(data.acao);
 
     return (
-      `✅ *${userData.tempName}, Lembrete criado!*\n\n` +
-      `🗓️ Resumo do Compromisso:\n\n` +
-      `📌 ${actionText}\n` +
+      `✅ *Lembrete criado!*\n\n` +
+      `📌 ${data.acao}\n` +
       `🕐 ${dateObj.toLocaleString("pt-BR", {
         timeZone: "America/Sao_Paulo",
       })}`
     );
   }
 
-  // 🕒 CRIA O TIMESTAMP CORRETO (BR → UTC)
+  /**
+   * =====================================================
+   * 🕒 CASO 3 — HORÁRIO ABSOLUTO (hoje / amanhã às HH:MM)
+   * =====================================================
+   */
+
+  // 🔒 Validação obrigatória (mantida)
+  if (
+    typeof data.offset_dias !== "number" ||
+    typeof data.hora !== "number" ||
+    typeof data.minuto !== "number"
+  ) {
+    return "❌ Não consegui entender o horário. Tente assim: 'me lembra de beber água amanhã às 17h'";
+  }
+
+  // 🕒 Cria timestamp usando SUA função existente
   const when = createTimestampBR({
     offset_dias: data.offset_dias,
     hora: data.hora,
@@ -72,7 +103,7 @@ export async function createReminder(userDocId, data) {
     when,
   });
 
-  // 🔍 DEBUG FINAL (AGORA CONFIÁVEL)
+  // 🔍 DEBUG FINAL (agora confiável)
   const dateObj = new Date(when);
   console.log("🔍 TIMESTAMP FINAL:", when);
   console.log("🔍 ISO STRING:", dateObj.toISOString());
@@ -82,7 +113,7 @@ export async function createReminder(userDocId, data) {
   );
   console.log("🔍 LOCAL BR:", dateObj.toLocaleString("pt-BR"));
 
-  // 📅 FORMATAÇÃO FINAL (SEM TIMEZONE MANUAL)
+  // 📅 FORMATAÇÃO FINAL
   const dataFormatada = dateObj.toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
