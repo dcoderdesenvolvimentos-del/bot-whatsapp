@@ -7,6 +7,17 @@ function getUserLists(userId) {
   return shoppingLists.get(userId);
 }
 
+// ✅ ADICIONE ISSO
+export function createList(userId, listName) {
+  const lists = getUserLists(userId);
+
+  if (!lists[listName]) {
+    lists[listName] = [];
+  }
+
+  return lists[listName];
+}
+
 export function addItem(userId, listName, items = []) {
   const lists = getUserLists(userId);
   if (!lists[listName]) lists[listName] = [];
