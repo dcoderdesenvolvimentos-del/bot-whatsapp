@@ -14,6 +14,12 @@ export function createTimestampBR({ offset_dias, hora, minuto }) {
   return date.getTime();
 }
 
+export function createDateBR() {
+  const now = new Date();
+  const [year, month, day] = now.toISOString().split("T")[0].split("-");
+  return `${day}-${month}-${year}`;
+}
+
 export function formatDateToBR(isoDate) {
   const [year, month, day] = isoDate.split("-");
   return `${day}-${month}-${year}`;
