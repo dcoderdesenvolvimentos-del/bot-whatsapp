@@ -13,3 +13,16 @@ export function createTimestampBR({ offset_dias, hora, minuto }) {
 
   return date.getTime();
 }
+
+export function createDateBR() {
+  const now = new Date();
+  return now.toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
+export function createHourBR() {
+  const now = new Date();
+  return now.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
