@@ -14,6 +14,12 @@ import {
   getList,
   getAllLists,
 } from "../services/shoppingListService.js";
+import {
+  createExpense,
+  getTodayExpenses,
+  getExpensesByCategory,
+  getExpensesByPeriod,
+} from "../services/expenseService.js";
 
 import { slugify, capitalize } from "../utils/textUtils.js";
 
@@ -460,6 +466,73 @@ export async function routeIntent(userDocId, text) {
       case "limpar_lista":
         await clearShoppingList(userDocId);
         return "🧹 Sua lista de compras foi limpa!";
+
+      /* =========================
+     Logica Dos Gastos
+  ========================= */
+
+      /* Salva Gastos */
+      case "criar_gasto": {
+        const { valor, local, categoria } = data;
+
+        if (!valor || !local) {
+          return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
+        }
+
+        await createExpense(userDocId, {
+          valor,
+          local,
+          categoria: categoria || "outros",
+        });
+
+        return (
+          "💾 *Gasto salvo com sucesso!*\n\n" +
+          `💰 Valor: R$ ${valor}\n` +
+          `📍 Local: ${local}\n` +
+          `🏷️ Categoria: ${categoria}`
+        );
+      }
+
+      /* Gastos do Dia */
+      case "consultar_gasto_dia": {
+        const total = await getTodayExpenses(userDocId);
+
+        return `💸 Hoje você gastou *R$ ${total.toFixed(2)}*`;
+      }
+
+      /* Gastos por Categoria */
+      case "consultar_gasto_categoria": {
+        const { categoria } = data;
+
+        if (!categoria) {
+          return "🤔 Qual categoria? Ex: quanto gastei no supermercado?";
+        }
+
+        const total = await getExpensesByCategory(userDocId, categoria);
+
+        return `🏷️ ${categoria}\n💰 Total gasto: *R$ ${total.toFixed(2)}*`;
+      }
+
+      /* Gastos por Periodo */
+      case "consultar_gasto_periodo": {
+        const { data_inicio, data_fim } = data;
+
+        if (!data_inicio || !data_fim) {
+          return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
+        }
+
+        const total = await getExpensesByPeriod(
+          userDocId,
+          data_inicio,
+          data_fim
+        );
+
+        return (
+          "📆 *Resumo de gastos*\n\n" +
+          `🗓️ De ${data_inicio} até ${data_fim}\n` +
+          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
+        );
+      }
 
       /* =========================
      6️⃣ Logica dos lembretes

@@ -57,6 +57,59 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 - Pedido de ajuda → "ajuda"
 - Caso contrário → "desconhecido"
 
+
+Quando o usuário relatar um gasto, identifique:
+
+- intencao: "criar_gasto"
+- valor: número (ex: 50, 120.90)
+- local: onde o gasto aconteceu
+- categoria: uma palavra simples e genérica
+
+Categorias possíveis:
+alimentação, supermercado, transporte, saúde, lazer, contas, educação, outros
+
+Exemplos:
+"gastei 50 reais na padaria" →
+{ intencao: criar_gasto, valor: 50, local: "padaria", categoria: "alimentação" }
+
+"paguei 120 de luz" →
+{ intencao: criar_gasto, valor: 120, local: "luz", categoria: "contas" }
+
+"coloquei gasolina" →
+{ intencao: criar_gasto, valor: 100, local: "posto", categoria: "transporte" }
+
+Se não tiver certeza da categoria, use "outros".
+
+
+
+Quando o usuário perguntar sobre gastos em um período de tempo:
+
+Identifique:
+- intencao: "consultar_gasto_periodo"
+- data_inicio: data no formato YYYY-MM-DD
+- data_fim: data no formato YYYY-MM-DD
+
+Regras:
+- "ontem" → data_inicio = data_fim = ontem
+- "anteontem" → data_inicio = data_fim = anteontem
+- "essa semana" → domingo até hoje
+- "semana passada" → domingo a sábado da semana anterior
+- "esse mês" → dia 1 até hoje
+- "mês passado" → dia 1 ao último dia do mês anterior
+- "do dia X até o dia Y" → intervalo explícito
+- Se o ano não for citado, use o ano atual
+
+Exemplos:
+"quanto gastei ontem" →
+{ intencao: consultar_gasto_periodo, data_inicio: 2026-01-07, data_fim: 2026-01-07 }
+
+"quanto gastei na semana passada" →
+{ intencao: consultar_gasto_periodo, data_inicio: 2025-12-29, data_fim: 2026-01-04 }
+
+"quanto gastei do dia 5 até o dia 10" →
+{ intencao: consultar_gasto_periodo, data_inicio: 2026-01-05, data_fim: 2026-01-10 }
+
+
 ============================
 REGRAS GERAIS
 ============================
