@@ -35,6 +35,11 @@ function normalize(text = "") {
     .trim();
 }
 
+export function capitalize(text) {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 /* =========================
    ROUTER PRINCIPAL
 =========================  */
@@ -488,8 +493,8 @@ export async function routeIntent(userDocId, text) {
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${valor}\n` +
-          `📍 Local: ${local}\n` +
-          `🏷️ Categoria: ${categoria}`
+          `📍 Local: ${capitalize(local)}\n` +
+          `🏷️ Categoria: ${capitalize(categoria)}`
         );
       }
 
