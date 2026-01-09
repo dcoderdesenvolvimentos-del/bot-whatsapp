@@ -339,6 +339,26 @@ export async function routeIntent(userDocId, text) {
         data: aiResponse,
       });
   }
+  // =========================
+  // AGRADECIMENTO
+  // =========================
+  if (
+    [
+      "muito obrigado",
+      "obrigado",
+      "vlw",
+      "valeu",
+      "tmj",
+      "tamo junto",
+      "obrigado mario",
+      "vlw mario",
+      "valeu mario",
+      "muito obrigado mario",
+      "vlw cara",
+    ].includes(text)
+  ) {
+    return "Por nada! 😊 qualquer coisa estou a disposição.";
+  }
 
   /* =========================
      6️⃣ IA (SÓ USUÁRIO ATIVO)
