@@ -1,16 +1,13 @@
 import { db } from "../firebase.js";
 import { createDateBR, createHourBR } from "../utils/dateUtils.js";
+import { Timestamp } from "firebase-admin/firestore";
 
 export async function createExpense(userId, data) {
-  const ref = db.ref(`gastos/${userId}`).push();
-
-  await ref.set({
+  await db.collection("gastos").doc(userId).collection("itens").add({
     valor: data.valor,
     local: data.local,
     categoria: data.categoria,
-    data: createDateBR(),
-    hora: createHourBR(),
-    timestamp: Date.now(),
+    timestamp: Timestamp.now(),
   });
 }
 
@@ -44,18 +41,21 @@ export async function getExpensesByCategory(userId, categoria) {
 }
 
 export async function getExpensesByPeriod(userId, startDate, endDate) {
-  const snapshot = await db.ref(`gastos/${userId}`).once("value");
+  const start = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T23:59:59");
 
-  const start = new Date(startDate + "T00:00:00").getTime();
-  const end = new Date(endDate + "T23:59:59").getTime();
+  const snapshot = await db
+    .collection("gastos")
+    .doc(userId)
+    .collection("itens")
+    .where("timestamp", ">=", start)
+    .where("timestamp", "<=", end)
+    .get();
 
   let total = 0;
 
-  snapshot.forEach((item) => {
-    const ts = item.val().timestamp;
-    if (ts >= start && ts <= end) {
-      total += item.val().valor;
-    }
+  snapshot.forEach((doc) => {
+    total += doc.data().valor;
   });
 
   return total;
