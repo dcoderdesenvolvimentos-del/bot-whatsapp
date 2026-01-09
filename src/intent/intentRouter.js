@@ -35,6 +35,12 @@ function normalize(text = "") {
     .trim();
 }
 
+function formatDateDMY(isoDate) {
+  if (!isoDate) return "";
+  const [year, month, day] = isoDate.split("-");
+  return `${day}-${month}-${year}`;
+}
+
 /* =========================
    ROUTER PRINCIPAL
 =========================  */
@@ -529,7 +535,9 @@ export async function routeIntent(userDocId, text) {
 
         return (
           "📆 *Resumo de gastos*\n\n" +
-          `🗓️ De ${data_inicio} até ${data_fim}\n` +
+          `🗓️ De ${formatDateDMY(data_inicio)} até ${formatDateDMY(
+            data_fim
+          )}\n` +
           `💰 Total gasto: *R$ ${total.toFixed(2)}*`
         );
       }
