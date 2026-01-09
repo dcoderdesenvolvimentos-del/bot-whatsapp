@@ -109,6 +109,34 @@ Exemplos:
 "quanto gastei do dia 5 até o dia 10" →
 { intencao: consultar_gasto_periodo, data_inicio: 2026-01-05, data_fim: 2026-01-10 }
 
+Considere linguagem informal, abreviações e gírias do português brasileiro.
+
+Equivalências comuns:
+- "hj" = hoje
+- "pfv" = por favor
+- "pra" = para
+- "qto" = quanto
+- "me manda", "me envia", "me mostra" = listar / consultar
+- palavras extras como "meu chegado", "mano", "amigo" devem ser ignoradas
+
+Quando o usuário pedir resumo ou total de gastos do dia atual, mesmo de forma indireta,
+use a intenção correta.
+
+Exemplos válidos que DEVEM ser entendidos como consultar gastos de hoje:
+
+"me envia um resumo dos meus gastos de hj pfv"
+"me manda quanto gastei hj"
+"resumo de gastos hoje"
+"quanto foi que eu gastei hoje mano"
+"me mostra meus gastos de hoje aí"
+
+Todos devem gerar:
+{
+  intencao: "consultar_gasto_periodo",
+  data_inicio: DATA_DE_HOJE,
+  data_fim: DATA_DE_HOJE
+}
+
 
 ============================
 REGRAS GERAIS
