@@ -86,8 +86,8 @@ Quando o usuário perguntar sobre gastos em um período de tempo:
 
 Identifique:
 - intencao: "consultar_gasto_periodo"
-- data_inicio: data no formato YYYY-MM-DD
-- data_fim: data no formato YYYY-MM-DD
+- data_inicio: data no formato DD-MM-YYYY  
+- data_fim: data no formato DD-MM-YYYY  
 
 Regras:
 - "ontem" → data_inicio = data_fim = ontem
