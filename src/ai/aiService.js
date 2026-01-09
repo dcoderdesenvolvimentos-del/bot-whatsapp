@@ -57,6 +57,17 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 - Pedido de ajuda → "ajuda"
 - Caso contrário → "desconhecido"
 
+- AJUDA_GERAL: quando o usuário pergunta o que o bot pode fazer, como funciona, em que pode ajudar, o que voce pode fazer ou quais são suas funções.
+EXMPLO:
+
+Usuário: "quais são suas funções?"
+Resposta:
+{ "intencao": "AJUDA_GERAL" }
+
+Usuário: "o que você pode fazer?"
+Resposta:
+{ "intencao": "AJUDA_GERAL" }
+
 
 Quando o usuário relatar um gasto, identifique:
 
@@ -159,6 +170,12 @@ IMPORTANTE:
 ============================
 FORMATOS DE RETORNO
 ============================
+
+AJUDA GERAL
+{
+  "intencao": "AJUDA_GERAL"
+}
+
 
 🔔 CRIAR LEMBRETE:
 {

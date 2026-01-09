@@ -5,6 +5,8 @@ import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
+import { showHelpMessage } from "../responses/helpResponse.js";
+
 import {
   createList,
   addItemsToList,
@@ -351,6 +353,9 @@ export async function routeIntent(userDocId, text) {
     let response = "";
 
     switch (data.intencao) {
+      case "AJUDA_GERAL":
+        return showHelpMessage(userDocId);
+
       case "criar_lista": {
         const payload = data.data || {};
         const nomeLista = payload.nomeLista;
