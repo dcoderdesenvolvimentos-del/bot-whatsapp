@@ -2,10 +2,9 @@ export function createTimestampBR({ offset_dias, hora, minuto }) {
   const now = new Date();
 
   const date = new Date(
-    now.getDate(),
+    now.getFullYear(),
     now.getMonth(),
-    now.getFullYear() + offset_dias,
-
+    now.getDate() + offset_dias,
     hora,
     minuto,
     0,
@@ -17,7 +16,8 @@ export function createTimestampBR({ offset_dias, hora, minuto }) {
 
 export function createDateBR() {
   const now = new Date();
-  return now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const [year, month, day] = now.toISOString().split("T")[0].split("-");
+  return `${day}-${month}-${year}`;
 }
 
 export function createHourBR() {
