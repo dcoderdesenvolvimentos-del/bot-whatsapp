@@ -181,5 +181,11 @@ export async function createReminder(userDocId, data) {
     timeStyle: "short",
   });
 
-  return `✅ *Lembrete criado!*\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`;
+  return {
+    mensagem: `✅ *Lembrete criado!*\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`,
+    resumo: {
+      acao: data.acao,
+      when,
+    },
+  };
 }

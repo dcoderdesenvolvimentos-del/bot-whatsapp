@@ -378,22 +378,31 @@ export async function routeIntent(userDocId, text) {
     let response = "";
 
     // fallback de intenção (como já ajustamos)
-    if (!data.intencao && (data.acao || data.dia || data.hora)) {
-      data.intencao = "criar_lembrete";
-    }
+    if (Array.isArray(data.lembretes)) {
+      const resumos = [];
 
-    if (data.intencao === "criar_lembrete") {
-      // 🧠 CASO NOVO: vários lembretes
-      if (Array.isArray(data.lembretes)) {
-        for (const lembrete of data.lembretes) {
-          await createReminder(userDocId, lembrete);
+      for (const lembrete of data.lembretes) {
+        const result = await createReminder(userDocId, lembrete);
+
+        if (result?.resumo) {
+          resumos.push(result.resumo);
         }
-
-        return `✅ ${data.lembretes.length} lembretes criados com sucesso!`;
       }
 
-      // 🧠 CASO ANTIGO: um lembrete só
-      return await createReminder(userDocId, data);
+      // 🧠 Monta resposta final bonita
+      let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
+
+      resumos.forEach((r, index) => {
+        const dateObj = new Date(r.when);
+        const dataFormatada = dateObj.toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        });
+
+        resposta += `${index + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
+      });
+
+      return resposta;
     }
 
     switch (data.intencao) {
