@@ -520,8 +520,7 @@ export async function routeIntent(userDocId, text) {
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
 
-      case "criar_lembrete_unico":
-      case "criar_lembretes_multiplos":
+      case "criar_lembrete":
         response = await createReminder(userDocId, data);
         break;
 

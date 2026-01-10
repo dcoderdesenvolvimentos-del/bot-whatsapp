@@ -177,6 +177,9 @@ export async function createReminder(userDocId, data) {
     return `✅ Criei ${mensagens.length} lembretes com sucesso!`;
   }
 
+  // 🔹 CASO ÚNICO (fluxo antigo)
+  // aqui entra TODO o código que você já tinha
+
   // 👉 ÚNICO (SEU CÓDIGO ATUAL CONTINUA)
   // offset_ms, hora absoluta, etc...
 
