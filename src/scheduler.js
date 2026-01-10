@@ -45,14 +45,11 @@ export function startScheduler() {
 
         const actionText = capitalizeFirst(reminder.text);
 
-        const message = `━━━━━━━━━━━━━━
-⏰ *LEMBRETE*
+        const message = `⏰ *LEMBRETE*
 ━━━━━━━━━━━━━━
-
 📌 *${actionText}*
 🗓 ${formattedDate}
 🕔 ${formattedTime}
-
 💡 Estou passando pra te lembrar 😉`;
 
         await sendMessage(reminder.phone, message);
