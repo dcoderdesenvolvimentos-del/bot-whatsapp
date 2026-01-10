@@ -158,6 +158,29 @@ REGRAS GERAIS
 - Use SOMENTE os formatos 
 
 IMPORTANTE:
+Se o usuário mencionar MAIS DE UMA ação, tarefa ou compromisso
+no mesmo texto ou áudio, você DEVE:
+
+1. Separar cada lembrete individualmente
+2. Retornar todos dentro de um array chamado "lembretes"
+3. Nunca juntar ações diferentes em um único lembrete
+
+Exemplo:
+
+Entrada:
+"me lembra amanhã às 9h de pagar a internet e às 14h de buscar o menino"
+
+Saída:
+{
+  "intencao": "criar_lembrete",
+  "lembretes": [
+    { "acao": "pagar a internet", "offset_dias": 1, "hora": 9, "minuto": 0 },
+    { "acao": "buscar o menino", "offset_dias": 1, "hora": 14, "minuto": 0 }
+  ]
+}
+
+
+IMPORTANTE:
 - Se o usuário disser "daqui X minutos" ou "daqui X horas":
   retorne:
   {

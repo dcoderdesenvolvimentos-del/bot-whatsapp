@@ -377,6 +377,25 @@ export async function routeIntent(userDocId, text) {
 
     let response = "";
 
+    // fallback de intenção (como já ajustamos)
+    if (!data.intencao && (data.acao || data.dia || data.hora)) {
+      data.intencao = "criar_lembrete";
+    }
+
+    if (data.intencao === "criar_lembrete") {
+      // 🧠 CASO NOVO: vários lembretes
+      if (Array.isArray(data.lembretes)) {
+        for (const lembrete of data.lembretes) {
+          await createReminder(userDocId, lembrete);
+        }
+
+        return `✅ ${data.lembretes.length} lembretes criados com sucesso!`;
+      }
+
+      // 🧠 CASO ANTIGO: um lembrete só
+      return await createReminder(userDocId, data);
+    }
+
     switch (data.intencao) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
