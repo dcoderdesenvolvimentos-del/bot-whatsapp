@@ -313,6 +313,7 @@ export async function routeIntent(userDocId, text) {
 
   try {
     const data = await analyzeIntent(normalizedFixed);
+    let intent = data.intencao; // ✅ DECLARADO
 
     if (Array.isArray(data.lembretes)) {
       intent = "criar_lembretes_multiplos";
