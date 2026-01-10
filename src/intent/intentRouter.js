@@ -583,15 +583,15 @@ export async function routeIntent(userDocId, text) {
           console.log("REMINDER CRIADO:", ultimoResultado.resumo);
 
           console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
-
-          return (
-            `✅ Prontinho! Seu lembrete foi criado:\n\n` +
-            `📌 ${ultimoResultado.resumo.acao}\n` +
-            `🕒 ${d}`
-          );
         }
 
         console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
+
+        return (
+          `✅ Prontinho! Seu lembrete foi criado:\n\n` +
+          `📌 ${ultimoResultado.resumo.acao}\n` +
+          `🕒 ${d}`
+        );
       }
 
       case "listar_lembretes":
