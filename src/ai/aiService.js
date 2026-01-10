@@ -180,6 +180,33 @@ Saída correta:
   acao: "pagar a internet",
   dia: 12
 }
+  
+
+ATENÇÃO MÁXIMA:
+
+Sempre extraia HORA e MINUTO quando o usuário mencionar:
+- "às 11 horas"
+- "11h"
+- "11 da manhã"
+- "11 da noite"
+- "meio-dia"
+- "meia-noite"
+
+Exemplos obrigatórios:
+
+Entrada:
+"me lembra dia 12 às 11 horas da manhã"
+
+Saída correta:
+{
+  acao: "pagar a internet",
+  dia: 12,
+  hora: 11,
+  minuto: 0
+}
+
+NUNCA ignore horário explícito mencionado pelo usuário.
+
 
 
 ============================

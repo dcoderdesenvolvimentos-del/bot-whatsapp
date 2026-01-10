@@ -18,6 +18,19 @@ export async function createReminder(userDocId, data) {
     // Se for dia do mês, ignora qualquer offset
     data.offset_dias = null;
   }
+  // 🛡️ FALLBACK SIMPLES DE HORA (se IA falhar)
+  if (
+    typeof data.dia === "number" &&
+    typeof data.hora !== "number" &&
+    typeof data.texto_original === "string"
+  ) {
+    const match = data.texto_original.match(/às?\s*(\d{1,2})/);
+
+    if (match) {
+      data.hora = Number(match[1]);
+      data.minuto = 0;
+    }
+  }
 
   /**
    * =====================================================
