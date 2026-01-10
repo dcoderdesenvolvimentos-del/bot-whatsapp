@@ -165,6 +165,21 @@ export async function createReminder(userDocId, data) {
     when,
   });
 
+  // 👉 MÚLTIPLOS
+  if (Array.isArray(data.lembretes)) {
+    let mensagens = [];
+
+    for (const lembrete of data.lembretes) {
+      const resposta = await createReminder(userDocId, lembrete);
+      mensagens.push(resposta);
+    }
+
+    return `✅ Criei ${mensagens.length} lembretes com sucesso!`;
+  }
+
+  // 👉 ÚNICO (SEU CÓDIGO ATUAL CONTINUA)
+  // offset_ms, hora absoluta, etc...
+
   // 🔍 DEBUG FINAL (agora confiável)
   const dateObj = new Date(when);
   console.log("🔍 TIMESTAMP FINAL:", when);
