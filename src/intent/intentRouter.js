@@ -334,7 +334,7 @@ export async function routeIntent(userDocId, text) {
 
     let response = "";
 
-    switch (data.intent) {
+    switch (intent) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
 
