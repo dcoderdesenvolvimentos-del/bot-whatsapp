@@ -530,12 +530,15 @@ export async function routeIntent(userDocId, text) {
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
       case "criar_lembrete": {
+        let ultimoResultado = null;
         const resumos = [];
 
         // 🔁 VÁRIOS LEMBRETES
         if (Array.isArray(data.lembretes)) {
           for (const lembrete of data.lembretes) {
             const result = await createReminder(userDocId, lembrete);
+            // 👇 GUARDA O ÚLTIMO RESULTADO
+            ultimoResultado = result;
             if (result?.resumo) {
               resumos.push(result.resumo);
             }
@@ -544,28 +547,47 @@ export async function routeIntent(userDocId, text) {
         // 🔁 APENAS UM LEMBRETE
         else {
           const result = await createReminder(userDocId, data);
+          // 👇 GUARDA O ÚLTIMO RESULTADO
+          ultimoResultado = result;
           if (result?.resumo) {
             resumos.push(result.resumo);
           }
         }
 
-        // ❌ Segurança
-        if (resumos.length === 0) {
-          return "❌ Ocorreu um erro ao criar os lembretes.";
+        // 🧠 Se conseguiu montar resumos normalmente
+        if (resumos.length > 0) {
+          let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
+
+          resumos.forEach((r, i) => {
+            const dataFormatada = new Date(r.when).toLocaleString("pt-BR", {
+              dateStyle: "short",
+              timeStyle: "short",
+            });
+            resposta += `${i + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
+          });
+
+          return resposta;
         }
 
-        // 🧠 Resposta final ao usuário
-        let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
+        // 🛟 FALLBACK COM DETALHE (1 lembrete, offset_ms etc.)
+        if (ultimoResultado?.resumo) {
+          const d = new Date(ultimoResultado.resumo.when).toLocaleString(
+            "pt-BR",
+            {
+              dateStyle: "short",
+              timeStyle: "short",
+            }
+          );
 
-        resumos.forEach((r, i) => {
-          const dataFormatada = new Date(r.when).toLocaleString("pt-BR", {
-            dateStyle: "short",
-            timeStyle: "short",
-          });
-          resposta += `${i + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
-        });
+          return (
+            `✅ Prontinho! Seu lembrete foi criado:\n\n` +
+            `📌 ${ultimoResultado.resumo.acao}\n` +
+            `🕒 ${d}`
+          );
+        }
 
-        return resposta;
+        // ❌ Só aqui é erro real
+        return "❌ Ocorreu um erro ao criar o lembrete.";
       }
 
       case "listar_lembretes":
