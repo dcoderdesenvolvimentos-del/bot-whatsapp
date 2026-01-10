@@ -285,61 +285,6 @@ export async function routeIntent(userDocId, text) {
   // usa o texto corrigido
   const normalizedFixed = fixed;
 
-  console.log("🚫 BLOQUEADO PELO PLANO");
-
-  function canCreateReminder(userData, qty = 1) {
-    const FREE_LIMIT = 3;
-
-    const remindersUsed = userData.remindersUsed ?? 0;
-
-    const isPremium =
-      userData.plan === "premium" &&
-      userData.premiumUntil &&
-      userData.premiumUntil > Date.now();
-
-    if (isPremium) return { ok: true };
-
-    if (remindersUsed + qty > FREE_LIMIT) {
-      return {
-        ok: false,
-        response: {
-          type: "buttons",
-          text:
-            `🚫 *${userData.tempName}, Seu limite gratuito acabou*\n\n` +
-            `Você aproveitou todos os *${FREE_LIMIT} lembretes* do plano free 🙌\n\n` +
-            "⏰ Para continuar se organizando sem interrupções, ative o *Plano Premium*.\n" +
-            "Com ele, seus lembretes não têm limite.\n" +
-            "✨ Ativação rápida • Pagamento via Pix • Liberação automática\n\n" +
-            "💎 Selecione uma opção abaixo e continue agora mesmo",
-          buttons: [
-            { id: "premium", title: "💎 Premium" },
-            { id: "saiba_mais", title: "ℹ️ Saiba mais" },
-          ],
-        },
-      };
-    }
-
-    return { ok: true };
-  }
-
-  switch (aiResponse.intent) {
-    case "criar_lista":
-    case "adicionar_item_lista":
-    case "listar_itens_lista":
-    case "remover_item_lista":
-    case "limpar_lista":
-      return handleShoppingListIntent({
-        userId: userDocId,
-        data,
-      });
-
-    case "create_reminder":
-    case "list_reminders":
-      return handleReminderIntent({
-        userId: userDocId,
-        data: aiResponse,
-      });
-  }
   // =========================
   // AGRADECIMENTO
   // =========================
