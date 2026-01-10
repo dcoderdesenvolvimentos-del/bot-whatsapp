@@ -549,10 +549,6 @@ export async function routeIntent(userDocId, text) {
      6️⃣ Logica dos lembretes
   ========================= */
 
-      case "criar_lembrete":
-        response = await createReminder(userDocId, data);
-        break;
-
       case "listar_lembretes":
         response = await listReminders(userDocId);
         break;
