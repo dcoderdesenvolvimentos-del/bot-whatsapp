@@ -72,24 +72,38 @@ export async function createReminder(userDocId, data) {
 
   /**
    * =====================================================
-   * 🕒 CASO 3 — HORÁRIO ABSOLUTO (hoje / amanhã às HH:MM)
+   * 🕒 CASO 3 — HORÁRIO ABSOLUTO (flexível)
    * =====================================================
    */
 
-  // 🔒 Validação obrigatória (mantida)
-  if (
-    typeof data.offset_dias !== "number" ||
-    typeof data.hora !== "number" ||
-    typeof data.minuto !== "number"
-  ) {
-    return "❌ Não consegui entender o horário. Tente assim: 'me lembra de beber água amanhã às 17h'";
+  // 👉 NORMALIZAÇÃO SEGURA
+  const offset_dias =
+    typeof data.offset_dias === "number" ? data.offset_dias : 0;
+
+  let hora = typeof data.hora === "number" ? data.hora : null;
+  let minuto = typeof data.minuto === "number" ? data.minuto : null;
+
+  // ❌ Se não veio NADA de tempo, aí sim erro
+  if (hora === null && minuto === null && offset_dias === null) {
+    return "❌ Não consegui entender quando devo te lembrar.";
+  }
+
+  // 🧠 REGRA: só data → 00:01
+  if (hora === null && minuto === null) {
+    hora = 0;
+    minuto = 1;
+  }
+
+  // 🧠 REGRA: só hora → hoje
+  if (hora !== null && minuto === null) {
+    minuto = 0;
   }
 
   // 🕒 Cria timestamp usando SUA função existente
   const when = createTimestampBR({
-    offset_dias: data.offset_dias,
-    hora: data.hora,
-    minuto: data.minuto,
+    offset_dias,
+    hora,
+    minuto,
   });
 
   // ⛔ Bloqueia passado
