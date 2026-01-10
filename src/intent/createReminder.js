@@ -6,6 +6,29 @@ export async function createReminder(userDocId, data) {
   console.log("🔥 USER DOC ID:", userDocId);
   console.log("🔥 DATA COMPLETO:", data);
 
+  // =========================
+  // 🔁 CASO MÚLTIPLO
+  // =========================
+  if (Array.isArray(data.lembretes)) {
+    let count = 0;
+
+    for (const lembrete of data.lembretes) {
+      // 🔧 converte offset_ms → when
+      if (typeof lembrete.offset_ms === "number" && !lembrete.when) {
+        lembrete.when = Date.now() + lembrete.offset_ms;
+      }
+
+      await createReminder(userDocId, lembrete);
+      count++;
+    }
+
+    return `✅ Prontinho! Criei ${count} lembretes com sucesso.`;
+  }
+
+  // =========================
+  // 🔹 CASO ÚNICO (CONTINUA SEU CÓDIGO ATUAL)
+  // =========================
+
   const phone = userDocId;
 
   if (!phone) {
