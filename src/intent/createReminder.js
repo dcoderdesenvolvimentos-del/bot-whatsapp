@@ -13,6 +13,12 @@ export async function createReminder(userDocId, data) {
     return "❌ Erro ao identificar usuário.";
   }
 
+  // 🛡️ PROTEÇÃO CONTRA ERRO DA IA
+  if (typeof data.dia === "number") {
+    // Se for dia do mês, ignora qualquer offset
+    data.offset_dias = null;
+  }
+
   /**
    * =====================================================
    * ⏱️ CASO 1 — OFFSET RELATIVO (daqui X minutos / horas)
@@ -72,36 +78,65 @@ export async function createReminder(userDocId, data) {
 
   /**
    * =====================================================
-   * 🕒 CASO 3 — HORÁRIO ABSOLUTO (flexível)
+   * 🕒 CASO 3 — HORÁRIO ABSOLUTO (com dia do mês)
    * =====================================================
    */
 
-  // 👉 NORMALIZAÇÃO SEGURA
-  const offset_dias =
+  // 🔹 AGORA = referência
+  const now = new Date();
+
+  // 🔹 Normaliza offset (padrão: hoje)
+  let offsetDiasFinal =
     typeof data.offset_dias === "number" ? data.offset_dias : 0;
 
+  // 🔒 Normaliza hora/minuto (regra que você já aprovou)
   let hora = typeof data.hora === "number" ? data.hora : null;
+
   let minuto = typeof data.minuto === "number" ? data.minuto : null;
 
-  // ❌ Se não veio NADA de tempo, aí sim erro
-  if (hora === null && minuto === null && offset_dias === null) {
+  // ❌ Se não veio nenhuma informação de tempo
+  if (
+    hora === null &&
+    minuto === null &&
+    typeof data.dia !== "number" &&
+    typeof offsetDiasFinal !== "number"
+  ) {
     return "❌ Não consegui entender quando devo te lembrar.";
   }
 
-  // 🧠 REGRA: só data → 00:01
+  /**
+   * ============================================
+   * 🧠 AJUSTE DE DATA ABSOLUTA (DIA DO MÊS)
+   * ============================================
+   * Exemplo: "dia 12"
+   */
+  if (typeof data.dia === "number") {
+    // 🎯 Cria data alvo no mês atual
+    const alvo = new Date(now.getFullYear(), now.getMonth(), data.dia, 0, 1, 0);
+
+    // ⏩ Se o dia já passou, joga pro mês seguinte
+    if (alvo < now) {
+      alvo.setMonth(alvo.getMonth() + 1);
+    }
+
+    // 🔁 Converte para offset_dias
+    offsetDiasFinal = Math.ceil((alvo - now) / (1000 * 60 * 60 * 24));
+  }
+
+  // 🧠 Só data → 00:01
   if (hora === null && minuto === null) {
     hora = 0;
     minuto = 1;
   }
 
-  // 🧠 REGRA: só hora → hoje
+  // 🧠 Só hora → hoje
   if (hora !== null && minuto === null) {
     minuto = 0;
   }
 
-  // 🕒 Cria timestamp usando SUA função existente
+  // 🕒 AGORA SIM: cria timestamp
   const when = createTimestampBR({
-    offset_dias,
+    offset_dias: offsetDiasFinal,
     hora,
     minuto,
   });
@@ -111,7 +146,7 @@ export async function createReminder(userDocId, data) {
     return "❌ Esse horário já passou! Tente um horário futuro.";
   }
 
-  // 💾 Salva no Firestore
+  // 💾 Salva
   await addReminder(phone, {
     text: data.acao,
     when,

@@ -167,6 +167,21 @@ IMPORTANTE:
   }
 - NÃO retorne hora, minuto ou offset_dias nesses casos.
 
+IMPORTANTE:
+- Se o usuário mencionar "dia X" (número do mês), use o campo "dia".
+- NUNCA converta "dia X" em offset_dias.
+- offset_dias só pode ser usado quando o usuário falar:
+  "daqui X dias", "em X dias", "depois de X dias".
+
+  Exemplo:
+  Entrada: "me lembra dia 12 de pagar a internet"
+Saída correta:
+{
+  acao: "pagar a internet",
+  dia: 12
+}
+
+
 ============================
 FORMATOS DE RETORNO
 ============================
