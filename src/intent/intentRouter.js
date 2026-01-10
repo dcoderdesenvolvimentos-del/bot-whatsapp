@@ -576,6 +576,8 @@ export async function routeIntent(userDocId, text) {
             }
           );
 
+          console.log("REMINDER CRIADO:", reminder);
+
           return (
             `✅ Prontinho! Seu lembrete foi criado:\n\n` +
             `📌 ${ultimoResultado.resumo.acao}\n` +
