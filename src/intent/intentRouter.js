@@ -314,12 +314,10 @@ export async function routeIntent(userDocId, text) {
   try {
     const data = await analyzeIntent(normalizedFixed);
 
-    // 🛡️ fallback de intenção (ANTES do switch)
-    if (
-      !data.intencao &&
-      (data.acao || data.dia || data.hora || data.lembretes)
-    ) {
-      data.intencao = "criar_lembrete";
+    if (Array.isArray(data.lembretes)) {
+      intent = "criar_lembretes_multiplos";
+    } else {
+      intent = "criar_lembrete_unico";
     }
 
     let response = "";
@@ -526,35 +524,54 @@ export async function routeIntent(userDocId, text) {
       // =====================================================
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
-      case "criar_lembrete": {
-        console.log("🔥 ENTROU NO CASE CRIAR_LEMBRETE");
+      case "criar_lembrete_unico": {
+        console.log("🟢 CASE: criar_lembrete_unico");
 
-        let ultimoResultado = null;
-        const resumos = [];
+        try {
+          const result = await createReminder(userDocId, data);
 
-        // VÁRIOS LEMBRETES
-        if (Array.isArray(data.lembretes)) {
+          if (!result?.resumo?.when || !result?.resumo?.acao) {
+            return "❌ Não consegui confirmar o lembrete, mas ele foi salvo.";
+          }
+
+          const d = new Date(result.resumo.when).toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          });
+
+          return (
+            `✅ Lembrete criado com sucesso!\n\n` +
+            `📌 ${result.resumo.acao}\n` +
+            `🕒 ${d}`
+          );
+        } catch (error) {
+          console.error("❌ Erro no lembrete único:", error);
+          return "❌ Ocorreu um erro ao criar o lembrete.";
+        }
+      }
+
+      case "criar_lembretes_multiplos": {
+        console.log("🟢 CASE: criar_lembretes_multiplos");
+
+        try {
+          if (!Array.isArray(data.lembretes) || data.lembretes.length === 0) {
+            return "❌ Nenhum lembrete válido foi encontrado.";
+          }
+
+          const resumos = [];
+
           for (const lembrete of data.lembretes) {
             const result = await createReminder(userDocId, lembrete);
-            ultimoResultado = result;
 
-            if (result?.resumo) {
+            if (result?.resumo?.when && result?.resumo?.acao) {
               resumos.push(result.resumo);
             }
           }
-        }
-        // UM LEMBRETE
-        else {
-          const result = await createReminder(userDocId, data);
-          ultimoResultado = result;
 
-          if (result?.resumo) {
-            resumos.push(result.resumo);
+          if (resumos.length === 0) {
+            return "❌ Não consegui confirmar os lembretes.";
           }
-        }
 
-        // ✅ resposta normal
-        if (resumos.length > 0) {
           let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
 
           resumos.forEach((r, i) => {
@@ -562,36 +579,15 @@ export async function routeIntent(userDocId, text) {
               dateStyle: "short",
               timeStyle: "short",
             });
+
             resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
           });
 
-          console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
-
           return resposta;
+        } catch (error) {
+          console.error("❌ Erro nos lembretes múltiplos:", error);
+          return "❌ Ocorreu um erro ao criar os lembretes.";
         }
-
-        // 🛟 fallback (offset_ms, 1 lembrete)
-        if (ultimoResultado?.resumo) {
-          const d = new Date(ultimoResultado.resumo.when).toLocaleString(
-            "pt-BR",
-            {
-              dateStyle: "short",
-              timeStyle: "short",
-            }
-          );
-
-          console.log("REMINDER CRIADO:", ultimoResultado.resumo);
-
-          console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
-        }
-
-        console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
-
-        return (
-          `✅ Prontinho! Seu lembrete foi criado:\n\n` +
-          `📌 ${ultimoResultado.resumo.acao}\n` +
-          `🕒 ${d}`
-        );
       }
 
       case "listar_lembretes":
