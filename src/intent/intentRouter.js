@@ -527,6 +527,8 @@ export async function routeIntent(userDocId, text) {
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
       case "criar_lembrete": {
+        console.log("🔥 ENTROU NO CASE CRIAR_LEMBRETE");
+
         let ultimoResultado = null;
         const resumos = [];
 
@@ -563,6 +565,8 @@ export async function routeIntent(userDocId, text) {
             resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
           });
 
+          console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
+
           return resposta;
         }
 
@@ -578,12 +582,16 @@ export async function routeIntent(userDocId, text) {
 
           console.log("REMINDER CRIADO:", ultimoResultado.resumo);
 
+          console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
+
           return (
             `✅ Prontinho! Seu lembrete foi criado:\n\n` +
             `📌 ${ultimoResultado.resumo.acao}\n` +
             `🕒 ${d}`
           );
         }
+
+        console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
 
         return "❌ Ocorreu um erro ao criar o lembrete.";
       }
