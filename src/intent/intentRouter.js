@@ -592,8 +592,6 @@ export async function routeIntent(userDocId, text) {
         }
 
         console.log("🔥 RETORNANDO RESPOSTA DE SUCESSO");
-
-        return "❌ Ocorreu um erro ao criar o lembrete.";
       }
 
       case "listar_lembretes":
