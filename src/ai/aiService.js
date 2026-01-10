@@ -173,12 +173,27 @@ IMPORTANTE:
 - offset_dias só pode ser usado quando o usuário falar:
   "daqui X dias", "em X dias", "depois de X dias".
 
+  REGRA OBRIGATÓRIA:
+
+Sempre retorne o campo "intencao".
+
+Se houver uma ação que represente um lembrete,
+use obrigatoriamente:
+
+"intencao": "criar_lembrete"
+
+Mesmo que o usuário informe apenas a data,
+ou apenas a ação,
+ou apenas o horário,
+a intenção NUNCA pode ser omitida.
+
   Exemplo:
   Entrada: "me lembra dia 12 de pagar a internet"
 Saída correta:
 {
-  acao: "pagar a internet",
-  dia: 12
+  "intencao": "criar_lembrete",
+  "acao": "pagar a internet",
+  "dia": 12
 }
   
 
