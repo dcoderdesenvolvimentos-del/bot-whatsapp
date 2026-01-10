@@ -533,43 +533,43 @@ export async function routeIntent(userDocId, text) {
         let ultimoResultado = null;
         const resumos = [];
 
-        // 🔁 VÁRIOS LEMBRETES
+        // VÁRIOS LEMBRETES
         if (Array.isArray(data.lembretes)) {
           for (const lembrete of data.lembretes) {
             const result = await createReminder(userDocId, lembrete);
-            // 👇 GUARDA O ÚLTIMO RESULTADO
             ultimoResultado = result;
+
             if (result?.resumo) {
               resumos.push(result.resumo);
             }
           }
         }
-        // 🔁 APENAS UM LEMBRETE
+        // UM LEMBRETE
         else {
           const result = await createReminder(userDocId, data);
-          // 👇 GUARDA O ÚLTIMO RESULTADO
           ultimoResultado = result;
+
           if (result?.resumo) {
             resumos.push(result.resumo);
           }
         }
 
-        // 🧠 Se conseguiu montar resumos normalmente
+        // ✅ resposta normal
         if (resumos.length > 0) {
           let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
 
           resumos.forEach((r, i) => {
-            const dataFormatada = new Date(r.when).toLocaleString("pt-BR", {
+            const d = new Date(r.when).toLocaleString("pt-BR", {
               dateStyle: "short",
               timeStyle: "short",
             });
-            resposta += `${i + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
+            resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
           });
 
           return resposta;
         }
 
-        // 🛟 FALLBACK COM DETALHE (1 lembrete, offset_ms etc.)
+        // 🛟 fallback (offset_ms, 1 lembrete)
         if (ultimoResultado?.resumo) {
           const d = new Date(ultimoResultado.resumo.when).toLocaleString(
             "pt-BR",
@@ -586,7 +586,6 @@ export async function routeIntent(userDocId, text) {
           );
         }
 
-        // ❌ Só aqui é erro real
         return "❌ Ocorreu um erro ao criar o lembrete.";
       }
 
