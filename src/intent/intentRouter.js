@@ -315,23 +315,6 @@ export async function routeIntent(userDocId, text) {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
 
-    // 🔧 ADAPTADOR PARA LEMBRETE COM OFFSET
-    if (
-      data.intencao === "criar_lembrete" &&
-      typeof data.offset_ms === "number"
-    ) {
-      data.when = Date.now() + data.offset_ms;
-    }
-
-    // 🔧 normalização da intenção
-    if (intent === "criar_lembrete") {
-      if (Array.isArray(data.lembretes)) {
-        intent = "criar_lembretes_multiplos";
-      } else {
-        intent = "criar_lembrete_unico";
-      }
-    }
-
     let response = "";
 
     switch (intent) {
@@ -538,10 +521,8 @@ export async function routeIntent(userDocId, text) {
       // =====================================================
 
       case "criar_lembrete_unico":
-        return await criarLembreteUnico(data, userDocId);
-
       case "criar_lembretes_multiplos":
-        return await criarLembretesMultiplos(data, userDocId);
+        return await createReminder(userDocId, data);
 
       case "listar_lembretes":
         response = await listReminders(userDocId);
