@@ -182,7 +182,10 @@ export async function createReminder(userDocId, data) {
   });
 
   return {
-    mensagem: `✅ *Lembrete criado!*\n\n📌 ${data.acao}\n🕐 ${dataFormatada}`,
+    mensagem:
+      `✅ *Lembrete criado!*\n\n` +
+      `📌 ${data.acao}\n` +
+      `🕐 ${dateObj.toLocaleString("pt-BR")}`,
     resumo: {
       acao: data.acao,
       when,
