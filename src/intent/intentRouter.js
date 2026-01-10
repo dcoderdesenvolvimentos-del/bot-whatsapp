@@ -51,11 +51,6 @@ export async function routeIntent(userDocId, text) {
   // 1️⃣ IA interpreta
   const aiResponse = await INTENT_PROMPT(text);
 
-  // 🛡️ FALLBACK DE INTENÇÃO
-  if (!data.intencao && (data.acao || data.dia || data.hora)) {
-    data.intencao = "criar_lembrete";
-  }
-
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
@@ -376,6 +371,10 @@ export async function routeIntent(userDocId, text) {
 
   try {
     const data = await analyzeIntent(text);
+    if (!data.intencao && (data.acao || data.dia || data.hora)) {
+      data.intencao = "criar_lembrete";
+    }
+
     let response = "";
 
     switch (data.intencao) {
