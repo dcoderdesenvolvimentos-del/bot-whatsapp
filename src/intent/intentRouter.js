@@ -315,10 +315,21 @@ export async function routeIntent(userDocId, text) {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
 
-    if (Array.isArray(data.lembretes)) {
-      intent = "criar_lembretes_multiplos";
-    } else {
-      intent = "criar_lembrete_unico";
+    // 🔧 ADAPTADOR PARA LEMBRETE COM OFFSET
+    if (
+      data.intencao === "criar_lembrete" &&
+      typeof data.offset_ms === "number"
+    ) {
+      data.when = Date.now() + data.offset_ms;
+    }
+
+    // 🔧 normalização da intenção
+    if (intent === "criar_lembrete") {
+      if (Array.isArray(data.lembretes)) {
+        intent = "criar_lembretes_multiplos";
+      } else {
+        intent = "criar_lembrete_unico";
+      }
     }
 
     let response = "";
@@ -525,71 +536,12 @@ export async function routeIntent(userDocId, text) {
       // =====================================================
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
-      case "criar_lembrete_unico": {
-        console.log("🟢 CASE: criar_lembrete_unico");
 
-        try {
-          const result = await createReminder(userDocId, data);
+      case "criar_lembrete_unico":
+        return await criarLembreteUnico(data, userDocId);
 
-          if (!result?.resumo?.when || !result?.resumo?.acao) {
-            return "❌ Não consegui confirmar o lembrete, mas ele foi salvo.";
-          }
-
-          const d = new Date(result.resumo.when).toLocaleString("pt-BR", {
-            dateStyle: "short",
-            timeStyle: "short",
-          });
-
-          return (
-            `✅ Lembrete criado com sucesso!\n\n` +
-            `📌 ${result.resumo.acao}\n` +
-            `🕒 ${d}`
-          );
-        } catch (error) {
-          console.error("❌ Erro no lembrete único:", error);
-          return "❌ Ocorreu um erro ao criar o lembrete.";
-        }
-      }
-
-      case "criar_lembretes_multiplos": {
-        console.log("🟢 CASE: criar_lembretes_multiplos");
-
-        try {
-          if (!Array.isArray(data.lembretes) || data.lembretes.length === 0) {
-            return "❌ Nenhum lembrete válido foi encontrado.";
-          }
-
-          const resumos = [];
-
-          for (const lembrete of data.lembretes) {
-            const result = await createReminder(userDocId, lembrete);
-
-            if (result?.resumo?.when && result?.resumo?.acao) {
-              resumos.push(result.resumo);
-            }
-          }
-
-          if (resumos.length === 0) {
-            return "❌ Não consegui confirmar os lembretes.";
-          }
-
-          let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
-
-          resumos.forEach((r, i) => {
-            const d = new Date(r.when).toLocaleString("pt-BR", {
-              dateStyle: "short",
-              timeStyle: "short",
-            });
-
-            resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
-          });
-
-          return resposta;
-        } catch (error) {
-          console.error("❌ Erro nos lembretes múltiplos:", error);
-          return "❌ Ocorreu um erro ao criar os lembretes.";
-        }
-      }
+      case "criar_lembretes_multiplos":
+        return await criarLembretesMultiplos(data, userDocId);
 
       case "listar_lembretes":
         response = await listReminders(userDocId);
