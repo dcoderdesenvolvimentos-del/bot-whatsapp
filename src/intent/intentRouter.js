@@ -316,39 +316,16 @@ export async function routeIntent(userDocId, text) {
 
   try {
     const data = await analyzeIntent(text);
-    if (!data.intencao && (data.acao || data.dia || data.hora)) {
+
+    // 🛡️ fallback de intenção (ANTES do switch)
+    if (
+      !data.intencao &&
+      (data.acao || data.dia || data.hora || data.lembretes)
+    ) {
       data.intencao = "criar_lembrete";
     }
 
     let response = "";
-
-    // fallback de intenção (como já ajustamos)
-    if (Array.isArray(data.lembretes)) {
-      const resumos = [];
-
-      for (const lembrete of data.lembretes) {
-        const result = await createReminder(userDocId, lembrete);
-
-        if (result?.resumo) {
-          resumos.push(result.resumo);
-        }
-      }
-
-      // 🧠 Monta resposta final bonita
-      let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
-
-      resumos.forEach((r, index) => {
-        const dateObj = new Date(r.when);
-        const dataFormatada = dateObj.toLocaleString("pt-BR", {
-          dateStyle: "short",
-          timeStyle: "short",
-        });
-
-        resposta += `${index + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
-      });
-
-      return resposta;
-    }
 
     switch (data.intencao) {
       case "AJUDA_GERAL":
@@ -548,6 +525,48 @@ export async function routeIntent(userDocId, text) {
       /* =========================
      6️⃣ Logica dos lembretes
   ========================= */
+
+      // =====================================================
+      // ⏰ CRIAR LEMBRETE(S)
+      // =====================================================
+      case "criar_lembrete": {
+        const resumos = [];
+
+        // 🔁 VÁRIOS LEMBRETES
+        if (Array.isArray(data.lembretes)) {
+          for (const lembrete of data.lembretes) {
+            const result = await createReminder(userDocId, lembrete);
+            if (result?.resumo) {
+              resumos.push(result.resumo);
+            }
+          }
+        }
+        // 🔁 APENAS UM LEMBRETE
+        else {
+          const result = await createReminder(userDocId, data);
+          if (result?.resumo) {
+            resumos.push(result.resumo);
+          }
+        }
+
+        // ❌ Segurança
+        if (resumos.length === 0) {
+          return "❌ Ocorreu um erro ao criar os lembretes.";
+        }
+
+        // 🧠 Resposta final ao usuário
+        let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
+
+        resumos.forEach((r, i) => {
+          const dataFormatada = new Date(r.when).toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          });
+          resposta += `${i + 1}️⃣ ${dataFormatada} — ${r.acao}\n`;
+        });
+
+        return resposta;
+      }
 
       case "listar_lembretes":
         response = await listReminders(userDocId);
