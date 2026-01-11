@@ -58,45 +58,6 @@ function buildWhen(lembrete) {
   throw new Error("Não foi possível calcular o horário do lembrete");
 }
 
-// CASO 2 — offset em dias + hora/minuto (referência BR)
-if (
-  typeof lembrete.offset_dias === "number" &&
-  typeof lembrete.hora === "number" &&
-  typeof lembrete.minuto === "number"
-) {
-  // hora 24 → 00 do dia seguinte
-  let extraDia = 0;
-  let hora = lembrete.hora;
-
-  if (hora === 24) {
-    hora = 0;
-  }
-
-  // data base EM BR (componentes)
-  const agoraBR = new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "America/Sao_Paulo",
-    })
-  );
-
-  const ano = agoraBR.getFullYear();
-  const mes = agoraBR.getMonth();
-  const dia = agoraBR.getDate() + lembrete.offset_dias + extraDia;
-
-  // 🔥 cria UTC DIRETO (sem fuso duplo)
-  return Date.UTC(
-    ano,
-    mes,
-    dia,
-    hora + 3, // converte BR → UTC
-    lembrete.minuto,
-    0,
-    0
-  );
-}
-
-throw new Error("Não foi possível calcular o horário do lembrete");
-
 export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
   console.log("🔥 USER DOC ID:", userDocId);
