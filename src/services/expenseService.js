@@ -87,7 +87,11 @@ export async function criarGastoParcelado(userId, data) {
 
   // salvar todos no banco
   for (const gasto of gastos) {
-    await salvarGasto(gasto);
+    await createExpense(userId, {
+      valor: gasto.valor,
+      local: gasto.descricao, // ou "cartão de crédito"
+      categoria: gasto.categoria,
+    });
   }
 
   return gastos;
