@@ -10,24 +10,39 @@ export async function createReminder(userDocId, data) {
   // 🔁 CASO MÚLTIPLO
   // =========================
   if (Array.isArray(data.lembretes)) {
-    let count = 0;
+    const resumos = [];
 
     for (const lembrete of data.lembretes) {
-      // 🔧 converte offset_ms → when
+      // garante when
       if (typeof lembrete.offset_ms === "number" && !lembrete.when) {
         lembrete.when = Date.now() + lembrete.offset_ms;
       }
 
-      await createReminder(userDocId, lembrete);
-      count++;
+      const resultado = await createReminder(userDocId, lembrete);
+
+      // se o createReminder único retorna resumo, aproveitamos
+      if (resultado?.resumo) {
+        resumos.push(resultado.resumo);
+      }
     }
 
-    return `✅ Prontinho! Criei ${count} lembretes com sucesso.`;
-  }
+    if (resumos.length === 0) {
+      return "❌ Não consegui confirmar os lembretes criados.";
+    }
 
-  // =========================
-  // 🔹 CASO ÚNICO (CONTINUA SEU CÓDIGO ATUAL)
-  // =========================
+    let resposta = `✅ Prontinho! Criei ${resumos.length} lembretes:\n\n`;
+
+    resumos.forEach((r, i) => {
+      const d = new Date(r.when).toLocaleString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
+    });
+
+    return resposta;
+  }
 
   const phone = userDocId;
 
