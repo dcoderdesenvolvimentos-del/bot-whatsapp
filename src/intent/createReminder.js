@@ -11,27 +11,29 @@ function nowInSaoPaulo() {
 }
 
 function buildWhen(lembrete) {
-  // CASO 1 — offset em minutos (já é UTC)
+  // CASO 1 — offset em minutos
   if (typeof lembrete.offset_ms === "number") {
     return Date.now() + lembrete.offset_ms;
   }
 
-  // CASO 2 — offset em dias + hora/minuto (referência BR)
+  // CASO 2 — offset em dias + hora/minuto
   if (
     typeof lembrete.offset_dias === "number" &&
     typeof lembrete.hora === "number" &&
     typeof lembrete.minuto === "number"
   ) {
-    // hora 24 → 00 do dia seguinte
-    let extraDia = 0;
     let hora = lembrete.hora;
 
+    // normalização: 24 nunca existe
     if (hora === 24) {
       hora = 0;
-      extraDia = 1;
     }
 
-    // data base EM BR (componentes)
+    // 12h da tarde ≠ meia-noite
+    if (hora === 0) {
+      hora = 12;
+    }
+
     const agoraBR = new Date(
       new Date().toLocaleString("en-US", {
         timeZone: "America/Sao_Paulo",
@@ -40,22 +42,60 @@ function buildWhen(lembrete) {
 
     const ano = agoraBR.getFullYear();
     const mes = agoraBR.getMonth();
-    const dia = agoraBR.getDate() + lembrete.offset_dias + extraDia;
+    const dia = agoraBR.getDate() + lembrete.offset_dias;
 
-    // 🔥 cria UTC DIRETO (sem fuso duplo)
     return Date.UTC(
       ano,
       mes,
       dia,
-      hora + 3, // converte BR → UTC
+      hora + 3, // BR → UTC
       lembrete.minuto,
       0,
       0
     );
   }
 
-  throw new Error("Não foi possível calcular o horário do lembrete");
+  throw new Error("Não foi possível calcular o horário");
 }
+
+// CASO 2 — offset em dias + hora/minuto (referência BR)
+if (
+  typeof lembrete.offset_dias === "number" &&
+  typeof lembrete.hora === "number" &&
+  typeof lembrete.minuto === "number"
+) {
+  // hora 24 → 00 do dia seguinte
+  let extraDia = 0;
+  let hora = lembrete.hora;
+
+  if (hora === 24) {
+    hora = 0;
+  }
+
+  // data base EM BR (componentes)
+  const agoraBR = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo",
+    })
+  );
+
+  const ano = agoraBR.getFullYear();
+  const mes = agoraBR.getMonth();
+  const dia = agoraBR.getDate() + lembrete.offset_dias + extraDia;
+
+  // 🔥 cria UTC DIRETO (sem fuso duplo)
+  return Date.UTC(
+    ano,
+    mes,
+    dia,
+    hora + 3, // converte BR → UTC
+    lembrete.minuto,
+    0,
+    0
+  );
+}
+
+throw new Error("Não foi possível calcular o horário do lembrete");
 
 export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
