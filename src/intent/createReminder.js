@@ -10,6 +10,53 @@ function nowInSaoPaulo() {
   );
 }
 
+function buildWhen(lembrete) {
+  // CASO 1 — offset em minutos (já é UTC)
+  if (typeof lembrete.offset_ms === "number") {
+    return Date.now() + lembrete.offset_ms;
+  }
+
+  // CASO 2 — offset em dias + hora/minuto (referência BR)
+  if (
+    typeof lembrete.offset_dias === "number" &&
+    typeof lembrete.hora === "number" &&
+    typeof lembrete.minuto === "number"
+  ) {
+    // hora 24 → 00 do dia seguinte
+    let extraDia = 0;
+    let hora = lembrete.hora;
+
+    if (hora === 24) {
+      hora = 0;
+      extraDia = 1;
+    }
+
+    // data base EM BR (componentes)
+    const agoraBR = new Date(
+      new Date().toLocaleString("en-US", {
+        timeZone: "America/Sao_Paulo",
+      })
+    );
+
+    const ano = agoraBR.getFullYear();
+    const mes = agoraBR.getMonth();
+    const dia = agoraBR.getDate() + lembrete.offset_dias + extraDia;
+
+    // 🔥 cria UTC DIRETO (sem fuso duplo)
+    return Date.UTC(
+      ano,
+      mes,
+      dia,
+      hora + 3, // converte BR → UTC
+      lembrete.minuto,
+      0,
+      0
+    );
+  }
+
+  throw new Error("Não foi possível calcular o horário do lembrete");
+}
+
 export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
   console.log("🔥 USER DOC ID:", userDocId);
@@ -18,35 +65,12 @@ export async function createReminder(userDocId, data) {
   // =========================
   // 🔁 CASO MÚLTIPLO
   // =========================
+
   if (Array.isArray(data.lembretes)) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
-      // hora 24 → 00 do dia seguinte
-      if (lembrete.hora === 24) {
-        lembrete.hora = 0;
-        lembrete.offset_dias = (lembrete.offset_dias || 0) + 1;
-      }
-
-      // offset em minutos
-      if (typeof lembrete.offset_ms === "number") {
-        lembrete.when = Date.now() + lembrete.offset_ms;
-      }
-
-      // offset em dias + hora (BR)
-      if (
-        typeof lembrete.offset_dias === "number" &&
-        typeof lembrete.hora === "number" &&
-        typeof lembrete.minuto === "number"
-      ) {
-        const base = nowInSaoPaulo();
-
-        base.setHours(0, 0, 0, 0);
-        base.setDate(base.getDate() + lembrete.offset_dias);
-        base.setHours(lembrete.hora, lembrete.minuto, 0, 0);
-
-        lembrete.when = base.getTime();
-      }
+      lembrete.when = buildWhen(lembrete);
 
       await createReminder(userDocId, lembrete);
 
@@ -60,6 +84,7 @@ export async function createReminder(userDocId, data) {
 
     resumos.forEach((r, i) => {
       const d = new Date(r.when).toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
         day: "2-digit",
         month: "2-digit",
         hour: "2-digit",
