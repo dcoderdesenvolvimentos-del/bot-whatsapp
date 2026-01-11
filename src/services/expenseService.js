@@ -2,6 +2,23 @@ import { db } from "../firebase.js";
 import { createDateBR, createHourBR } from "../utils/dateUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
 
+// 🔧 Converte "DD-MM-YYYY" em Firestore Timestamp
+function parseDateToTimestamp(dateStr, isEnd = false) {
+  const [day, month, year] = dateStr.split("-").map(Number);
+
+  const date = new Date(
+    year,
+    month - 1,
+    day,
+    isEnd ? 23 : 0,
+    isEnd ? 59 : 0,
+    isEnd ? 59 : 0,
+    isEnd ? 999 : 0
+  );
+
+  return Timestamp.fromDate(date);
+}
+
 export async function createExpense(userId, data) {
   await db.collection("gastos").doc(userId).collection("itens").add({
     valor: data.valor,
