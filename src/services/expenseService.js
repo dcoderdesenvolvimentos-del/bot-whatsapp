@@ -41,8 +41,8 @@ export async function getExpensesByCategory(userId, categoria) {
 }
 
 export async function getExpensesByPeriod(userId, startDate, endDate) {
-  const start = new Date(startDate + "T00:00:00");
-  const end = new Date(endDate + "T23:59:59");
+  const start = parseDateToTimestamp(startDate);
+  const end = parseDateToTimestamp(endDate, true);
 
   const snapshot = await db
     .collection("gastos")
