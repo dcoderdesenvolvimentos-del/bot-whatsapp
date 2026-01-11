@@ -179,6 +179,17 @@ Saída:
   ]
 }
 
+Se o usuário pedir para VER ou LISTAR lembretes,
+identifique também filtros de tempo:
+
+- "hoje" → periodo = "hoje"
+- "amanhã" → periodo = "amanha"
+- "depois de amanhã" → periodo = "depois_amanha"
+- "dia X" → dia = X
+- "segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"
+  → dia_semana = "<dia>"
+
+
 
 IMPORTANTE:
 - Se o usuário disser "daqui X minutos" ou "daqui X horas":

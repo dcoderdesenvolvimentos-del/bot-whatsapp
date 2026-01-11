@@ -317,6 +317,19 @@ export async function routeIntent(userDocId, text) {
 
     let response = "";
 
+    function getDayRangeBR(date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      return {
+        start: start.getTime(),
+        end: end.getTime(),
+      };
+    }
+
     switch (intent) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
@@ -524,9 +537,81 @@ export async function routeIntent(userDocId, text) {
         response = await createReminder(userDocId, data);
         break;
 
-      case "listar_lembretes":
-        response = await listReminders(userDocId);
-        break;
+      case "listar_lembretes": {
+        let start = null;
+        let end = null;
+
+        const now = new Date();
+
+        // 📅 HOJE
+        if (data.periodo === "hoje") {
+          ({ start, end } = getDayRangeBR(now));
+        }
+
+        // 📅 AMANHÃ
+        if (data.periodo === "amanha") {
+          const d = new Date(now);
+          d.setDate(d.getDate() + 1);
+          ({ start, end } = getDayRangeBR(d));
+        }
+
+        // 📅 DIA ESPECÍFICO
+        if (typeof data.dia === "number") {
+          const d = new Date(now.getFullYear(), now.getMonth(), data.dia);
+          ({ start, end } = getDayRangeBR(d));
+        }
+
+        // 📅 DIA DA SEMANA
+        if (data.dia_semana) {
+          const map = {
+            domingo: 0,
+            segunda: 1,
+            terça: 2,
+            quarta: 3,
+            quinta: 4,
+            sexta: 5,
+            sábado: 6,
+          };
+
+          const alvo = map[data.dia_semana.toLowerCase()];
+          const d = new Date(now);
+          const diff = (alvo + 7 - d.getDay()) % 7;
+          d.setDate(d.getDate() + diff);
+
+          ({ start, end } = getDayRangeBR(d));
+        }
+
+        const query = db
+          .collection("reminders")
+          .where("phone", "==", userDocId)
+          .where("when", ">", Date.now());
+
+        if (start && end) {
+          query.where("when", ">=", start).where("when", "<=", end);
+        }
+
+        const snapshot = await query.orderBy("when", "asc").get();
+
+        if (snapshot.empty) {
+          return "📭 Você não tem lembretes para esse período.";
+        }
+
+        let resposta = "🔔 Seus lembretes:\n\n";
+
+        snapshot.docs.forEach((doc, i) => {
+          const r = doc.data();
+          const d = new Date(r.when).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          resposta += `${i + 1}️⃣ ${d} — ${r.text}\n`;
+        });
+
+        return resposta;
+      }
 
       case "excluir_lembrete":
         response = await deleteReminder(userDocId, data);
