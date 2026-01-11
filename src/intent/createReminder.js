@@ -5,6 +5,7 @@ export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
   console.log("🔥 USER DOC ID:", userDocId);
   console.log("🔥 DATA COMPLETO:", data);
+
   // =========================
   // 🔁 CASO MÚLTIPLO
   // =========================
@@ -12,14 +13,31 @@ export async function createReminder(userDocId, data) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
-      // garante when
-      if (typeof lembrete.offset_ms === "number" && !lembrete.when) {
+      // 🔧 hora 24 → 00 do dia seguinte
+      if (lembrete.hora === 24) {
+        lembrete.hora = 0;
+        lembrete.offset_dias = (lembrete.offset_dias || 0) + 1;
+      }
+
+      // 🔧 offset_ms → when
+      if (typeof lembrete.offset_ms === "number") {
         lembrete.when = Date.now() + lembrete.offset_ms;
+      }
+
+      // 🔧 offset_dias + hora
+      if (
+        typeof lembrete.offset_dias === "number" &&
+        typeof lembrete.hora === "number" &&
+        typeof lembrete.minuto === "number"
+      ) {
+        const base = new Date();
+        base.setDate(base.getDate() + lembrete.offset_dias);
+        base.setHours(lembrete.hora, lembrete.minuto, 0, 0);
+        lembrete.when = base.getTime();
       }
 
       await createReminder(userDocId, lembrete);
 
-      // 🔥 MONTA O RESUMO AQUI (SEM DEPENDER DO RETORNO)
       resumos.push({
         acao: lembrete.acao,
         when: lembrete.when,
@@ -34,7 +52,6 @@ export async function createReminder(userDocId, data) {
         hour: "2-digit",
         minute: "2-digit",
       });
-
       resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
     });
 
