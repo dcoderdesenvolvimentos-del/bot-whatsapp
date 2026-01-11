@@ -20,8 +20,7 @@ export async function getUserReminders(phone) {
   const snapshot = await db
     .collection("reminders")
     .where("phone", "==", phone)
-    .where("sent", "==", false)
-    .where("when", ">", now) // 🔥 ESSENCIAL
+    .where("when", ">", now) // 🔥 ÚNICO CRITÉRIO DE PENDENTE
     .orderBy("when", "asc")
     .get();
 
