@@ -94,5 +94,13 @@ export async function criarGastoParcelado(userId, data) {
     });
   }
 
-  return gastos;
+  return (
+    `💳 *Compra parcelada registrada com sucesso!*\n\n` +
+    `📦 Item: ${descricao}\n` +
+    `💰 Valor total: R$ ${valor_total.toFixed(2)}\n` +
+    `🔢 Parcelas: ${parcelas}x de R$ ${(valor_total / parcelas).toFixed(
+      2
+    )}\n\n` +
+    `📅 As parcelas foram distribuídas nos próximos ${parcelas} meses.`
+  );
 }
