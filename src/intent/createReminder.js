@@ -24,12 +24,12 @@ function buildWhen(lembrete) {
   ) {
     let hora = lembrete.hora;
 
-    // normalização: 24 nunca existe
+    // normalização
     if (hora === 24) {
       hora = 0;
     }
 
-    // 12h da tarde ≠ meia-noite
+    // 12h da tarde nunca é meia-noite
     if (hora === 0) {
       hora = 12;
     }
@@ -55,7 +55,7 @@ function buildWhen(lembrete) {
     );
   }
 
-  throw new Error("Não foi possível calcular o horário");
+  throw new Error("Não foi possível calcular o horário do lembrete");
 }
 
 // CASO 2 — offset em dias + hora/minuto (referência BR)
