@@ -22,8 +22,7 @@ export async function getUserReminders(phone) {
   const snapshot = await db
     .collection("reminders")
     .where("phone", "==", phone)
-    .where("sent", "==", false)
-    .orderBy("when", "asc") // ← ADICIONA ORDEM
+    .orderBy("when", "asc")
     .get();
 
   return snapshot;
