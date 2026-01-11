@@ -15,13 +15,13 @@ export async function addReminder(phone, data) {
 }
 
 export async function getUserReminders(phone) {
-  if (!phone) {
-    throw new Error("Phone não informado em getUserReminders");
-  }
+  const now = Date.now();
 
   const snapshot = await db
     .collection("reminders")
     .where("phone", "==", phone)
+    .where("sent", "==", false)
+    .where("when", ">", now) // 🔥 ESSENCIAL
     .orderBy("when", "asc")
     .get();
 
