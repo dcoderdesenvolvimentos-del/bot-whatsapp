@@ -526,6 +526,9 @@ export async function routeIntent(userDocId, text) {
         );
       }
 
+      case "criar_gasto_parcelado":
+        return await criarGastoParcelado(userDocId, data);
+
       /* =========================
      6️⃣ Logica dos lembretes
   ========================= */

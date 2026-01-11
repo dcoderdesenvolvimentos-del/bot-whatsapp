@@ -148,6 +148,18 @@ Todos devem gerar:
   data_fim: DATA_DE_HOJE
 }
 
+Se o usuário mencionar compra parcelada, cartão de crédito, parcelas ou "X vezes",
+retorne:
+
+{
+  "intencao": "criar_gasto_parcelado",
+  "valor_total": número,
+  "parcelas": número,
+  "descricao": descrição curta do gasto,
+  "categoria": categoria adequada
+}
+
+
 
 ============================
 REGRAS GERAIS

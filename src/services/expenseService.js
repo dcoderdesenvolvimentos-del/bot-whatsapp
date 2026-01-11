@@ -60,3 +60,35 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
 
   return total;
 }
+
+export async function criarGastoParcelado(userId, data) {
+  const { valor_total, parcelas, descricao, categoria } = data;
+
+  const valorParcela = Number((valor_total / parcelas).toFixed(2));
+
+  const gastos = [];
+
+  const agora = new Date();
+
+  for (let i = 0; i < parcelas; i++) {
+    const dataParcela = new Date(agora);
+    dataParcela.setMonth(dataParcela.getMonth() + i);
+
+    gastos.push({
+      userId,
+      valor: valorParcela,
+      descricao: `${descricao} (${i + 1}/${parcelas})`,
+      categoria,
+      data: dataParcela.getTime(),
+      recorrente: true,
+      grupo_parcelado: `${descricao}-${agora.getTime()}`,
+    });
+  }
+
+  // salvar todos no banco
+  for (const gasto of gastos) {
+    await salvarGasto(gasto);
+  }
+
+  return gastos;
+}
