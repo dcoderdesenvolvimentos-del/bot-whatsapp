@@ -18,17 +18,24 @@ export async function createReminder(userDocId, data) {
         lembrete.when = Date.now() + lembrete.offset_ms;
       }
 
-      // offset em dias + hora
+      // offset em dias + hora (FUSO BR CORRETO)
       if (
         typeof lembrete.offset_dias === "number" &&
         typeof lembrete.hora === "number" &&
         typeof lembrete.minuto === "number"
       ) {
-        const base = new Date();
+        const base = nowInSaoPaulo();
+
+        // zera horário local BR
         base.setHours(0, 0, 0, 0);
+
+        // soma dias
         base.setDate(base.getDate() + lembrete.offset_dias);
+
+        // aplica hora/minuto desejados (BR)
         base.setHours(lembrete.hora, lembrete.minuto, 0, 0);
 
+        // converte para timestamp UTC
         lembrete.when = base.getTime();
       }
 
