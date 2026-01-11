@@ -1,6 +1,15 @@
 import { addReminder } from "../services/reminderService.js";
 import { createTimestampBR } from "../utils/dateUtils.js";
 
+// 🔧 helper para data/hora no fuso do Brasil
+function nowInSaoPaulo() {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo",
+    })
+  );
+}
+
 export async function createReminder(userDocId, data) {
   console.log("🔥 CHEGOU NO CREATE REMINDER");
   console.log("🔥 USER DOC ID:", userDocId);
@@ -13,12 +22,18 @@ export async function createReminder(userDocId, data) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
+      // hora 24 → 00 do dia seguinte
+      if (lembrete.hora === 24) {
+        lembrete.hora = 0;
+        lembrete.offset_dias = (lembrete.offset_dias || 0) + 1;
+      }
+
       // offset em minutos
       if (typeof lembrete.offset_ms === "number") {
         lembrete.when = Date.now() + lembrete.offset_ms;
       }
 
-      // offset em dias + hora (FUSO BR CORRETO)
+      // offset em dias + hora (BR)
       if (
         typeof lembrete.offset_dias === "number" &&
         typeof lembrete.hora === "number" &&
@@ -26,16 +41,10 @@ export async function createReminder(userDocId, data) {
       ) {
         const base = nowInSaoPaulo();
 
-        // zera horário local BR
         base.setHours(0, 0, 0, 0);
-
-        // soma dias
         base.setDate(base.getDate() + lembrete.offset_dias);
-
-        // aplica hora/minuto desejados (BR)
         base.setHours(lembrete.hora, lembrete.minuto, 0, 0);
 
-        // converte para timestamp UTC
         lembrete.when = base.getTime();
       }
 
