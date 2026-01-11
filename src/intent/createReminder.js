@@ -13,26 +13,22 @@ export async function createReminder(userDocId, data) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
-      // 🔧 hora 24 → 00 do dia seguinte
-      if (lembrete.hora === 24) {
-        lembrete.hora = 0;
-        lembrete.offset_dias = (lembrete.offset_dias || 0) + 1;
-      }
-
-      // 🔧 offset_ms → when
+      // offset em minutos
       if (typeof lembrete.offset_ms === "number") {
         lembrete.when = Date.now() + lembrete.offset_ms;
       }
 
-      // 🔧 offset_dias + hora
+      // offset em dias + hora
       if (
         typeof lembrete.offset_dias === "number" &&
         typeof lembrete.hora === "number" &&
         typeof lembrete.minuto === "number"
       ) {
         const base = new Date();
+        base.setHours(0, 0, 0, 0);
         base.setDate(base.getDate() + lembrete.offset_dias);
         base.setHours(lembrete.hora, lembrete.minuto, 0, 0);
+
         lembrete.when = base.getTime();
       }
 
@@ -49,9 +45,12 @@ export async function createReminder(userDocId, data) {
     resumos.forEach((r, i) => {
       const d = new Date(r.when).toLocaleString("pt-BR", {
         timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
       });
+
       resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
     });
 
