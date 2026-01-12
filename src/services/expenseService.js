@@ -2,9 +2,19 @@ import { db } from "../firebase.js";
 import { createDateBR } from "../utils/dateUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
 
-// 🔧 Converte "DD-MM-YYYY" em Firestore Timestamp
 function parseDateToTimestamp(dateStr, isEnd = false) {
-  const [day, month, year] = dateStr.split("-").map(Number);
+  let day, month, year;
+
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    [year, month, day] = dateStr.split("-").map(Number);
+  }
+  // DD-MM-YYYY
+  else if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+    [day, month, year] = dateStr.split("-").map(Number);
+  } else {
+    throw new Error("Formato de data inválido: " + dateStr);
+  }
 
   const date = new Date(
     year,
