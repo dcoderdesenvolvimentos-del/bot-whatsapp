@@ -20,12 +20,16 @@ function parseDateToTimestamp(dateStr, isEnd = false) {
 }
 
 export async function createExpense(userId, data) {
-  await db.collection("gastos").doc(userId).collection("itens").add({
-    valor: data.valor,
-    local: data.local,
-    categoria: data.categoria,
-    timestamp: Timestamp.now(),
-  });
+  await db
+    .collection("gastos")
+    .doc(userId)
+    .collection("itens")
+    .add({
+      valor: data.valor,
+      local: data.local,
+      categoria: data.categoria,
+      timestamp: data.timestamp ?? Timestamp.now(),
+    });
 }
 
 export async function getTodayExpenses(userId) {
@@ -106,8 +110,9 @@ export async function criarGastoParcelado(userId, data) {
   for (const gasto of gastos) {
     await createExpense(userId, {
       valor: gasto.valor,
-      local: gasto.descricao, // ou "cartão de crédito"
+      local: gasto.descricao,
       categoria: gasto.categoria,
+      timestamp: Timestamp.fromDate(new Date(gasto.data)),
     });
   }
 
