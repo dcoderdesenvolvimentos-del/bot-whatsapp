@@ -52,6 +52,22 @@ function formatDateDMY(isoDate) {
 export async function routeIntent(userDocId, text) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  const MAPA_MESES = {
+    janeiro: 1,
+    fevereiro: 2,
+    marco: 3,
+    março: 3,
+    abril: 4,
+    maio: 5,
+    junho: 6,
+    julho: 7,
+    agosto: 8,
+    setembro: 9,
+    outubro: 10,
+    novembro: 11,
+    dezembro: 12,
+  };
+
   if (!userDocId) {
     console.error("❌ userDocId inválido");
     return "Erro ao identificar usuário.";
@@ -506,12 +522,22 @@ export async function routeIntent(userDocId, text) {
 
       /* Gastos por Período (ex: fevereiro, setembro, dia X até Y) */
       case "consultar_gasto_periodo": {
-        let { data_inicio, data_fim, mes } = data;
+        let { data_inicio, data_fim, mes, mes_nome } = data;
 
-        // 🔹 CASO: usuário falou só o mês (ex: setembro)
+        // 🔹 Se vier nome do mês (ex: "setembro")
+        if (!mes && mes_nome) {
+          mes = MAPA_MESES[mes_nome.toLowerCase()];
+        }
+
+        // 🔹 Se vier "mes" como string ("setembro")
+        if (typeof mes === "string") {
+          mes = MAPA_MESES[mes.toLowerCase()];
+        }
+
+        // 🔹 Se só tiver mês (sem datas)
         if (!data_inicio && !data_fim && mes) {
           const hoje = new Date();
-          const mesAtual = hoje.getMonth() + 1; // 1 a 12
+          const mesAtual = hoje.getMonth() + 1;
           let ano = hoje.getFullYear();
 
           // se o mês já passou, assume o próximo ano
@@ -525,9 +551,9 @@ export async function routeIntent(userDocId, text) {
           data_fim = `${ano}-${mesFormatado}-31`;
         }
 
-        // 🔹 PROTEÇÃO
+        // 🔹 Proteção final
         if (!data_inicio || !data_fim) {
-          return "🤔 Não consegui entender o período. Ex: gastos de fevereiro ou do dia 5 até o dia 10.";
+          return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
         }
 
         const total = await getResumoGastos(userDocId, {
