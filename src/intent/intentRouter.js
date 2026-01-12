@@ -522,25 +522,29 @@ export async function routeIntent(userDocId, text) {
 
       /* Gastos por Período (ex: fevereiro, setembro, dia X até Y) */
       case "consultar_gasto_periodo": {
-        let { data_inicio, data_fim } = data;
+        try {
+          const data_inicio = data?.data_inicio;
+          const data_fim = data?.data_fim;
 
-        // Se a IA mandou datas, confia nelas
-        if (!data_inicio || !data_fim) {
-          return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
+          if (!data_inicio || !data_fim) {
+            return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
+          }
+
+          const total = await getResumoGastos(userDocId, {
+            data_inicio,
+            data_fim,
+          });
+
+          // ⚠️ NÃO usa formatDateDMY (elimina erro oculto)
+          return (
+            "📆 *Resumo de gastos*\n\n" +
+            `🗓️ Período: ${data_inicio} até ${data_fim}\n` +
+            `💰 Total gasto: *R$ ${Number(total || 0).toFixed(2)}*`
+          );
+        } catch (err) {
+          console.error("🔥 ERRO consultar_gasto_periodo:", err);
+          return "❌ Ops! Algo deu errado ao calcular seus gastos.";
         }
-
-        const total = await getResumoGastos(userDocId, {
-          data_inicio,
-          data_fim,
-        });
-
-        return (
-          "📆 *Resumo de gastos*\n\n" +
-          `🗓️ De ${formatDateDMY(data_inicio)} até ${formatDateDMY(
-            data_fim
-          )}\n` +
-          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
-        );
       }
 
       case "criar_gasto_parcelado":
