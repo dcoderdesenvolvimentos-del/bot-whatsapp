@@ -329,6 +329,24 @@ export async function routeIntent(userDocId, text) {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
 
+  function resolverPeriodoPorMes(mes) {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    let ano = hoje.getFullYear();
+
+    // se o mês já passou, assume o próximo ano
+    if (mes < mesAtual) {
+      ano += 1;
+    }
+
+    const mesStr = String(mes).padStart(2, "0");
+
+    return {
+      data_inicio: `${ano}-${mesStr}-01`,
+      data_fim: `${ano}-${mesStr}-31`,
+    };
+  }
+
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
@@ -520,31 +538,61 @@ export async function routeIntent(userDocId, text) {
         return `🏷️ ${categoria}\n💰 Total gasto: *R$ ${total.toFixed(2)}*`;
       }
 
-      /* Gastos por Período (ex: fevereiro, setembro, dia X até Y) */
       case "consultar_gasto_periodo": {
-        try {
-          const data_inicio = data?.data_inicio;
-          const data_fim = data?.data_fim;
+        const texto = (textoNormalizado || "").toLowerCase();
 
-          if (!data_inicio || !data_fim) {
-            return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
+        const MAPA_MESES = {
+          janeiro: 1,
+          fevereiro: 2,
+          marco: 3,
+          março: 3,
+          abril: 4,
+          maio: 5,
+          junho: 6,
+          julho: 7,
+          agosto: 8,
+          setembro: 9,
+          outubro: 10,
+          novembro: 11,
+          dezembro: 12,
+        };
+
+        let mesDetectado = null;
+
+        for (const nome in MAPA_MESES) {
+          if (texto.includes(nome)) {
+            mesDetectado = MAPA_MESES[nome];
+            break;
           }
-
-          const total = await getResumoGastos(userDocId, {
-            data_inicio,
-            data_fim,
-          });
-
-          // ⚠️ NÃO usa formatDateDMY (elimina erro oculto)
-          return (
-            "📆 *Resumo de gastos*\n\n" +
-            `🗓️ Período: ${data_inicio} até ${data_fim}\n` +
-            `💰 Total gasto: *R$ ${Number(total || 0).toFixed(2)}*`
-          );
-        } catch (err) {
-          console.error("🔥 ERRO consultar_gasto_periodo:", err);
-          return "❌ Ops! Algo deu errado ao calcular seus gastos.";
         }
+
+        let data_inicio;
+        let data_fim;
+
+        // 🔥 SE FALOU MÊS → O SISTEMA DECIDE O ANO
+        if (mesDetectado) {
+          const periodo = resolverPeriodoPorMes(mesDetectado);
+          data_inicio = periodo.data_inicio;
+          data_fim = periodo.data_fim;
+        }
+        // 🔵 CASO CONTRÁRIO, USA DATA EXATA
+        else if (data.data_inicio && data.data_fim) {
+          data_inicio = data.data_inicio;
+          data_fim = data.data_fim;
+        } else {
+          return "🤔 Não consegui entender o período.";
+        }
+
+        const total = await getResumoGastos(userDocId, {
+          data_inicio,
+          data_fim,
+        });
+
+        return (
+          "📆 *Resumo de gastos*\n\n" +
+          `🗓️ Período: ${data_inicio} até ${data_fim}\n` +
+          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
+        );
       }
 
       case "criar_gasto_parcelado":
