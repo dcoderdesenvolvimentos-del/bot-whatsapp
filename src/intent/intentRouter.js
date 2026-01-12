@@ -21,7 +21,7 @@ import {
   createExpense,
   getTodayExpenses,
   getExpensesByCategory,
-  getExpensesByPeriod,
+  getExpensesByMonth,
   criarGastoParcelado,
 } from "../services/expenseService.js";
 
@@ -512,7 +512,7 @@ export async function routeIntent(userDocId, text) {
           return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
         }
 
-        const total = await getExpensesByPeriod(
+        const total = await getExpensesByMonth(
           userDocId,
           data_inicio,
           data_fim
