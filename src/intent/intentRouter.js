@@ -512,7 +512,10 @@ export async function routeIntent(userDocId, text) {
           return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
         }
 
-        const total = await getResumoGastos(userDocId, data_inicio, data_fim);
+        const total = await getResumoGastos(userDocId, {
+          data_inicio,
+          data_fim,
+        });
 
         return (
           "📆 *Resumo de gastos*\n\n" +
