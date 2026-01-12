@@ -21,6 +21,7 @@ import {
   createExpense,
   getTodayExpenses,
   getExpensesByCategory,
+  getExpensesByPeriod,
   getExpensesByMonth,
   criarGastoParcelado,
 } from "../services/expenseService.js";
@@ -506,6 +507,29 @@ export async function routeIntent(userDocId, text) {
 
       /* Gastos por Periodo */
       case "consultar_gasto_periodo": {
+        const { data_inicio, data_fim } = data;
+
+        if (!data_inicio || !data_fim) {
+          return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
+        }
+
+        const total = await getExpensesByPeriod(
+          userDocId,
+          data_inicio,
+          data_fim
+        );
+
+        return (
+          "📆 *Resumo de gastos*\n\n" +
+          `🗓️ De ${formatDateDMY(data_inicio)} até ${formatDateDMY(
+            data_fim
+          )}\n` +
+          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
+        );
+      }
+
+      /* Gastos por Periodo */
+      case "consultar_gasto_periodo_mensal": {
         const { data_inicio, data_fim } = data;
 
         if (!data_inicio || !data_fim) {
