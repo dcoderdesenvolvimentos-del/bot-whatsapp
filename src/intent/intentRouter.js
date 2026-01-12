@@ -522,36 +522,54 @@ export async function routeIntent(userDocId, text) {
 
       /* Gastos por Período (ex: fevereiro, setembro, dia X até Y) */
       case "consultar_gasto_periodo": {
-        let { data_inicio, data_fim, mes, mes_nome } = data;
+        let { data_inicio, data_fim } = data;
 
-        // 🔹 Se vier nome do mês (ex: "setembro")
-        if (!mes && mes_nome) {
-          mes = MAPA_MESES[mes_nome.toLowerCase()];
+        // 🔴 DETECTAR "mês sem ano" (ex: setembro)
+        const texto = textoNormalizado || "";
+
+        const meses = {
+          janeiro: 1,
+          fevereiro: 2,
+          marco: 3,
+          março: 3,
+          abril: 4,
+          maio: 5,
+          junho: 6,
+          julho: 7,
+          agosto: 8,
+          setembro: 9,
+          outubro: 10,
+          novembro: 11,
+          dezembro: 12,
+        };
+
+        let mesDetectado = null;
+
+        for (const nome in meses) {
+          if (texto.includes(nome)) {
+            mesDetectado = meses[nome];
+            break;
+          }
         }
 
-        // 🔹 Se vier "mes" como string ("setembro")
-        if (typeof mes === "string") {
-          mes = MAPA_MESES[mes.toLowerCase()];
-        }
-
-        // 🔹 Se só tiver mês (sem datas)
-        if (!data_inicio && !data_fim && mes) {
+        // 🔥 SE FALOU MÊS SEM ANO → RECALCULA O ANO
+        if (mesDetectado) {
           const hoje = new Date();
           const mesAtual = hoje.getMonth() + 1;
           let ano = hoje.getFullYear();
 
-          // se o mês já passou, assume o próximo ano
-          if (mes < mesAtual) {
+          // se mês já passou no ano atual, assume o próximo ano
+          if (mesDetectado < mesAtual) {
             ano += 1;
           }
 
-          const mesFormatado = String(mes).padStart(2, "0");
+          const mesStr = String(mesDetectado).padStart(2, "0");
 
-          data_inicio = `${ano}-${mesFormatado}-01`;
-          data_fim = `${ano}-${mesFormatado}-31`;
+          data_inicio = `${ano}-${mesStr}-01`;
+          data_fim = `${ano}-${mesStr}-31`;
         }
 
-        // 🔹 Proteção final
+        // 🔐 PROTEÇÃO FINAL
         if (!data_inicio || !data_fim) {
           return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
         }
