@@ -524,52 +524,7 @@ export async function routeIntent(userDocId, text) {
       case "consultar_gasto_periodo": {
         let { data_inicio, data_fim } = data;
 
-        // 🔴 DETECTAR "mês sem ano" (ex: setembro)
-        const texto = textoNormalizado || "";
-
-        const meses = {
-          janeiro: 1,
-          fevereiro: 2,
-          marco: 3,
-          março: 3,
-          abril: 4,
-          maio: 5,
-          junho: 6,
-          julho: 7,
-          agosto: 8,
-          setembro: 9,
-          outubro: 10,
-          novembro: 11,
-          dezembro: 12,
-        };
-
-        let mesDetectado = null;
-
-        for (const nome in meses) {
-          if (texto.includes(nome)) {
-            mesDetectado = meses[nome];
-            break;
-          }
-        }
-
-        // 🔥 SE FALOU MÊS SEM ANO → RECALCULA O ANO
-        if (mesDetectado) {
-          const hoje = new Date();
-          const mesAtual = hoje.getMonth() + 1;
-          let ano = hoje.getFullYear();
-
-          // se mês já passou no ano atual, assume o próximo ano
-          if (mesDetectado < mesAtual) {
-            ano += 1;
-          }
-
-          const mesStr = String(mesDetectado).padStart(2, "0");
-
-          data_inicio = `${ano}-${mesStr}-01`;
-          data_fim = `${ano}-${mesStr}-31`;
-        }
-
-        // 🔐 PROTEÇÃO FINAL
+        // Se a IA mandou datas, confia nelas
         if (!data_inicio || !data_fim) {
           return "🤔 Não consegui entender o período. Ex: gastos de setembro ou do dia 5 até o dia 10.";
         }
