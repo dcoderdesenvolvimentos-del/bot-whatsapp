@@ -488,98 +488,23 @@ export async function routeIntent(userDocId, text) {
         );
       }
 
-      case "limpar_lista":
-        await clearShoppingList(userDocId);
-        return "🧹 Sua lista de compras foi limpa!";
-
-      /* =========================
-     Logica Dos Gastos
-  ========================= */
-
-      /* Salva Gastos */
-      case "criar_gasto": {
-        const { valor, local, categoria } = data;
-
-        if (!valor || !local) {
-          return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
-        }
-
-        await createExpense(userDocId, {
-          valor,
-          local,
-          categoria: categoria || "outros",
-        });
-
-        return (
-          "💾 *Gasto salvo com sucesso!*\n\n" +
-          `💰 Valor: R$ ${valor}\n` +
-          `📍 Local: ${capitalize(local)}\n` +
-          `🏷️ Categoria: ${capitalize(categoria)}`
-        );
-      }
-
-      /* Gastos do Dia */
-      case "consultar_gasto_dia": {
-        const total = await getTodayExpenses(userDocId);
-
-        return `💸 Hoje você gastou *R$ ${total.toFixed(2)}*`;
-      }
-
-      /* Gastos por Categoria */
-      case "consultar_gasto_categoria": {
-        const { categoria } = data;
-
-        if (!categoria) {
-          return "🤔 Qual categoria? Ex: quanto gastei no supermercado?";
-        }
-
-        const total = await getExpensesByCategory(userDocId, categoria);
-
-        return `🏷️ ${categoria}\n💰 Total gasto: *R$ ${total.toFixed(2)}*`;
-      }
-
       case "consultar_gasto_periodo": {
-        const texto = (texto || "").toLowerCase();
+        let { data_inicio, data_fim, mes } = data;
 
-        const MAPA_MESES = {
-          janeiro: 1,
-          fevereiro: 2,
-          marco: 3,
-          março: 3,
-          abril: 4,
-          maio: 5,
-          junho: 6,
-          julho: 7,
-          agosto: 8,
-          setembro: 9,
-          outubro: 10,
-          novembro: 11,
-          dezembro: 12,
-        };
+        // 🔥 SE VEIO "MES" (ex: agosto)
+        if (mes && !data_inicio && !data_fim) {
+          const ano = await resolverAnoDoMesComGasto(userDocId, mes);
 
-        let mesDetectado = null;
-
-        for (const nome in MAPA_MESES) {
-          if (texto.includes(nome)) {
-            mesDetectado = MAPA_MESES[nome];
-            break;
+          if (!ano) {
+            return "📭 Não encontrei gastos para esse mês.";
           }
+
+          const mesStr = String(mes).padStart(2, "0");
+          data_inicio = `${ano}-${mesStr}-01`;
+          data_fim = `${ano}-${mesStr}-31`;
         }
 
-        let data_inicio;
-        let data_fim;
-
-        // 🔥 SE FALOU MÊS → O SISTEMA DECIDE O ANO
-        if (mesDetectado) {
-          const periodo = resolverPeriodoPorMes(mesDetectado);
-          data_inicio = periodo.data_inicio;
-          data_fim = periodo.data_fim;
-        }
-        // 🔵 CASO CONTRÁRIO, USA DATA EXATA
-        else if (data.data_inicio && data.data_fim) {
-          data_inicio = data.data_inicio;
-          data_fim = data.data_fim;
-        } else {
+        if (!data_inicio || !data_fim) {
           return "🤔 Não consegui entender o período.";
         }
 

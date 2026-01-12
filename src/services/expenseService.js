@@ -204,3 +204,28 @@ export async function getResumoGastos(userId, options = {}) {
 
   return total;
 }
+
+export async function resolverAnoDoMesComGasto(userId, mes) {
+  const anoAtual = new Date().getFullYear();
+
+  // verifica ano atual e anterior (ajuste se quiser)
+  for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
+    const inicio = Timestamp.fromDate(new Date(ano, mes - 1, 1));
+    const fim = Timestamp.fromDate(new Date(ano, mes, 0, 23, 59, 59, 999));
+
+    const snapshot = await db
+      .collection("gastos")
+      .doc(userId)
+      .collection("itens")
+      .where("timestamp", ">=", inicio)
+      .where("timestamp", "<=", fim)
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      return ano;
+    }
+  }
+
+  return null; // não existe gasto nesse mês
+}
