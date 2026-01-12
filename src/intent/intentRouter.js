@@ -539,7 +539,7 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "consultar_gasto_periodo": {
-        const texto = (textoNormalizado || "").toLowerCase();
+        const texto = (texto || "").toLowerCase();
 
         const MAPA_MESES = {
           janeiro: 1,
