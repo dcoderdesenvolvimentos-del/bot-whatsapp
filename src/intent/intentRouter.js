@@ -504,12 +504,30 @@ export async function routeIntent(userDocId, text) {
         return `🏷️ ${categoria}\n💰 Total gasto: *R$ ${total.toFixed(2)}*`;
       }
 
-      /* Gastos por Periodo */
+      /* Gastos por Período (ex: fevereiro, setembro, dia X até Y) */
       case "consultar_gasto_periodo": {
-        const { data_inicio, data_fim } = data;
+        let { data_inicio, data_fim, mes } = data;
 
+        // 🔹 CASO: usuário falou só o mês (ex: setembro)
+        if (!data_inicio && !data_fim && mes) {
+          const hoje = new Date();
+          const mesAtual = hoje.getMonth() + 1; // 1 a 12
+          let ano = hoje.getFullYear();
+
+          // se o mês já passou, assume o próximo ano
+          if (mes < mesAtual) {
+            ano += 1;
+          }
+
+          const mesFormatado = String(mes).padStart(2, "0");
+
+          data_inicio = `${ano}-${mesFormatado}-01`;
+          data_fim = `${ano}-${mesFormatado}-31`;
+        }
+
+        // 🔹 PROTEÇÃO
         if (!data_inicio || !data_fim) {
-          return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
+          return "🤔 Não consegui entender o período. Ex: gastos de fevereiro ou do dia 5 até o dia 10.";
         }
 
         const total = await getResumoGastos(userDocId, {
