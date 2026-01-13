@@ -546,19 +546,19 @@ export async function routeIntent(userDocId, text) {
       case "criar_lembrete_recorrente":
         const tiposTexto = {
           diario: "todos os dias",
-          semanal: `toda ${parsedIntent.valor_recorrencia}`,
-          mensal: `todo dia ${parsedIntent.valor_recorrencia}`,
-          anual: `todo dia ${parsedIntent.valor_recorrencia}`,
+          semanal: `toda ${data.valor_recorrencia}`,
+          mensal: `todo dia ${data.valor_recorrencia}`,
+          anual: `todo dia ${data.valor_recorrencia}`,
         };
 
-        await addRecurringReminder(userDocId, parsedIntent);
+        await addRecurringReminder(userDocId, data);
 
-        return (
+        response =
           `✅ *Lembrete recorrente criado!*\n\n` +
-          `📝 ${parsedIntent.mensagem}\n` +
-          `🔁 Frequência: ${tiposTexto[parsedIntent.tipo_recorrencia]}\n` +
-          `⏰ Horário: ${parsedIntent.horario}`
-        );
+          `📝 ${data.mensagem}\n` +
+          `🔁 Frequência: ${tiposTexto[data.tipo_recorrencia]}\n` +
+          `⏰ Horário: ${data.horario}`;
+        break;
 
       case "listar_lembretes": {
         let start = null;
