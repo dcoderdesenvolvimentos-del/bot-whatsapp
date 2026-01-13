@@ -92,7 +92,14 @@ export async function createReminder(userDocId, data) {
         minute: "2-digit",
       });
 
-      resposta += `${i + 1}️⃣ ${d} — ${r.acao}\n`;
+      function capitalizeFirst(text) {
+        if (!text || typeof text !== "string") return "";
+        return text.charAt(0).toUpperCase() + text.slice(1);
+      }
+
+      const actionText = capitalizeFirst(r.acao);
+
+      resposta += `${i + 1}️⃣ ${d} — ${actionText}\n`;
     });
 
     return resposta;

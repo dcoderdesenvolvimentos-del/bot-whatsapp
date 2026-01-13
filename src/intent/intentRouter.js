@@ -542,6 +542,10 @@ export async function routeIntent(userDocId, text) {
         response = await createReminder(userDocId, data);
         break;
 
+      case "criar_lembrete_recorrente":
+        await createRecurringReminder(data, userId);
+        break;
+
       case "listar_lembretes": {
         let start = null;
         let end = null;
