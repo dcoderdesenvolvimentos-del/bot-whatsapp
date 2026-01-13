@@ -489,19 +489,13 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "consultar_gasto_periodo": {
-        const { data_inicio, data_fim, mes, ano } = data;
+        let { data_inicio, data_fim, mes, ano } = data;
 
         let inicio;
         let fim;
 
-        // 🟢 CASO 1 — usuário falou datas explícitas (dia X até Y)
-        if (data_inicio && data_fim && textoContemDiaEspecifico) {
-          inicio = data_inicio;
-          fim = data_fim;
-        }
-
-        // 🔥 CASO 2 — usuário falou só o mês (IGNORA A IA)
-        else if (mes && !ano) {
+        // 🔥 CASO 1 — mês SEM ano → backend decide
+        if (mes && !ano) {
           const anoCorreto = await encontrarAnoComGasto(userDocId, mes);
 
           if (!anoCorreto) {
@@ -513,11 +507,10 @@ export async function routeIntent(userDocId, text) {
           fim = `${anoCorreto}-${mesStr}-31`;
         }
 
-        // 🔵 CASO 3 — mês + ano explícito
-        else if (mes && ano) {
-          const mesStr = String(mes).padStart(2, "0");
-          inicio = `${ano}-${mesStr}-01`;
-          fim = `${ano}-${mesStr}-31`;
+        // 🟢 CASO 2 — período EXPLÍCITO (aceita a IA)
+        else if (data_inicio && data_fim) {
+          inicio = data_inicio;
+          fim = data_fim;
         } else {
           return "🤔 Não consegui entender o período.";
         }
@@ -530,7 +523,7 @@ export async function routeIntent(userDocId, text) {
         return (
           "📆 *Resumo de gastos*\n\n" +
           `🗓️ Período: ${inicio} até ${fim}\n` +
-          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
+          `💰 Total gasto: *R$ ${Number(total || 0).toFixed(2)}*`
         );
       }
 
