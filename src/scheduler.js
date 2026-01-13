@@ -23,7 +23,6 @@ export function startScheduler() {
       for (const reminder of pendentes) {
         let dateObj;
 
-        // Converte Timestamp do Firebase ou número
         if (reminder.when?.seconds) {
           dateObj = new Date(reminder.when.seconds * 1000);
         } else {
@@ -31,7 +30,6 @@ export function startScheduler() {
         }
 
         const formattedDate = dateObj.toLocaleDateString("pt-BR", {});
-
         const formattedTime = dateObj.toLocaleTimeString("pt-BR", {
           timeZone: "America/Sao_Paulo",
           hour: "2-digit",
@@ -45,15 +43,41 @@ export function startScheduler() {
 
         const actionText = capitalizeFirst(reminder.text);
 
-        const message = `⏰ *_LEMBRETE_*
+        // 👇 NOVO: Se tiver valor, oferece registrar gasto
+        let message;
+
+        if (reminder.temGasto && reminder.valor) {
+          message = `⏰ *_LEMBRETE DE PAGAMENTO_*
+━━━━━━━━━━━━━━
+📌 *${actionText}*
+💰 Valor: *R$ ${reminder.valor.toFixed(2)}*
+🗓 ${formattedDate}
+🕔 ${formattedTime}
+
+Já pagou? Responda:
+✅ *"Sim, paguei"* - registro o gasto
+❌ *"Ainda não"* - te lembro depois`;
+        } else {
+          message = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
 📌 *${actionText}*
 🗓 ${formattedDate}
 🕔 ${formattedTime}
 💡 Estou passando pra te lembrar 😉`;
+        }
 
         await sendMessage(reminder.phone, message);
-        await markAsSent(reminder.id);
+
+        // 👇 Se NÃO tem gasto, marca como enviado
+        if (!reminder.temGasto) {
+          await markAsSent(reminder.id);
+        } else {
+          // Se tem gasto, aguarda confirmação
+          await db.collection("reminders").doc(reminder.id).update({
+            aguardandoConfirmacao: true,
+            enviadoEm: Date.now(),
+          });
+        }
 
         console.log("✅ Lembrete enviado:", reminder.id);
       }

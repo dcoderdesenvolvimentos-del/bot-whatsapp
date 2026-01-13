@@ -1,17 +1,24 @@
 import { db } from "../config/firebase.js";
 
-export async function addReminder(phone, data) {
-  console.log("🔥 Salvando lembrete:", phone, data);
+export async function addReminder(userDocId, data) {
+  console.log("🔥 Salvando lembrete:", userDocId, data);
 
-  await db.collection("reminders").add({
-    phone,
-    text: data.text, // ← MUDOU DE action PARA text
-    when: data.when, // ← MUDOU DE time PARA when
+  const reminderData = {
+    phone: userDocId,
+    text: data.acao,
+    when: data.timestamp,
     sent: false,
     createdAt: Date.now(),
-  });
+    // 👇 NOVO: salva valor se for pagamento
+    ...(data.valor && {
+      valor: data.valor,
+      local: data.local || "pagamento",
+      temGasto: true,
+    }),
+  };
 
-  console.log("✅ Lembrete salvo no Firestore");
+  await db.collection("reminders").add(reminderData);
+  console.log("✅ Lembrete salvo!");
 }
 
 export async function getUserReminders(phone) {
