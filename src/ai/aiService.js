@@ -93,12 +93,22 @@ Se não tiver certeza da categoria, use "outros".
 
 
 
-Quando o usuário perguntar sobre gastos em um período de tempo:
+- Se for consulta de gastos por período, retorne:
+  {
+    "intencao": "consultar_gasto_periodo",
+    "data_inicio": "DD-MM-AAAA",
+    "data_fim": "DD-MM-AAAA"
+  }
+  
+  IMPORTANTE SOBRE DATAS:
+  - ANO ATUAL: 2026
+  - Se o usuário NÃO especificar o ano, considere 2026
+  - Exemplos:
+    * "gastos de outubro" → 01-10-2026 até 31-10-2026
+    * "gastos de agosto" → 01-08-2026 até 31-08-2026
+    * "gastos de janeiro de 2025" → 01-01-2025 até 31-01-2025
 
-Identifique:
-- intencao: "consultar_gasto_periodo"
-- data_inicio: data no formato DD-MM-YYYY  
-- data_fim: data no formato DD-MM-YYYY  
+
 
 Regras:
 - "ontem" → data_inicio = data_fim = ontem
