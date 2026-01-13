@@ -230,54 +230,28 @@ export async function resolverAnoDoMesComGasto(userId, mes) {
   return null; // não existe gasto nesse mês
 }
 
-async function resolverPeriodo(periodo, userId) {
-  const hoje = new Date();
+export async function encontrarAnoComGasto(userId, mes) {
+  const anoAtual = new Date().getFullYear();
 
-  switch (periodo.tipo) {
-    case "mes": {
-      const mes = periodo.mes; // 1–12
+  // verifica do ano atual para trás (ajuste o range se quiser)
+  for (let ano = anoAtual; ano >= anoAtual - 5; ano--) {
+    const inicio = Timestamp.fromDate(new Date(ano, mes - 1, 1));
 
-      // regra: mês mais recente com gasto
-      const ano = await encontrarAnoComGasto(userId, mes);
-      if (!ano) return null;
+    const fim = Timestamp.fromDate(new Date(ano, mes, 0, 23, 59, 59, 999));
 
-      return {
-        inicio: `${ano}-${String(mes).padStart(2, "0")}-01`,
-        fim: `${ano}-${String(mes).padStart(2, "0")}-31`,
-      };
+    const snapshot = await db
+      .collection("gastos")
+      .doc(userId)
+      .collection("itens")
+      .where("timestamp", ">=", inicio)
+      .where("timestamp", "<=", fim)
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      return ano;
     }
-
-    case "semana": {
-      const offset = periodo.offset ?? 0;
-      const inicioSemana = new Date(hoje);
-      inicioSemana.setDate(hoje.getDate() - hoje.getDay() + 1 + offset * 7);
-
-      const fimSemana = new Date(inicioSemana);
-      fimSemana.setDate(inicioSemana.getDate() + 6);
-
-      return {
-        inicio: inicioSemana.toISOString().slice(0, 10),
-        fim: fimSemana.toISOString().slice(0, 10),
-      };
-    }
-
-    case "dia": {
-      const offset = periodo.offset ?? 0;
-      const dia = new Date(hoje);
-      dia.setDate(hoje.getDate() + offset);
-
-      const iso = dia.toISOString().slice(0, 10);
-      return { inicio: iso, fim: iso };
-    }
-
-    case "intervalo": {
-      return {
-        inicio: periodo.data_inicio,
-        fim: periodo.data_fim,
-      };
-    }
-
-    default:
-      return null;
   }
+
+  return null;
 }
