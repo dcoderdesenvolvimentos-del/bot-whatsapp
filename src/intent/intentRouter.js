@@ -7,6 +7,7 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
+import { addRecurringReminder } from "../services/reminderService.js";
 
 import {
   createList,
@@ -543,8 +544,21 @@ export async function routeIntent(userDocId, text) {
         break;
 
       case "criar_lembrete_recorrente":
-        await createRecurringReminder(data, userId);
-        break;
+        const tiposTexto = {
+          diario: "todos os dias",
+          semanal: `toda ${parsedIntent.valor_recorrencia}`,
+          mensal: `todo dia ${parsedIntent.valor_recorrencia}`,
+          anual: `todo dia ${parsedIntent.valor_recorrencia}`,
+        };
+
+        await addRecurringReminder(userDocId, parsedIntent);
+
+        return (
+          `✅ *Lembrete recorrente criado!*\n\n` +
+          `📝 ${parsedIntent.mensagem}\n` +
+          `🔁 Frequência: ${tiposTexto[parsedIntent.tipo_recorrencia]}\n` +
+          `⏰ Horário: ${parsedIntent.horario}`
+        );
 
       case "listar_lembretes": {
         let start = null;

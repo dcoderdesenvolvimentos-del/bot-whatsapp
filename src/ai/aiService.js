@@ -202,6 +202,22 @@ Saída:
   ]
 }
 
+- Se for cadastrar lembrete RECORRENTE, retorne:
+  {
+    "intencao": "criar_lembrete_recorrente",
+    "mensagem": "texto do lembrete",
+    "tipo_recorrencia": "diario|semanal|mensal|anual",
+    "valor_recorrencia": "número ou dia da semana",
+    "horario": "HH:MM" // se não especificar, retorne "00:00"
+  }
+  
+  Exemplos de recorrência:
+  - "todo dia 10" → tipo: "mensal", valor: "10"
+  - "toda segunda-feira" → tipo: "semanal", valor: "segunda"
+  - "todo dia 3 de janeiro" → tipo: "anual", valor: "03-01"
+  - "todos os dias às 10h" → tipo: "diario", valor: null
+
+
 Se o usuário pedir para VER ou LISTAR lembretes,
 identifique também filtros de tempo:
 
