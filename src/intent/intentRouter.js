@@ -21,6 +21,7 @@ import {
   createExpense,
   getTodayExpenses,
   getExpensesByCategory,
+  encontrarAnoComGasto,
   criarGastoParcelado,
   getResumoGastos,
 } from "../services/expenseService.js";
@@ -364,6 +365,59 @@ export async function routeIntent(userDocId, text) {
         start: start.getTime(),
         end: end.getTime(),
       };
+    }
+
+    async function resolverPeriodo(periodo, userId) {
+      const hoje = new Date();
+
+      switch (periodo.tipo) {
+        case "mes": {
+          const mes = periodo.mes;
+
+          const ano = await encontrarAnoComGasto(userId, mes);
+          if (!ano) return null;
+
+          const mesStr = String(mes).padStart(2, "0");
+          return {
+            inicio: `${ano}-${mesStr}-01`,
+            fim: `${ano}-${mesStr}-31`,
+          };
+        }
+
+        case "semana": {
+          const offset = periodo.offset ?? 0;
+
+          const inicio = new Date(hoje);
+          inicio.setDate(hoje.getDate() - hoje.getDay() + 1 + offset * 7);
+
+          const fim = new Date(inicio);
+          fim.setDate(inicio.getDate() + 6);
+
+          return {
+            inicio: inicio.toISOString().slice(0, 10),
+            fim: fim.toISOString().slice(0, 10),
+          };
+        }
+
+        case "dia": {
+          const offset = periodo.offset ?? 0;
+          const dia = new Date(hoje);
+          dia.setDate(hoje.getDate() + offset);
+
+          const iso = dia.toISOString().slice(0, 10);
+          return { inicio: iso, fim: iso };
+        }
+
+        case "intervalo": {
+          return {
+            inicio: periodo.data_inicio,
+            fim: periodo.data_fim,
+          };
+        }
+
+        default:
+          return null;
+      }
     }
 
     switch (intent) {
