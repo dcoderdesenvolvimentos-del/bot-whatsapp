@@ -9,10 +9,11 @@ export async function addReminder(userDocId, data) {
     when: data.timestamp,
     sent: false,
     createdAt: Date.now(),
-    // 👇 NOVO: salva valor se for pagamento
+    // 👇 Salva dados do pagamento se tiver
     ...(data.valor && {
       valor: data.valor,
-      local: data.local || "pagamento",
+      local: data.local,
+      categoria: data.categoria,
       temGasto: true,
     }),
   };

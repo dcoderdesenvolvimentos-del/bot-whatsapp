@@ -560,6 +560,43 @@ export async function routeIntent(userDocId, text) {
           `⏰ Horário: ${data.horario}`;
         break;
 
+      case "criar_lembrete_pagamento":
+        console.log("💰 Criando lembrete de pagamento com gasto automático");
+
+        // Cria o lembrete
+        const timestampPagamento = calcularTimestamp(
+          aiResponse.offset_dias,
+          aiResponse.horario || "09:00"
+        );
+
+        await addReminder(userDocId, {
+          acao: aiResponse.acao,
+          timestamp: timestampPagamento,
+          valor: aiResponse.valor,
+          local: aiResponse.local,
+          categoria: aiResponse.categoria || "outros",
+        });
+
+        const dataPagamento = new Date(timestampPagamento).toLocaleDateString(
+          "pt-BR"
+        );
+        const horaPagamento = new Date(timestampPagamento).toLocaleTimeString(
+          "pt-BR",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        );
+
+        reply = `✅ Lembrete de pagamento criado!
+
+📌 *${aiResponse.acao}*
+💰 Valor: *R$ ${aiResponse.valor.toFixed(2)}*
+🗓 ${dataPagamento} às ${horaPagamento}
+
+Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`;
+        break;
+
       case "listar_lembretes": {
         let start = null;
         let end = null;
