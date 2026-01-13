@@ -19,17 +19,13 @@ import {
   getAllLists,
 } from "../services/shoppingListService.js";
 import {
-  createExpense,
-  getTodayExpenses,
-  getExpensesByCategory,
-  encontrarAnoComGasto,
   criarGastoParcelado,
   getResumoGastos,
 } from "../services/expenseService.js";
 
 import { slugify, capitalize } from "../utils/textUtils.js";
 
-/* ===========================
+/* ==========================
    HELPERS
 ========================= */
 
