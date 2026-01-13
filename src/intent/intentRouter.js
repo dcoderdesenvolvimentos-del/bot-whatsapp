@@ -489,41 +489,23 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "consultar_gasto_periodo": {
-        const { mes } = data;
+        const periodo = data.periodo;
 
-        let inicio;
-        let fim;
+        const range = await resolverPeriodo(periodo, userDocId);
 
-        // 🔥 CASO 1 — usuário falou MÊS (outubro, agosto, etc)
-        if (mes) {
-          const anoCorreto = await encontrarAnoComGasto(userDocId, mes);
-
-          if (!anoCorreto) {
-            return "📭 Não encontrei gastos para esse mês.";
-          }
-
-          const mesStr = String(mes).padStart(2, "0");
-          inicio = `${anoCorreto}-${mesStr}-01`;
-          fim = `${anoCorreto}-${mesStr}-31`;
-        }
-
-        // 🔵 CASO 2 — período explícito (SÓ quando o usuário fala datas)
-        else if (data.data_inicio && data.data_fim) {
-          inicio = data.data_inicio;
-          fim = data.data_fim;
-        } else {
-          return "🤔 Não consegui entender o período.";
+        if (!range) {
+          return "📭 Não encontrei gastos para esse período.";
         }
 
         const total = await getResumoGastos(userDocId, {
-          data_inicio: inicio,
-          data_fim: fim,
+          data_inicio: range.inicio,
+          data_fim: range.fim,
         });
 
         return (
           "📆 *Resumo de gastos*\n\n" +
-          `🗓️ Período: ${inicio} até ${fim}\n` +
-          `💰 Total gasto: *R$ ${Number(total || 0).toFixed(2)}*`
+          `🗓️ Período: ${range.inicio} até ${range.fim}\n` +
+          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
         );
       }
 
