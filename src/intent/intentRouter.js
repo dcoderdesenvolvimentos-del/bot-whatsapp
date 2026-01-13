@@ -333,6 +333,28 @@ export async function routeIntent(userDocId, text) {
       };
     }
 
+    // 🛡️ Proteção: Se vier "criar_lembrete" com gasto junto, converte
+    if (aiResponse.intencao === "criar_lembrete" && aiResponse.lembretes) {
+      const temPagamento = aiResponse.lembretes.find(
+        (l) => l.valor && l.acao?.includes("pagar")
+      );
+      const temGasto = aiResponse.lembretes.find(
+        (l) => l.acao === "criar_gasto" || l.valor
+      );
+
+      if (temPagamento && temGasto) {
+        console.log("🔄 Convertendo para criar_lembrete_pagamento");
+        aiResponse.intencao = "criar_lembrete_pagamento";
+        aiResponse.acao = temPagamento.acao;
+        aiResponse.valor = temGasto.valor;
+        aiResponse.local = temGasto.local;
+        aiResponse.categoria = temGasto.categoria;
+        aiResponse.offset_dias = temPagamento.offset_dias;
+        aiResponse.horario = temPagamento.horario;
+        delete aiResponse.lembretes;
+      }
+    }
+
     switch (intent) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
