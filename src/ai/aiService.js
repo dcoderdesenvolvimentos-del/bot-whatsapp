@@ -102,6 +102,7 @@ Se não tiver certeza da categoria, use "outros".
   
   IMPORTANTE SOBRE DATAS:
   - ANO ATUAL: 2026
+  - FORMATO OBRIGATÓRIO: DD-MM-AAAA (exemplo: 13-01-2026)
   - Se o usuário NÃO especificar o ano, considere 2026
   - Exemplos:
     * "gastos de outubro" → 01-10-2026 até 31-10-2026

@@ -61,6 +61,10 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
   const start = parseDateToTimestamp(startDate);
   const end = parseDateToTimestamp(endDate, true);
 
+  console.log("🔍 BUSCANDO:", { startDate, endDate });
+  console.log("📅 start:", start.toDate());
+  console.log("📅 end:", end.toDate());
+
   const snapshot = await db
     .collection("gastos")
     .doc(userId)
