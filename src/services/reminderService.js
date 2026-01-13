@@ -126,28 +126,41 @@ function calcularProximaRecorrencia(tipo, valor, horario) {
 }
 
 // 🔔 Adicionar lembrete RECORRENTE
-export async function addRecurringReminder(phone, data) {
-  console.log("🔥 Salvando lembrete recorrente:", phone, data);
+export async function addRecurringReminder(userDocId, data) {
+  console.log("🔥 Salvando lembrete recorrente:", userDocId, data);
 
-  const proximaData = calcularProximaRecorrencia(
-    data.tipo_recorrencia,
-    data.valor_recorrencia,
-    data.horario
+  const [hour, minute] = data.horario.split(":").map(Number);
+
+  // 🌎 Cria data em horário de Brasília
+  const now = new Date();
+  const brDate = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
   );
 
-  await db.collection("reminders").add({
-    phone,
+  brDate.setHours(hour, minute, 0, 0);
+
+  // Se o horário já passou hoje, agenda para amanhã
+  const nowBr = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
+  if (brDate <= nowBr) {
+    brDate.setDate(brDate.getDate() + 1);
+  }
+
+  const reminderData = {
+    phone: userDocId,
     text: data.mensagem,
-    when: proximaData,
+    when: brDate.getTime(), // 👈 Timestamp correto em BR
     sent: false,
-    createdAt: Date.now(),
     recorrente: true,
     tipo_recorrencia: data.tipo_recorrencia,
     valor_recorrencia: data.valor_recorrencia,
     horario: data.horario,
-  });
+    createdAt: Date.now(),
+  };
 
-  console.log("✅ Lembrete recorrente salvo");
+  await db.collection("reminders").add(reminderData);
+  console.log("✅ Lembrete recorrente salvo!");
 }
 
 // 🔁 Reagendar lembrete recorrente após ser enviado
