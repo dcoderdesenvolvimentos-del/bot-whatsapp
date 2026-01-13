@@ -7,7 +7,7 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
-import { calcularPeriodo } from "./services/periodCalculator.js";
+import { calcularPeriodo } from "../services/periodCalculator.js";
 
 import {
   createList,
