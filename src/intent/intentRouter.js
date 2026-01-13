@@ -7,7 +7,6 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
-import { calcularPeriodo } from "../services/periodCalculator.js";
 
 import {
   createList,
@@ -19,13 +18,16 @@ import {
   getAllLists,
 } from "../services/shoppingListService.js";
 import {
+  createExpense,
+  getTodayExpenses,
+  getExpensesByCategory,
+  getExpensesByPeriod,
   criarGastoParcelado,
-  getResumoGastos,
 } from "../services/expenseService.js";
 
 import { slugify, capitalize } from "../utils/textUtils.js";
 
-/* ==========================
+/* ===========================
    HELPERS
 ========================= */
 
@@ -49,22 +51,6 @@ function formatDateDMY(isoDate) {
 
 export async function routeIntent(userDocId, text) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
-
-  const MAPA_MESES = {
-    janeiro: 1,
-    fevereiro: 2,
-    marco: 3,
-    março: 3,
-    abril: 4,
-    maio: 5,
-    junho: 6,
-    julho: 7,
-    agosto: 8,
-    setembro: 9,
-    outubro: 10,
-    novembro: 11,
-    dezembro: 12,
-  };
 
   if (!userDocId) {
     console.error("❌ userDocId inválido");
@@ -327,24 +313,6 @@ export async function routeIntent(userDocId, text) {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
 
-  function resolverPeriodoPorMes(mes) {
-    const hoje = new Date();
-    const mesAtual = hoje.getMonth() + 1;
-    let ano = hoje.getFullYear();
-
-    // se o mês já passou, assume o próximo ano
-    if (mes < mesAtual) {
-      ano += 1;
-    }
-
-    const mesStr = String(mes).padStart(2, "0");
-
-    return {
-      data_inicio: `${ano}-${mesStr}-01`,
-      data_fim: `${ano}-${mesStr}-31`,
-    };
-  }
-
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
@@ -486,52 +454,78 @@ export async function routeIntent(userDocId, text) {
         );
       }
 
-      case "filtrar.gastos":
-        const textoUsuario = request.body.queryResult.queryText;
-        const periodo = calcularPeriodo(textoUsuario);
+      case "limpar_lista":
+        await clearShoppingList(userDocId);
+        return "🧹 Sua lista de compras foi limpa!";
 
-        if (!periodo) {
-          return res.json({
-            fulfillmentText:
-              "Não entendi o período. Tenta: 'gastos desse mês' ou 'gastos de outubro'",
-          });
+      /* =========================
+     Logica Dos Gastos
+  ========================= */
+
+      /* Salva Gastos */
+      case "criar_gasto": {
+        const { valor, local, categoria } = data;
+
+        if (!valor || !local) {
+          return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
         }
 
-        const snapshot = await db
-          .collection("gastos")
-          .doc(userId)
-          .collection("itens")
-          .where("timestamp", ">=", periodo.inicio)
-          .where("timestamp", "<=", periodo.fim)
-          .get();
+        await createExpense(userDocId, {
+          valor,
+          local,
+          categoria: categoria || "outros",
+        });
 
-        if (snapshot.empty) {
-          return res.json({
-            fulfillmentText: `Nenhum gasto encontrado em ${periodo.descricao} 📭`,
-          });
+        return (
+          "💾 *Gasto salvo com sucesso!*\n\n" +
+          `💰 Valor: R$ ${valor}\n` +
+          `📍 Local: ${capitalize(local)}\n` +
+          `🏷️ Categoria: ${capitalize(categoria)}`
+        );
+      }
+
+      /* Gastos do Dia */
+      case "consultar_gasto_dia": {
+        const total = await getTodayExpenses(userDocId);
+
+        return `💸 Hoje você gastou *R$ ${total.toFixed(2)}*`;
+      }
+
+      /* Gastos por Categoria */
+      case "consultar_gasto_categoria": {
+        const { categoria } = data;
+
+        if (!categoria) {
+          return "🤔 Qual categoria? Ex: quanto gastei no supermercado?";
         }
 
-        let total = 0;
-        let lista = [];
+        const total = await getExpensesByCategory(userDocId, categoria);
 
-        snapshot.forEach((doc) => {
-          const d = doc.data();
-          total += d.valor;
-          lista.push(`• R$ ${d.valor.toFixed(2)} - ${d.local}`);
-        });
-        const resposta = `
-📊 *Gastos de ${periodo.descricao}*
+        return `🏷️ ${categoria}\n💰 Total gasto: *R$ ${total.toFixed(2)}*`;
+      }
 
-${lista.join("\n")}
+      /* Gastos por Periodo */
+      case "consultar_gasto_periodo": {
+        const { data_inicio, data_fim } = data;
 
-💰 *Total: R$ ${total.toFixed(2)}*
-  `.trim();
+        if (!data_inicio || !data_fim) {
+          return "🤔 Não consegui entender o período. Ex: quanto gastei do dia 5 até o dia 10?";
+        }
 
-        return res.json({
-          fulfillmentText: resposta,
-        });
+        const total = await getExpensesByPeriod(
+          userDocId,
+          data_inicio,
+          data_fim
+        );
 
-        break;
+        return (
+          "📆 *Resumo de gastos*\n\n" +
+          `🗓️ De ${formatDateDMY(data_inicio)} até ${formatDateDMY(
+            data_fim
+          )}\n` +
+          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
+        );
+      }
 
       case "criar_gasto_parcelado":
         return await criarGastoParcelado(userDocId, data);
