@@ -489,13 +489,13 @@ export async function routeIntent(userDocId, text) {
       }
 
       case "consultar_gasto_periodo": {
-        let { data_inicio, data_fim, mes, ano } = data;
+        const { mes } = data;
 
         let inicio;
         let fim;
 
-        // 🔥 CASO 1 — mês SEM ano → backend decide
-        if (mes && !ano) {
+        // 🔥 CASO 1 — usuário falou MÊS (outubro, agosto, etc)
+        if (mes) {
           const anoCorreto = await encontrarAnoComGasto(userDocId, mes);
 
           if (!anoCorreto) {
@@ -507,10 +507,10 @@ export async function routeIntent(userDocId, text) {
           fim = `${anoCorreto}-${mesStr}-31`;
         }
 
-        // 🟢 CASO 2 — período EXPLÍCITO (aceita a IA)
-        else if (data_inicio && data_fim) {
-          inicio = data_inicio;
-          fim = data_fim;
+        // 🔵 CASO 2 — período explícito (SÓ quando o usuário fala datas)
+        else if (data.data_inicio && data.data_fim) {
+          inicio = data.data_inicio;
+          fim = data.data_fim;
         } else {
           return "🤔 Não consegui entender o período.";
         }
