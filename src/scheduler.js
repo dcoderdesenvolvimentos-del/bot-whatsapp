@@ -45,7 +45,7 @@ export function startScheduler() {
 
         const actionText = capitalizeFirst(reminder.text);
 
-        const message = `⏰ *LEMBRETE*
+        const message = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
 📌 *${actionText}*
 🗓 ${formattedDate}
