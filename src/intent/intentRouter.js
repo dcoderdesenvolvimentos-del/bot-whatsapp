@@ -46,6 +46,22 @@ function formatDateDMY(isoDate) {
   return `${day}-${month}-${year}`;
 }
 
+// 👇 ADICIONA ESSA FUNÇÃO AQUI
+function calcularTimestamp(offsetDias = 0, horario = "09:00") {
+  const [hora, minuto] = horario.split(":").map(Number);
+
+  // Cria data em horário de Brasília
+  const now = new Date();
+  const brDate = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
+
+  brDate.setDate(brDate.getDate() + offsetDias);
+  brDate.setHours(hora, minuto, 0, 0);
+
+  return brDate.getTime();
+}
+
 /* =========================
    ROUTER PRINCIPAL
 =========================  */
