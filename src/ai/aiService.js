@@ -52,10 +52,21 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 - Se mencionar "apagar", "excluir lembrete":
   → intencao = "excluir_lembrete"
 
+1. Retorne APENAS UM JSON válido
+2. Se o usuário pedir "lembrete + gasto de pagamento", use "criar_lembrete_pagamento"
+3. NUNCA retorne dois JSONs separados
+4. Se não souber, use "desconhecido"
+
 3️⃣ OUTROS
 - Saudação SEM pedido → "conversa_solta"
 - Pedido de ajuda → "ajuda"
 - Caso contrário → "desconhecido"
+
+⚠️ REGRAS CRÍTICAS:
+1. Retorne APENAS UM JSON válido
+2. Se o usuário pedir "lembrete + gasto de pagamento", use "criar_lembrete_pagamento"
+3. NUNCA retorne dois JSONs separados
+4. Se não souber, use "desconhecido"
 
 - AJUDA_GERAL: quando o usuário pergunta o que o bot pode fazer, como funciona, em que pode ajudar, o que voce pode fazer ou quais são suas funções.
 EXMPLO:
@@ -314,6 +325,17 @@ AJUDA GERAL
   "offset_dias": 1,
   "hora": 17,
   "minuto": 0
+}
+
+criar_lembrete_pagamento - Quando o usuário pede para lembrar de PAGAR algo E menciona o VALOR
+{
+  "intencao": "criar_lembrete_pagamento",
+  "acao": "descrição do pagamento",
+  "valor": 1200,
+  "local": "onde foi o gasto",
+  "categoria": "alimentacao|transporte|saude|lazer|moradia|educacao|outros",
+  "offset_dias": 1,
+  "horario": "09:00"
 }
 
 🛒 CRIAR LISTA:
