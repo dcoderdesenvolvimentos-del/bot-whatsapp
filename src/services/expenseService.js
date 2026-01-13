@@ -229,29 +229,3 @@ export async function resolverAnoDoMesComGasto(userId, mes) {
 
   return null; // não existe gasto nesse mês
 }
-
-export async function encontrarAnoComGasto(userId, mes) {
-  const anoAtual = new Date().getFullYear();
-
-  // verifica do ano atual para trás (ajuste o range se quiser)
-  for (let ano = anoAtual; ano >= anoAtual - 5; ano--) {
-    const inicio = Timestamp.fromDate(new Date(ano, mes - 1, 1));
-
-    const fim = Timestamp.fromDate(new Date(ano, mes, 0, 23, 59, 59, 999));
-
-    const snapshot = await db
-      .collection("gastos")
-      .doc(userId)
-      .collection("itens")
-      .where("timestamp", ">=", inicio)
-      .where("timestamp", "<=", fim)
-      .limit(1)
-      .get();
-
-    if (!snapshot.empty) {
-      return ano;
-    }
-  }
-
-  return null;
-}

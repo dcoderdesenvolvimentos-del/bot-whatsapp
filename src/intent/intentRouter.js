@@ -7,6 +7,7 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
+import { calcularPeriodo } from "./services/periodCalculator.js";
 
 import {
   createList,
@@ -367,59 +368,6 @@ export async function routeIntent(userDocId, text) {
       };
     }
 
-    async function resolverPeriodo(periodo, userId) {
-      const hoje = new Date();
-
-      switch (periodo.tipo) {
-        case "mes": {
-          const mes = periodo.mes;
-
-          const ano = await encontrarAnoComGasto(userId, mes);
-          if (!ano) return null;
-
-          const mesStr = String(mes).padStart(2, "0");
-          return {
-            inicio: `${ano}-${mesStr}-01`,
-            fim: `${ano}-${mesStr}-31`,
-          };
-        }
-
-        case "semana": {
-          const offset = periodo.offset ?? 0;
-
-          const inicio = new Date(hoje);
-          inicio.setDate(hoje.getDate() - hoje.getDay() + 1 + offset * 7);
-
-          const fim = new Date(inicio);
-          fim.setDate(inicio.getDate() + 6);
-
-          return {
-            inicio: inicio.toISOString().slice(0, 10),
-            fim: fim.toISOString().slice(0, 10),
-          };
-        }
-
-        case "dia": {
-          const offset = periodo.offset ?? 0;
-          const dia = new Date(hoje);
-          dia.setDate(hoje.getDate() + offset);
-
-          const iso = dia.toISOString().slice(0, 10);
-          return { inicio: iso, fim: iso };
-        }
-
-        case "intervalo": {
-          return {
-            inicio: periodo.data_inicio,
-            fim: periodo.data_fim,
-          };
-        }
-
-        default:
-          return null;
-      }
-    }
-
     switch (intent) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
@@ -542,26 +490,52 @@ export async function routeIntent(userDocId, text) {
         );
       }
 
-      case "consultar_gasto_periodo": {
-        const periodo = data.periodo;
+      case "filtrar.gastos":
+        const textoUsuario = request.body.queryResult.queryText;
+        const periodo = calcularPeriodo(textoUsuario);
 
-        const range = await resolverPeriodo(periodo, userDocId);
-
-        if (!range) {
-          return "📭 Não encontrei gastos para esse período.";
+        if (!periodo) {
+          return res.json({
+            fulfillmentText:
+              "Não entendi o período. Tenta: 'gastos desse mês' ou 'gastos de outubro'",
+          });
         }
 
-        const total = await getResumoGastos(userDocId, {
-          data_inicio: range.inicio,
-          data_fim: range.fim,
+        const snapshot = await db
+          .collection("gastos")
+          .doc(userId)
+          .collection("itens")
+          .where("timestamp", ">=", periodo.inicio)
+          .where("timestamp", "<=", periodo.fim)
+          .get();
+
+        if (snapshot.empty) {
+          return res.json({
+            fulfillmentText: `Nenhum gasto encontrado em ${periodo.descricao} 📭`,
+          });
+        }
+
+        let total = 0;
+        let lista = [];
+
+        snapshot.forEach((doc) => {
+          const d = doc.data();
+          total += d.valor;
+          lista.push(`• R$ ${d.valor.toFixed(2)} - ${d.local}`);
+        });
+        const resposta = `
+📊 *Gastos de ${periodo.descricao}*
+
+${lista.join("\n")}
+
+💰 *Total: R$ ${total.toFixed(2)}*
+  `.trim();
+
+        return res.json({
+          fulfillmentText: resposta,
         });
 
-        return (
-          "📆 *Resumo de gastos*\n\n" +
-          `🗓️ Período: ${range.inicio} até ${range.fim}\n` +
-          `💰 Total gasto: *R$ ${total.toFixed(2)}*`
-        );
-      }
+        break;
 
       case "criar_gasto_parcelado":
         return await criarGastoParcelado(userDocId, data);
