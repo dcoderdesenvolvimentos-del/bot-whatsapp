@@ -721,52 +721,7 @@ Tudo certo! 😉`;
       // =====================================================
 
       case "criar_lembrete":
-        console.log("🔥 CHEGOU NO CREATE REMINDER");
-        console.log("🔥 USER DOC ID:", userDocId);
-        console.log("🔥 DATA COMPLETO:", aiResponse);
-
-        let timestamp;
-
-        if (aiResponse.offset_ms) {
-          timestamp = Date.now() + aiResponse.offset_ms;
-        } else {
-          timestamp = calcularTimestamp(
-            aiResponse.offset_dias || 0,
-            aiResponse.horario || "09:00"
-          );
-        }
-
-        // 👇 SE TEM VALOR, É LEMBRETE DE PAGAMENTO
-        if (aiResponse.valor) {
-          await addReminder(userDocId, {
-            text: aiResponse.acao,
-            when: timestamp,
-            valor: aiResponse.valor,
-            local: aiResponse.local || "não informado",
-            categoria: aiResponse.categoria || "outros",
-          });
-
-          const dataPagamento = new Date(timestamp).toLocaleDateString("pt-BR");
-          const horaPagamento = new Date(timestamp).toLocaleTimeString(
-            "pt-BR",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          );
-
-          return (reply = `✅ Lembrete de pagamento criado!
-
-📌 *${aiResponse.acao}*
-💰 Valor: *R$ ${aiResponse.valor.toFixed(2)}*
-🗓 ${dataPagamento} às ${horaPagamento}
-
-Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`);
-        } else {
-          // Lembrete normal sem valor
-          reply = await createReminder(userDocId, aiResponse);
-        }
-
+        response = await createReminder(userDocId, data);
         break;
 
       case "criar_lembrete_recorrente":
