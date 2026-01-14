@@ -615,7 +615,6 @@ export async function routeIntent(userDocId, text) {
       case "criar_lembrete_pagamento":
         console.log("💰 Criando lembrete de pagamento com gasto automático");
 
-        // Cria o lembrete
         const timestampPagamento = calcularTimestamp(
           aiResponse.offset_dias,
           aiResponse.horario || "09:00"
