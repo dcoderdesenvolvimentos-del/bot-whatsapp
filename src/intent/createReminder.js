@@ -148,9 +148,15 @@ export async function createReminder(userDocId, data) {
 
     const dateObj = new Date(when);
 
+    function capitalizeFirst(text) {
+      if (!text || typeof text !== "string") return "";
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    const actionText = capitalizeFirst(data.acao);
     return (
       `✅ *Lembrete criado!*\n\n` +
-      `📌 ${data.acao}\n` +
+      `📌 ${actionText}\n` +
       `🕐 ${dateObj.toLocaleString("pt-BR", {
         timeZone: "America/Sao_Paulo",
       })}`
@@ -179,9 +185,15 @@ export async function createReminder(userDocId, data) {
 
     const dateObj = new Date(when);
 
+    function capitalizeFirst(text) {
+      if (!text || typeof text !== "string") return "";
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    const actionText = capitalizeFirst(data.acao);
     return (
       `✅ *Lembrete criado!*\n\n` +
-      `📌 ${data.acao}\n` +
+      `📌 ${actionText}\n` +
       `🕐 ${dateObj.toLocaleString("pt-BR", {
         timeZone: "America/Sao_Paulo",
       })}`
@@ -290,7 +302,14 @@ export async function createReminder(userDocId, data) {
     timeStyle: "short",
   });
 
+  function capitalizeFirst(text) {
+    if (!text || typeof text !== "string") return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  const actionText = capitalizeFirst(data.acao);
+
   return (
-    `✅ *Lembrete criado!*\n\n` + `📌 ${data.acao}\n` + `🕐 ${dataFormatadaBR}`
+    `✅ *Lembrete criado!*\n\n` + `📌 ${actionText}\n` + `🕐 ${dataFormatadaBR}`
   );
 }
