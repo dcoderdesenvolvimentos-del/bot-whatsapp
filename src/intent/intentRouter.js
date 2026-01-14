@@ -7,7 +7,10 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
-import { addRecurringReminder } from "../services/reminderService.js";
+import {
+  addRecurringReminder,
+  addReminder,
+} from "../services/reminderService.js";
 
 import {
   createList,
