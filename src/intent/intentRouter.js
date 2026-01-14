@@ -95,18 +95,6 @@ export async function routeIntent(userDocId, text) {
      4️⃣ ONBOARDING POR STAGE
   ========================= */
 
-  // 👉 Pergunta confirmação com BOTÕES
-  if (userData.stage === "awaiting_confirmation") {
-    return {
-      type: "button",
-      text: `Seu nome é *${userData.tempName}*?`,
-      buttons: [
-        { id: "1", text: "✅ Sim" },
-        { id: "2", text: "❌ Não" },
-      ],
-    };
-  }
-
   // 👉 Perguntar nome
   if (userData.stage === "first_contact") {
     await updateUser(userDocId, {
@@ -127,13 +115,15 @@ export async function routeIntent(userDocId, text) {
       tempName: displayName,
     });
 
-    return (
-      `✨ *Só confirmando rapidinho...*\n\n` +
-      `👉 Seu nome é *${displayName}*?\n\n` +
-      `Responda com:\n` +
-      `✅ *sim* — confirmar\n` +
-      `❌ *não* — corrigir`
-    );
+    // 🔘 RETORNA COM BOTÕES
+    return {
+      type: "buttons",
+      text: `✨ *Só confirmando rapidinho...*\n\n👉 Seu nome é *${displayName}*?`,
+      buttons: [
+        { id: "sim", text: "✅ Sim" },
+        { id: "nao", text: "❌ Não" },
+      ],
+    };
   }
 
   // 👉 Confirmar nome
@@ -168,7 +158,6 @@ export async function routeIntent(userDocId, text) {
 
     return "Responda apenas *sim* ou *não*, por favor 🙂";
   }
-
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO
   // =========================

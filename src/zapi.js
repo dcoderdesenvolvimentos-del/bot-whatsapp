@@ -6,8 +6,14 @@ const HEADERS = {
   "Client-Token": process.env.ZAPI_CLIENT_TOKEN,
 };
 
-/* 💬 TEXTO SIMPLES */
+/* 💬 TEXTO SIMPLES OU BOTÕES */
 export async function sendMessage(phone, message) {
+  // 🔘 Se for objeto com botões
+  if (typeof message === "object" && message.type === "buttons") {
+    return await sendButtonList(phone, message.text, message.buttons);
+  }
+
+  // 📝 Texto simples
   if (!message || typeof message !== "string") {
     console.warn("⚠️ Mensagem vazia. Ignorada.");
     return;
@@ -33,9 +39,9 @@ export async function sendButtonList(phone, message, buttons) {
     phone,
     message,
     buttonList: {
-      buttons: buttons.map((b, index) => ({
-        id: b.id ?? String(index + 1),
-        label: b.title ?? b.label,
+      buttons: buttons.map((b) => ({
+        id: b.id || b.text,
+        label: b.text || b.label,
       })),
     },
   };
@@ -45,10 +51,11 @@ export async function sendButtonList(phone, message, buttons) {
       headers: HEADERS,
     });
 
-    console.log("📤 Z-API BUTTON LIST ENVIADA:", res.data);
+    console.log("📤 BOTÕES ENVIADOS:", res.data);
+    return res.data;
   } catch (err) {
     console.error(
-      "❌ Erro ao enviar button list:",
+      "❌ Erro ao enviar botões:",
       err.response?.data || err.message
     );
   }
