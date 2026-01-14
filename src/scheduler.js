@@ -1,6 +1,7 @@
 import { getPendingReminders, markAsSent } from "./services/reminderService.js";
 import { sendMessage } from "./zapi.js";
-import { db } from "../config/firebase.js";
+import { db } from "./config/firebase.js";
+import { updateUser } from "./services/userService.js";
 
 let isRunning = false;
 
@@ -47,7 +48,7 @@ export function startScheduler() {
         // 👇 NOVO: Se tiver valor, oferece registrar gasto
         let message;
 
-        if (reminder.temGasto && reminder.valor) {
+        if (reminder.valor) {
           message = `⏰ *_LEMBRETE DE PAGAMENTO_*
 ━━━━━━━━━━━━━━
 📌 *${actionText}*
@@ -56,8 +57,20 @@ export function startScheduler() {
 🕔 ${formattedTime}
 
 Já pagou? Responda:
-✅ *"Sim, paguei"* - registro o gasto
-❌ *"Ainda não"* - te lembro depois`;
+✅ *"Sim, paguei"*
+❌ *"Ainda não"*`;
+
+          // 👇 Marca usuário como aguardando confirmação
+          await updateUser(reminder.phone, {
+            stage: "awaiting_payment_confirmation",
+            pendingPayment: {
+              reminderId: reminder.id,
+              valor: reminder.valor,
+              local: reminder.local,
+              categoria: reminder.categoria,
+              acao: reminder.text,
+            },
+          });
         } else {
           message = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
@@ -69,11 +82,11 @@ Já pagou? Responda:
 
         await sendMessage(reminder.phone, message);
 
-        // 👇 Se NÃO tem gasto, marca como enviado
-        if (!reminder.temGasto) {
+        // 👇 Se NÃO tem valor, marca como enviado
+        if (!reminder.valor) {
           await markAsSent(reminder.id);
         } else {
-          // Se tem gasto, aguarda confirmação
+          // Se tem valor, aguarda confirmação
           await db.collection("reminders").doc(reminder.id).update({
             aguardandoConfirmacao: true,
             enviadoEm: Date.now(),

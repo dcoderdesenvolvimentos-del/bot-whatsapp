@@ -627,7 +627,7 @@ export async function routeIntent(userDocId, text) {
         else {
           timestampPagamento = calcularTimestamp(
             aiResponse.offset_dias || 0,
-            aiResponse.horario || "09:00"
+            aiResponse.horario || "00:05"
           );
         }
 
