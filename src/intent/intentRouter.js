@@ -366,6 +366,82 @@ export async function routeIntent(userDocId, text) {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
 
+  /* =========================
+     4.5️⃣ CONFIRMAÇÃO DE PAGAMENTO
+  ========================= */
+
+  if (userData.stage === "awaiting_payment_confirmation") {
+    const respostaNormalizada = normalize(text);
+
+    // ✅ Usuário confirmou pagamento
+    if (
+      respostaNormalizada.includes("sim") ||
+      respostaNormalizada.includes("paguei") ||
+      respostaNormalizada.includes("ja paguei") ||
+      respostaNormalizada.includes("pago")
+    ) {
+      const { valor, local, categoria, acao, reminderId } =
+        userData.pendingPayment;
+
+      // Cria o gasto
+      await createExpense(userDocId, {
+        valor,
+        local,
+        categoria,
+        descricao: acao,
+        data: new Date().toISOString().split("T")[0],
+      });
+
+      // Marca lembrete como concluído
+      await markAsSent(reminderId);
+
+      // Reseta stage do usuário
+      await updateUser(userDocId, {
+        stage: "active",
+        pendingPayment: null,
+      });
+
+      return `✅ Gasto registrado com sucesso!
+
+💰 *R$ ${valor.toFixed(2)}*
+📍 ${local}
+📂 ${categoria}
+📝 ${acao}
+
+Tudo certo! 😉`;
+    }
+
+    // ❌ Usuário disse que ainda não pagou
+    if (
+      respostaNormalizada.includes("nao") ||
+      respostaNormalizada.includes("não") ||
+      respostaNormalizada.includes("ainda nao") ||
+      respostaNormalizada.includes("ainda não")
+    ) {
+      const { reminderId } = userData.pendingPayment;
+
+      // Remove flag de aguardando confirmação
+      await db
+        .collection("reminders")
+        .doc(reminderId)
+        .update({
+          aguardandoConfirmacao: false,
+          timestamp: Date.now() + 3600000, // +1 hora
+        });
+
+      // Reseta stage
+      await updateUser(userDocId, {
+        stage: "active",
+        pendingPayment: null,
+      });
+
+      return "Sem problema! Vou te lembrar de novo em 1 hora 😉";
+    }
+
+    // Se não entendeu, pede confirmação novamente
+    return "Não entendi 🤔 Responda com *sim* ou *não*";
+  }
+
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
