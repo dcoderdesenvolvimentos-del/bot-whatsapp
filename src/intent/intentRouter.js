@@ -95,6 +95,18 @@ export async function routeIntent(userDocId, text) {
      4️⃣ ONBOARDING POR STAGE
   ========================= */
 
+  // 👉 Pergunta confirmação com BOTÕES
+  if (userData.stage === "awaiting_confirmation") {
+    return {
+      type: "button",
+      text: `Seu nome é *${userData.tempName}*?`,
+      buttons: [
+        { id: "1", text: "✅ Sim" },
+        { id: "2", text: "❌ Não" },
+      ],
+    };
+  }
+
   // 👉 Perguntar nome
   if (userData.stage === "first_contact") {
     await updateUser(userDocId, {
@@ -124,9 +136,9 @@ export async function routeIntent(userDocId, text) {
     );
   }
 
+  // 👉 Confirmar nome
   if (userData.stage === "confirming_name") {
-    // ✅ Clicou em SIM
-    if (message.buttonId === "CONFIRM_NAME_YES") {
+    if (["sim", "isso", "correto", "pode ser"].includes(normalized)) {
       await updateUser(userDocId, {
         stage: "active",
         name: userData.tempName,
@@ -134,19 +146,18 @@ export async function routeIntent(userDocId, text) {
       });
 
       return (
-        `✨ *Bem-vindo(a), ${userData.name}!* 😊\n\n` +
-        `Agora eu cuido dos seus lembretes ⏰✨\n\n` +
-        `📌 *Exemplos de pedidos:*\n\n` +
+        `✨ *Bem-vindo(a), ${userData.tempName}!* 😊\n\n` +
+        `Agora eu cuido dos seus lembretes para que você possa focar no que importa ⏰✨\n\n` +
+        `📌 *Você pode me pedir coisas como:*\n\n` +
         `• me lembra daqui 10 minutos\n` +
         `• amanhã às 17h30 ir para a academia\n` +
         `• listar lembretes\n` +
         `• excluir lembretes\n\n` +
-        `🎤 Pode falar por áudio ou texto`
+        `🎤 Pode falar comigo por áudio ou texto, do jeito que preferir 😉`
       );
     }
 
-    // ❌ Clicou em NÃO
-    if (message.buttonId === "CONFIRM_NAME_NO") {
+    if (["nao", "não", "errado"].includes(normalized)) {
       await updateUser(userDocId, {
         stage: "awaiting_name",
         tempName: null,
@@ -155,8 +166,7 @@ export async function routeIntent(userDocId, text) {
       return "Sem problema 😊 Qual é o seu nome então?";
     }
 
-    // fallback
-    return "Use os botões para responder 👇";
+    return "Responda apenas *sim* ou *não*, por favor 🙂";
   }
 
   // =========================
