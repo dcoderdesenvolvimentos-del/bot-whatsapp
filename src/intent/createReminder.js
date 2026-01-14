@@ -283,26 +283,14 @@ export async function createReminder(userDocId, data) {
   // offset_ms, hora absoluta, etc...
 
   // 🔍 DEBUG FINAL (agora confiável)
-  const dateObj = new Date(when);
-  console.log("🔍 TIMESTAMP FINAL:", when);
-  console.log("🔍 ISO STRING:", dateObj.toISOString());
-  console.log(
-    "🔍 TIMEZONE SERVIDOR:",
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
-  console.log("🔍 LOCAL BR:", dateObj.toLocaleString("pt-BR"));
-
-  // 📅 FORMATAÇÃO FINAL
-  const dataFormatada = dateObj.toLocaleString("pt-BR", {
+  // 📅 FORMATAÇÃO FINAL (forçando Brasil)
+  const dataFormatadaBR = new Date(when).toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     dateStyle: "short",
     timeStyle: "short",
   });
 
   return (
-    `✅ *Lembrete criado!*\n\n` +
-    `📌 ${data.acao}\n` +
-    `🕐 ${dateObj.toLocaleString("pt-BR", {
-      timeZone: "America/Sao_Paulo",
-    })}`
+    `✅ *Lembrete criado!*\n\n` + `📌 ${data.acao}\n` + `🕐 ${dataFormatadaBR}`
   );
 }
