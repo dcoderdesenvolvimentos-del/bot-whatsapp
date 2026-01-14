@@ -338,7 +338,7 @@ export async function routeIntent(userDocId, text) {
     ].includes(text)
   ) {
     return (
-      `Oi ${userData.tempName}! 😊 Posso fazer muito por você.\n\n` +
+      `Oi! 😊 Posso fazer muito por você.\n\n` +
       "Exemplos:\n" +
       "*• me lembra daqui 10 minutos*\n" +
       "*• amanhã às 17h30 ir para a academia*\n" +
