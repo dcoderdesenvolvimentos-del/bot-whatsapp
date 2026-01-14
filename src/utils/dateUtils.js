@@ -1,17 +1,21 @@
 export function createTimestampBR({ offset_dias, hora, minuto }) {
-  const now = new Date();
+  // 🇧🇷 Pega a data/hora atual NO BRASIL
+  const nowBR = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
 
-  const date = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + offset_dias,
+  // 🔹 Cria a data alvo NO BRASIL
+  const targetBR = new Date(
+    nowBR.getFullYear(),
+    nowBR.getMonth(),
+    nowBR.getDate() + offset_dias,
     hora,
     minuto,
     0,
     0
   );
 
-  return date.getTime();
+  return targetBR.getTime();
 }
 
 export function createDateBR() {
