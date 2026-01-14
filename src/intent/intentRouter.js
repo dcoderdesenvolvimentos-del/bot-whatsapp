@@ -177,6 +177,57 @@ export async function routeIntent(userDocId, text) {
   }
 
   /* =========================
+     CONFIRMAÇÃO DE PAGAMENTO
+  ========================= */
+
+  if (userData.stage === "awaiting_payment_confirmation") {
+    const respostaNormalizada = normalize(text);
+
+    if (
+      respostaNormalizada.includes("sim") ||
+      respostaNormalizada.includes("paguei")
+    ) {
+      const { valor, local, categoria, acao, reminderId } =
+        userData.pendingPayment;
+
+      await createExpense(userDocId, {
+        valor,
+        local,
+        categoria,
+        descricao: acao,
+        data: new Date().toISOString().split("T")[0],
+      });
+
+      await db.collection("reminders").doc(reminderId).update({
+        sent: true,
+        aguardandoConfirmacao: false,
+      });
+
+      await updateUser(userDocId, {
+        stage: "active",
+        pendingPayment: null,
+      });
+
+      return `✅ Gasto registrado!
+
+💰 R$ ${valor.toFixed(2)} - ${local}`;
+    }
+
+    if (
+      respostaNormalizada.includes("nao") ||
+      respostaNormalizada.includes("não")
+    ) {
+      await updateUser(userDocId, {
+        stage: "active",
+        pendingPayment: null,
+      });
+      return "Beleza! Quando pagar, me avisa 😉";
+    }
+
+    return "Responda *sim* ou *não* 😊";
+  }
+
+  /* =========================
      5️⃣ ANÁLISE DE INTENÇÃO COM IA
   ========================= */
 
