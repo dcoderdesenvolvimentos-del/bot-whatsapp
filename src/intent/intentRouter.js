@@ -385,6 +385,8 @@ export async function routeIntent(userDocId, text) {
       };
     }
 
+    let reply;
+
     switch (intent) {
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
