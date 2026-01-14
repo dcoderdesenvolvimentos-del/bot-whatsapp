@@ -307,6 +307,50 @@ export async function routeIntent(userDocId, text) {
     return "Por nada! 😊 qualquer coisa estou a disposição.";
   }
 
+  // =========================
+  // SAUDAÇÃO
+  // =========================
+  if (
+    [
+      ".",
+      ",",
+      "/",
+      "oi",
+      "ola",
+      "olá",
+      "boa noite",
+      "bom dia",
+      "boa tarde",
+      "mario",
+      "oi mario",
+      "ola mario",
+      "opa",
+      "op",
+      "criar lembrete",
+      "oi mario tudo bem?",
+      "ola mario tudo bem?",
+      "ola mario tudo joia",
+      "ei",
+      "ei mario",
+      "oba",
+      "fala campeão",
+      "iae campeão",
+    ].includes(text)
+  ) {
+    return (
+      `Oi ${name}! 😊 Posso fazer muito por você.\n\n` +
+      "Exemplos:\n" +
+      "*• me lembra daqui 10 minutos*\n" +
+      "*• amanhã às 17h30 ir para a academia*\n" +
+      "*• listar lembretes*\n" +
+      "*• adicionar um gasto*\n" +
+      "*• listar gastos, do dia, mes ou ano.*\n" +
+      "*• Ex: Me lembre todo dia 5 de pagar internet*\n" +
+      "\n" +
+      "📋 É só digitar ou gravar um áudio que eu anoto tudo certinho para não esquecer!"
+    );
+  }
+
   /* =========================
      6️⃣ IA (SÓ USUÁRIO ATIVO)
   ========================= */
