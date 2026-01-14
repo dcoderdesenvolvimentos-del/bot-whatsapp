@@ -52,33 +52,6 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 - Se mencionar "apagar", "excluir lembrete":
   → intencao = "excluir_lembrete"
 
-  
-⚠️ REGRAS CRÍTICAS - LEIA COM ATENÇÃO:
-1. Retorne SEMPRE um JSON válido
-2. Se o usuário pedir para "lembrar de PAGAR algo" E mencionar um VALOR, use APENAS a intenção "criar_lembrete_pagamento"
-3. NUNCA coloque "criar_gasto" dentro de "lembretes"
-4. Um lembrete de pagamento JÁ INCLUI o gasto automaticamente
-
-Exemplo CORRETO para "me lembra de pagar R$ 100 amanhã":
-{
-  "intencao": "criar_lembrete_pagamento",
-  "acao": "pagar",
-  "valor": 100,
-  "local": "pagamento",
-  "categoria": "outros",
-  "offset_dias": 1,
-  "horario": "09:00"
-}
-
-Exemplo ERRADO (NÃO FAÇA ISSO):
-{
-  "intencao": "criar_lembrete",
-  "lembretes": [
-    { "acao": "pagar", "offset_dias": 1 },
-    { "acao": "criar_gasto", "valor": 100 }
-  ]
-}
-
 3️⃣ OUTROS
 - Saudação SEM pedido → "conversa_solta"
 - Pedido de ajuda → "ajuda"
@@ -341,17 +314,6 @@ AJUDA GERAL
   "offset_dias": 1,
   "hora": 17,
   "minuto": 0
-}
-
-criar_lembrete_pagamento - Quando o usuário pede para lembrar de PAGAR algo E menciona o VALOR
-{
-  "intencao": "criar_lembrete_pagamento",
-  "acao": "descrição do pagamento",
-  "valor": 1200,
-  "local": "onde foi o gasto",
-  "categoria": "alimentacao|transporte|saude|lazer|moradia|educacao|outros",
-  "offset_dias": 1,
-  "horario": "09:00"
 }
 
 🛒 CRIAR LISTA:

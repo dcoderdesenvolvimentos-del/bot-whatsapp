@@ -7,10 +7,7 @@ import { getUser, updateUser } from "../services/userService.js";
 import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
-import {
-  addRecurringReminder,
-  addReminder,
-} from "../services/reminderService.js";
+import { addRecurringReminder } from "../services/reminderService.js";
 
 import {
   createList,
@@ -47,22 +44,6 @@ function formatDateDMY(isoDate) {
   if (!isoDate) return "";
   const [year, month, day] = isoDate.split("-");
   return `${day}-${month}-${year}`;
-}
-
-// 👇 ADICIONA ESSA FUNÇÃO AQUI
-function calcularTimestamp(offsetDias = 0, horario = "09:00") {
-  const [hora, minuto] = horario.split(":").map(Number);
-
-  // Cria data em horário de Brasília
-  const now = new Date();
-  const brDate = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-  );
-
-  brDate.setDate(brDate.getDate() + offsetDias);
-  brDate.setHours(hora, minuto, 0, 0);
-
-  return brDate.getTime();
 }
 
 /* =========================
@@ -175,90 +156,6 @@ export async function routeIntent(userDocId, text) {
 
     return "Responda apenas *sim* ou *não*, por favor 🙂";
   }
-
-  /* =========================
-     CONFIRMAÇÃO DE PAGAMENTO
-  ========================= */
-
-  if (userData.stage === "awaiting_payment_confirmation") {
-    const respostaNormalizada = normalize(text);
-
-    if (
-      respostaNormalizada.includes("sim") ||
-      respostaNormalizada.includes("paguei")
-    ) {
-      const { valor, local, categoria, acao, reminderId } =
-        userData.pendingPayment;
-
-      await createExpense(userDocId, {
-        valor,
-        local,
-        categoria,
-        descricao: acao,
-        data: new Date().toISOString().split("T")[0],
-      });
-
-      await db.collection("reminders").doc(reminderId).update({
-        sent: true,
-        aguardandoConfirmacao: false,
-      });
-
-      await updateUser(userDocId, {
-        stage: "active",
-        pendingPayment: null,
-      });
-
-      return `✅ Gasto registrado!
-
-💰 R$ ${valor.toFixed(2)} - ${local}`;
-    }
-
-    if (
-      respostaNormalizada.includes("nao") ||
-      respostaNormalizada.includes("não")
-    ) {
-      await updateUser(userDocId, {
-        stage: "active",
-        pendingPayment: null,
-      });
-      return "Beleza! Quando pagar, me avisa 😉";
-    }
-
-    return "Responda *sim* ou *não* 😊";
-  }
-
-  /* =========================
-     5️⃣ ANÁLISE DE INTENÇÃO COM IA
-  ========================= */
-
-  const userName = userData.name || "usuário";
-  const aiResponse = await analyzeIntent(text, userName);
-
-  console.log("🧠 RESPOSTA IA LIMPA:", aiResponse);
-
-  // 🛡️ Proteção: Se vier "criar_lembrete" com gasto junto, converte
-  if (aiResponse.intencao === "criar_lembrete" && aiResponse.lembretes) {
-    const temPagamento = aiResponse.lembretes.find((l) =>
-      l.acao?.toLowerCase().includes("pagar")
-    );
-    const temGasto = aiResponse.lembretes.find((l) => l.valor);
-
-    if (temPagamento && temGasto) {
-      console.log("🔄 Convertendo para criar_lembrete_pagamento");
-      aiResponse.intencao = "criar_lembrete_pagamento";
-      aiResponse.acao = temPagamento.acao;
-      aiResponse.valor = temGasto.valor;
-      aiResponse.local = temGasto.local;
-      aiResponse.categoria = temGasto.categoria;
-      aiResponse.offset_dias = temPagamento.offset_dias;
-      aiResponse.horario = temGasto.horario || temPagamento.horario || "09:00";
-      delete aiResponse.lembretes;
-    }
-  }
-
-  /* =========================
-     6️⃣ VERIFICAÇÃO DE INTENTS SIMPLES
-  ========================= */
 
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO
@@ -417,82 +314,6 @@ export async function routeIntent(userDocId, text) {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
 
-  /* =========================
-     4.5️⃣ CONFIRMAÇÃO DE PAGAMENTO
-  ========================= */
-
-  if (userData.stage === "awaiting_payment_confirmation") {
-    const respostaNormalizada = normalize(text);
-
-    // ✅ Usuário confirmou pagamento
-    if (
-      respostaNormalizada.includes("sim") ||
-      respostaNormalizada.includes("paguei") ||
-      respostaNormalizada.includes("ja paguei") ||
-      respostaNormalizada.includes("pago")
-    ) {
-      const { valor, local, categoria, acao, reminderId } =
-        userData.pendingPayment;
-
-      // Cria o gasto
-      await createExpense(userDocId, {
-        valor,
-        local,
-        categoria,
-        descricao: acao,
-        data: new Date().toISOString().split("T")[0],
-      });
-
-      // Marca lembrete como concluído
-      await markAsSent(reminderId);
-
-      // Reseta stage do usuário
-      await updateUser(userDocId, {
-        stage: "active",
-        pendingPayment: null,
-      });
-
-      return `✅ Gasto registrado com sucesso!
-
-💰 *R$ ${valor.toFixed(2)}*
-📍 ${local}
-📂 ${categoria}
-📝 ${acao}
-
-Tudo certo! 😉`;
-    }
-
-    // ❌ Usuário disse que ainda não pagou
-    if (
-      respostaNormalizada.includes("nao") ||
-      respostaNormalizada.includes("não") ||
-      respostaNormalizada.includes("ainda nao") ||
-      respostaNormalizada.includes("ainda não")
-    ) {
-      const { reminderId } = userData.pendingPayment;
-
-      // Remove flag de aguardando confirmação
-      await db
-        .collection("reminders")
-        .doc(reminderId)
-        .update({
-          aguardandoConfirmacao: false,
-          timestamp: Date.now() + 3600000, // +1 hora
-        });
-
-      // Reseta stage
-      await updateUser(userDocId, {
-        stage: "active",
-        pendingPayment: null,
-      });
-
-      return "Sem problema! Vou te lembrar de novo em 1 hora 😉";
-    }
-
-    // Se não entendeu, pede confirmação novamente
-    return "Não entendi 🤔 Responda com *sim* ou *não*";
-  }
-
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
@@ -511,8 +332,6 @@ Tudo certo! 😉`;
         end: end.getTime(),
       };
     }
-
-    let reply;
 
     switch (intent) {
       case "AJUDA_GERAL":
@@ -739,51 +558,6 @@ Tudo certo! 😉`;
           `📝 ${data.mensagem}\n` +
           `🔁 Frequência: ${tiposTexto[data.tipo_recorrencia]}\n` +
           `⏰ Horário: ${data.horario}`;
-        break;
-
-      case "criar_lembrete_pagamento":
-        console.log("💰 Criando lembrete de pagamento com gasto automático");
-
-        let timestampPagamento;
-
-        // Se veio offset_ms (ex: "daqui 3 minutos")
-        if (aiResponse.offset_ms) {
-          timestampPagamento = Date.now() + aiResponse.offset_ms;
-        }
-        // Se veio offset_dias (ex: "amanhã")
-        else {
-          timestampPagamento = calcularTimestamp(
-            aiResponse.offset_dias || 0,
-            aiResponse.horario || "00:05"
-          );
-        }
-
-        await addReminder(userDocId, {
-          acao: aiResponse.acao,
-          timestamp: timestampPagamento,
-          valor: aiResponse.valor,
-          local: aiResponse.local,
-          categoria: aiResponse.categoria || "outros",
-        });
-
-        const dataPagamento = new Date(timestampPagamento).toLocaleDateString(
-          "pt-BR"
-        );
-        const horaPagamento = new Date(timestampPagamento).toLocaleTimeString(
-          "pt-BR",
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-          }
-        );
-
-        return (reply = `✅ Lembrete de pagamento criado!
-
-📌 *${aiResponse.acao}*
-💰 Valor: *R$ ${aiResponse.valor.toFixed(2)}*
-🗓 ${dataPagamento} às ${horaPagamento}
-
-Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`);
         break;
 
       case "listar_lembretes": {

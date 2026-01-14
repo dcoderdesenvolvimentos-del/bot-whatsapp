@@ -64,17 +64,6 @@ export async function createReminder(userDocId, data) {
   console.log("🔥 DATA COMPLETO:", data);
 
   // =========================
-  // 🛡️ NORMALIZA TEXTO
-  // =========================
-  if (typeof data.acao !== "string" || !data.acao.trim()) {
-    if (typeof data.texto_original === "string") {
-      data.acao = data.texto_original.trim();
-    } else {
-      data.acao = "Lembrete";
-    }
-  }
-
-  // =========================
   // 🔁 CASO MÚLTIPLO
   // =========================
 

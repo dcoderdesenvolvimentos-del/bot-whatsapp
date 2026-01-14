@@ -1,25 +1,17 @@
 import { db } from "../config/firebase.js";
 
-export async function addReminder(userDocId, data) {
-  console.log("🔥 Salvando lembrete:", userDocId, data);
+export async function addReminder(phone, data) {
+  console.log("🔥 Salvando lembrete:", phone, data);
 
-  const reminderData = {
-    phone: userDocId,
-    text: data.acao,
-    when: data.timestamp,
+  await db.collection("reminders").add({
+    phone,
+    text: data.text, // ← MUDOU DE action PARA text
+    when: data.when, // ← MUDOU DE time PARA when
     sent: false,
     createdAt: Date.now(),
-    // 👇 Salva dados do pagamento se tiver
-    ...(data.valor && {
-      valor: data.valor,
-      local: data.local,
-      categoria: data.categoria,
-      temGasto: true,
-    }),
-  };
+  });
 
-  await db.collection("reminders").add(reminderData);
-  console.log("✅ Lembrete salvo!");
+  console.log("✅ Lembrete salvo no Firestore");
 }
 
 export async function getUserReminders(phone) {
@@ -134,41 +126,28 @@ function calcularProximaRecorrencia(tipo, valor, horario) {
 }
 
 // 🔔 Adicionar lembrete RECORRENTE
-export async function addRecurringReminder(userDocId, data) {
-  console.log("🔥 Salvando lembrete recorrente:", userDocId, data);
+export async function addRecurringReminder(phone, data) {
+  console.log("🔥 Salvando lembrete recorrente:", phone, data);
 
-  const [hour, minute] = data.horario.split(":").map(Number);
-
-  // 🌎 Cria data em horário de Brasília
-  const now = new Date();
-  const brDate = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  const proximaData = calcularProximaRecorrencia(
+    data.tipo_recorrencia,
+    data.valor_recorrencia,
+    data.horario
   );
 
-  brDate.setHours(hour, minute, 0, 0);
-
-  // Se o horário já passou hoje, agenda para amanhã
-  const nowBr = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-  );
-  if (brDate <= nowBr) {
-    brDate.setDate(brDate.getDate() + 1);
-  }
-
-  const reminderData = {
-    phone: userDocId,
+  await db.collection("reminders").add({
+    phone,
     text: data.mensagem,
-    when: brDate.getTime(), // 👈 Timestamp correto em BR
+    when: proximaData,
     sent: false,
+    createdAt: Date.now(),
     recorrente: true,
     tipo_recorrencia: data.tipo_recorrencia,
     valor_recorrencia: data.valor_recorrencia,
     horario: data.horario,
-    createdAt: Date.now(),
-  };
+  });
 
-  await db.collection("reminders").add(reminderData);
-  console.log("✅ Lembrete recorrente salvo!");
+  console.log("✅ Lembrete recorrente salvo");
 }
 
 // 🔁 Reagendar lembrete recorrente após ser enviado
