@@ -292,20 +292,17 @@ export async function createReminder(userDocId, data) {
   );
   console.log("🔍 LOCAL BR:", dateObj.toLocaleString("pt-BR"));
 
-  // 📅  FORMATAÇÃO FINAL
+  // 📅 FORMATAÇÃO FINAL
   const dataFormatada = dateObj.toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
   });
 
-  return {
-    mensagem:
-      `✅ *Lembrete criado!*\n\n` +
-      `📌 ${data.acao}\n` +
-      `🕐 ${dateObj.toLocaleString("pt-BR")}`,
-    resumo: {
-      acao: data.acao,
-      when,
-    },
-  };
+  return (
+    `✅ *Lembrete criado!*\n\n` +
+    `📌 ${data.acao}\n` +
+    `🕐 ${dateObj.toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+    })}`
+  );
 }
