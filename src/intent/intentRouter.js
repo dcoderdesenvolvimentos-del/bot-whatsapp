@@ -641,13 +641,13 @@ export async function routeIntent(userDocId, text) {
           }
         );
 
-        reply = `✅ Lembrete de pagamento criado!
+        return (reply = `✅ Lembrete de pagamento criado!
 
 📌 *${aiResponse.acao}*
 💰 Valor: *R$ ${aiResponse.valor.toFixed(2)}*
 🗓 ${dataPagamento} às ${horaPagamento}
 
-Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`;
+Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`);
         break;
 
       case "listar_lembretes": {
