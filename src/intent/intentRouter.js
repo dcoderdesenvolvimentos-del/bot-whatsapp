@@ -617,10 +617,19 @@ export async function routeIntent(userDocId, text) {
       case "criar_lembrete_pagamento":
         console.log("💰 Criando lembrete de pagamento com gasto automático");
 
-        const timestampPagamento = calcularTimestamp(
-          aiResponse.offset_dias,
-          aiResponse.horario || "09:00"
-        );
+        let timestampPagamento;
+
+        // Se veio offset_ms (ex: "daqui 3 minutos")
+        if (aiResponse.offset_ms) {
+          timestampPagamento = Date.now() + aiResponse.offset_ms;
+        }
+        // Se veio offset_dias (ex: "amanhã")
+        else {
+          timestampPagamento = calcularTimestamp(
+            aiResponse.offset_dias || 0,
+            aiResponse.horario || "09:00"
+          );
+        }
 
         await addReminder(userDocId, {
           acao: aiResponse.acao,
@@ -641,13 +650,13 @@ export async function routeIntent(userDocId, text) {
           }
         );
 
-        return (reply = `✅ Lembrete de pagamento criado!
+        reply = `✅ Lembrete de pagamento criado!
 
 📌 *${aiResponse.acao}*
 💰 Valor: *R$ ${aiResponse.valor.toFixed(2)}*
 🗓 ${dataPagamento} às ${horaPagamento}
 
-Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`);
+Quando eu te lembrar, vou perguntar se você já pagou e registro o gasto automaticamente! 😉`;
         break;
 
       case "listar_lembretes": {

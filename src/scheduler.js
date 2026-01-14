@@ -1,5 +1,6 @@
 import { getPendingReminders, markAsSent } from "./services/reminderService.js";
 import { sendMessage } from "./zapi.js";
+import { db } from "../config/firebase.js";
 
 let isRunning = false;
 
