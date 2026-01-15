@@ -28,7 +28,7 @@ export async function listarCompromissosPorPeriodo({ userId, periodo }) {
     return "📭 Você não tem compromissos nesse período.";
   }
 
-  let resposta = "📅 *Seus compromissos:*\n\n";
+  let resposta = "📅 *Olá, aqui estão seus compromissos:*\n\n";
 
   snapshot.forEach((doc) => {
     const r = doc.data();
@@ -37,7 +37,14 @@ export async function listarCompromissosPorPeriodo({ userId, periodo }) {
       minute: "2-digit",
     });
 
-    resposta += `• ${horario} — ${r.text}\n`;
+    function capitalizeFirst(text) {
+      if (!text || typeof text !== "string") return "";
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    const actionText = capitalizeFirst(r.text);
+
+    resposta += `• ${actionText} às ${horario}\n`;
   });
 
   return resposta;
