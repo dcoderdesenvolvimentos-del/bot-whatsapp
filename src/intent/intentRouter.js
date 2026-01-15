@@ -683,8 +683,8 @@ export async function routeIntent(userDocId, text) {
 
       case "LISTAR_COMPROMISSOS_POR_PERIODO": {
         return await listarCompromissosPorPeriodo({
-          userId,
-          periodo: iaResponse.periodo,
+          userId: userDocId,
+          periodo: response.periodo,
         });
       }
 
