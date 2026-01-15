@@ -1,5 +1,14 @@
 import { db } from "../firebase.js";
 
+const messageId =
+  payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
+
+if (!messageId) return;
+
+if (isDuplicate(messageId)) {
+  return;
+}
+
 function startOfDay(dateStr) {
   return new Date(dateStr + "T00:00:00").getTime();
 }
