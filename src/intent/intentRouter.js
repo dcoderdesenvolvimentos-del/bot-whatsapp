@@ -681,8 +681,12 @@ export async function routeIntent(userDocId, text) {
         return resposta;
       }
 
-      case "LISTAR_COMPROMISSOS_POR_PERIODO":
-        return listarCompromissosPorPeriodo(payload);
+      case "LISTAR_COMPROMISSOS_POR_PERIODO": {
+        return await listarCompromissosPorPeriodo({
+          userId,
+          periodo: iaResponse.periodo,
+        });
+      }
 
       case "excluir_lembrete":
         response = await deleteReminder(userDocId, data);
