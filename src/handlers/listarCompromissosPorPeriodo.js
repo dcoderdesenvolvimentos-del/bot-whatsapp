@@ -37,7 +37,9 @@ export async function listarCompromissosPorPeriodo({
 
   let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
-  snapshot.forEach((doc, index) => {
+  let contador = 1;
+
+  snapshot.forEach((doc) => {
     const r = doc.data();
     const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
@@ -51,7 +53,7 @@ export async function listarCompromissosPorPeriodo({
 
     const actionText = capitalizeFirst(r.text);
 
-    resposta += `${index + 1}️⃣ ${actionText} — ⏰ ${horario}\n`;
+    resposta += `${contador}️⃣ ${actionText} — ⏰ ${horario}\n`;
   });
 
   return resposta;
