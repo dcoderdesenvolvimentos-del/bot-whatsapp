@@ -1,4 +1,6 @@
 import { db } from "../firebase.js";
+console.log("DEBUG RESPONSE:", response);
+console.log("DEBUG RESPONSE.PERIODO:", response?.periodo);
 
 export async function listarCompromissosPorPeriodo({ userId, periodo }) {
   const { data_inicio, data_fim } = periodo;
