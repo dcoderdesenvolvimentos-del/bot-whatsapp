@@ -37,24 +37,39 @@ export async function listarCompromissosPorPeriodo({
 
   let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
-  snapshot.forEach((doc, index) => {
+  let lastDate = null;
+
+  snapshot.forEach((doc) => {
     const r = doc.data();
 
-    const data = new Date(r.when).toLocaleDateString("pt-BR", {
+    const dataObj = new Date(r.when);
+
+    const data = dataObj.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       timeZone: "America/Sao_Paulo",
     });
 
-    const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
+    const diaSemana = dataObj.toLocaleDateString("pt-BR", {
+      weekday: "short",
+      timeZone: "America/Sao_Paulo",
+    });
+
+    const horario = dataObj.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "America/Sao_Paulo",
     });
 
-    const actionText = r.text.charAt(0).toUpperCase() + r.text.slice(1);
+    // Cabeçalho do dia
+    if (data !== lastDate) {
+      resposta += `🗓️ *${
+        diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
+      } • ${data}*\n`;
+      lastDate = data;
+    }
 
-    resposta += `${index + 1}️⃣ ${data} — ${actionText} às ${horario}\n`;
+    resposta += `• ${r.text} — ${horario}\n\n`;
   });
 
   return resposta;
