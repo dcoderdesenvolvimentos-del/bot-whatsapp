@@ -8,7 +8,11 @@ function endOfDay(dateStr) {
   return new Date(dateStr + "T23:59:59").getTime();
 }
 
-export async function listarCompromissosPorPeriodo({ userId, periodo }) {
+export async function listarCompromissosPorPeriodo({
+  userId,
+  periodo,
+  userName,
+}) {
   if (!periodo?.data_inicio || !periodo?.data_fim) {
     return "⚠️ Não consegui identificar o período dos compromissos.";
   }
@@ -28,9 +32,10 @@ export async function listarCompromissosPorPeriodo({ userId, periodo }) {
     return "📭 Você não tem compromissos nesse período.";
   }
 
+  const nome = userName ? ` ${userName}` : "";
   const periodoLabel = getPeriodoLabel(periodo);
 
-  let resposta = `📅 *Olá, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
+  let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
   snapshot.forEach((doc) => {
     const r = doc.data();

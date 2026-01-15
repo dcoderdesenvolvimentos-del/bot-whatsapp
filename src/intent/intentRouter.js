@@ -685,6 +685,7 @@ export async function routeIntent(userDocId, text) {
         return await listarCompromissosPorPeriodo({
           userId: userDocId,
           periodo: data.periodo,
+          userName: userData.name,
         });
       }
 
