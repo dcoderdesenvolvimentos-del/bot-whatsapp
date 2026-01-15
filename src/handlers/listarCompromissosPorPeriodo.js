@@ -51,7 +51,19 @@ export async function listarCompromissosPorPeriodo({
 
     const actionText = capitalizeFirst(r.text);
 
-    resposta += `• ${actionText} às ${horario}\n`;
+    snapshot.forEach((doc, index) => {
+      const r = doc.data();
+      const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const actionText = r.text;
+
+      resposta += `${index + 1}️⃣ ${actionText} — ⏰ ${horario}\n`;
+    });
+
+    resposta += `${index + 1}️⃣ ${actionText} — ⏰ ${horario}\n`;
   });
 
   return resposta;
