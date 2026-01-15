@@ -1,14 +1,27 @@
 import { db } from "../firebase.js";
 
+function startOfDay(dateStr) {
+  return new Date(dateStr + "T00:00:00").getTime();
+}
+
+function endOfDay(dateStr) {
+  return new Date(dateStr + "T23:59:59").getTime();
+}
+
 export async function listarCompromissosPorPeriodo({ userId, periodo }) {
-  const { data_inicio, data_fim } = periodo;
+  if (!periodo?.data_inicio || !periodo?.data_fim) {
+    return "⚠️ Não consegui identificar o período dos compromissos.";
+  }
+
+  const start = startOfDay(periodo.data_inicio);
+  const end = endOfDay(periodo.data_fim);
 
   const snapshot = await db
     .collection("reminders")
-    .where("userId", "==", userId)
-    .where("data", ">=", data_inicio)
-    .where("data", "<=", data_fim)
-    .orderBy("data", "asc")
+    .where("phone", "==", userId)
+    .where("when", ">=", start)
+    .where("when", "<=", end)
+    .orderBy("when", "asc")
     .get();
 
   if (snapshot.empty) {
@@ -18,8 +31,13 @@ export async function listarCompromissosPorPeriodo({ userId, periodo }) {
   let resposta = "📅 *Seus compromissos:*\n\n";
 
   snapshot.forEach((doc) => {
-    const c = doc.data();
-    resposta += `• ${c.data} às ${c.hora} — ${c.titulo}\n`;
+    const r = doc.data();
+    const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    resposta += `• ${horario} — ${r.text}\n`;
   });
 
   return resposta;
