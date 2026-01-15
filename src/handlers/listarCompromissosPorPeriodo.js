@@ -37,21 +37,24 @@ export async function listarCompromissosPorPeriodo({
 
   let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
-  snapshot.forEach((doc) => {
+  snapshot.forEach((doc, index) => {
     const r = doc.data();
+
+    const data = new Date(r.when).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      timeZone: "America/Sao_Paulo",
+    });
+
     const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "America/Sao_Paulo",
     });
 
-    function capitalizeFirst(text) {
-      if (!text || typeof text !== "string") return "";
-      return text.charAt(0).toUpperCase() + text.slice(1);
-    }
+    const actionText = r.text.charAt(0).toUpperCase() + r.text.slice(1);
 
-    const actionText = capitalizeFirst(r.text);
-    resposta += `• ${actionText} às ${horario}\n`;
+    resposta += `${index + 1}️⃣ ${data} — ${actionText} às ${horario}\n`;
   });
 
   return resposta;
