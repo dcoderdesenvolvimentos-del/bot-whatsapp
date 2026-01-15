@@ -8,7 +8,7 @@ import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
 import { addRecurringReminder } from "../services/reminderService.js";
-
+import { listarCompromissosPorPeriodo } from "../handlers/listarCompromissosPorPeriodo.js";
 import {
   createList,
   addItemsToList,
@@ -680,6 +680,9 @@ export async function routeIntent(userDocId, text) {
 
         return resposta;
       }
+
+      case "LISTAR_COMPROMISSOS_POR_PERIODO":
+        return listarCompromissosPorPeriodo(payload);
 
       case "excluir_lembrete":
         response = await deleteReminder(userDocId, data);

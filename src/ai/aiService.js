@@ -316,6 +316,26 @@ AJUDA GERAL
   "minuto": 0
 }
 
+Quando a intenção for listar compromissos por período, retorne SEMPRE no formato JSON:
+
+{
+  "intent": "LISTAR_COMPROMISSOS_POR_PERIODO",
+  "periodo": {
+    "tipo": "day | week | month",
+    "data_inicio": "YYYY-MM-DD",
+    "data_fim": "YYYY-MM-DD"
+  }
+}
+
+Regras:
+- "hoje", "amanhã", "depois de amanhã" → tipo "day"
+- "próxima segunda-feira" → tipo "day"
+- "esse mês" → tipo "month"
+- "mês que vem" → tipo "month"
+- Sempre normalize para datas absolutas
+- Nunca retorne texto fora do JSON
+
+
 🛒 CRIAR LISTA:
 {
   intent: "criar_lista_compras",
