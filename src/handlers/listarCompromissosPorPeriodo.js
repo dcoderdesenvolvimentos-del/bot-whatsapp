@@ -1,8 +1,10 @@
-async function listarCompromissosPorPeriodo({ userId, periodo }) {
+import { db } from "../firebase.js";
+
+export async function listarCompromissosPorPeriodo({ userId, periodo }) {
   const { data_inicio, data_fim } = periodo;
 
   const snapshot = await db
-    .collection("compromissos")
+    .collection("reminders")
     .where("userId", "==", userId)
     .where("data", ">=", data_inicio)
     .where("data", "<=", data_fim)
@@ -22,5 +24,3 @@ async function listarCompromissosPorPeriodo({ userId, periodo }) {
 
   return resposta;
 }
-
-module.exports = listarCompromissosPorPeriodo;

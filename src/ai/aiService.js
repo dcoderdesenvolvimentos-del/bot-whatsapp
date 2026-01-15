@@ -335,6 +335,24 @@ Regras:
 - Sempre normalize para datas absolutas
 - Nunca retorne texto fora do JSON
 
+### Intenção: LISTAR_COMPROMISSOS_POR_PERIODO
+
+Exemplos de mensagens do usuário:
+- me manda meus compromissos de hoje
+- quais são meus compromissos de amanhã
+- me manda meus compromissos da próxima segunda-feira
+- me manda meus compromissos do dia 15
+- quais compromissos eu tenho esse mês
+- me manda meus compromissos do mês que vem
+
+- me manda meus lembretes de hoje
+- quais são meus lembretes  de amanhã
+- me manda meus lembretes  da próxima segunda-feira
+- me manda meus lembretes  do dia 15
+- quais lembretes  eu tenho esse mês
+- me manda meus lembretes  do mês que vem
+
+
 
 🛒 CRIAR LISTA:
 {
