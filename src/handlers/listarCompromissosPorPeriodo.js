@@ -50,7 +50,6 @@ export async function listarCompromissosPorPeriodo({
     }
 
     const actionText = capitalizeFirst(r.text);
-
     resposta += `• ${actionText} às ${horario}\n`;
   });
 
