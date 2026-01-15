@@ -1,12 +1,33 @@
 import { db } from "../firebase.js";
 
-export async function listarCompromissosPorPeriodo({ userId, periodo }) {
+const messageId =
+  payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
+
+if (!messageId) return;
+
+if (isDuplicate(messageId)) {
+  return;
+}
+
+function startOfDay(dateStr) {
+  return new Date(dateStr + "T00:00:00").getTime();
+}
+
+function endOfDay(dateStr) {
+  return new Date(dateStr + "T23:59:59").getTime();
+}
+
+export async function listarCompromissosPorPeriodo({
+  userId,
+  periodo,
+  userName,
+}) {
   if (!periodo?.data_inicio || !periodo?.data_fim) {
     return "⚠️ Não consegui identificar o período dos compromissos.";
   }
 
-  const start = new Date(periodo.data_inicio + "T00:00:00").getTime();
-  const end = new Date(periodo.data_fim + "T23:59:59").getTime();
+  const start = startOfDay(periodo.data_inicio);
+  const end = endOfDay(periodo.data_fim);
 
   const snapshot = await db
     .collection("reminders")
@@ -20,17 +41,58 @@ export async function listarCompromissosPorPeriodo({ userId, periodo }) {
     return "📭 Você não tem compromissos nesse período.";
   }
 
-  let resposta = "📅 *Olá, aqui estão seus compromissos:*\n\n";
+  const nome = userName ? ` ${userName}` : "";
+  const periodoLabel = getPeriodoLabel(periodo);
 
-  snapshot.forEach((doc, index) => {
+  let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
+
+  snapshot.forEach((doc) => {
     const r = doc.data();
     const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
     });
 
-    resposta += `${index + 1}️⃣ ${r.text} — ⏰ ${horario}\n`;
+    function capitalizeFirst(text) {
+      if (!text || typeof text !== "string") return "";
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    const actionText = capitalizeFirst(r.text);
+    resposta += `• ${actionText} às ${horario}\n`;
   });
 
   return resposta;
+}
+
+function getPeriodoLabel(periodo) {
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  if (periodo.tipo === "day") {
+    if (periodo.data_inicio === hoje) {
+      return "de hoje";
+    }
+
+    const amanha = new Date();
+    amanha.setDate(amanha.getDate() + 1);
+    const amanhaISO = amanha.toISOString().slice(0, 10);
+
+    if (periodo.data_inicio === amanhaISO) {
+      return "de amanhã";
+    }
+
+    const [y, m, d] = periodo.data_inicio.split("-");
+    return `do dia ${d}/${m}`;
+  }
+
+  if (periodo.tipo === "week") {
+    return "dessa semana";
+  }
+
+  if (periodo.tipo === "month") {
+    const [y, m] = periodo.data_inicio.split("-");
+    return `do mês ${m}/${y}`;
+  }
+
+  return "";
 }
