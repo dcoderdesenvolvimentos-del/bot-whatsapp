@@ -5,22 +5,7 @@ import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUser } from "./services/userService.js";
 
-const processedMessages = new Map();
-
-function isDuplicate(messageId) {
-  if (processedMessages.has(messageId)) {
-    return true;
-  }
-
-  processedMessages.set(messageId, Date.now());
-
-  // limpa após 10 minutos
-  setTimeout(() => {
-    processedMessages.delete(messageId);
-  }, 10 * 60 * 1000);
-
-  return false;
-}
+const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
   if (payload?.action?.includes("payment") || payload?.type === "payment") {
