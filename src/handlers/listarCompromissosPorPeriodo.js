@@ -62,8 +62,6 @@ export async function listarCompromissosPorPeriodo({
 
       resposta += `${index + 1}️⃣ ${actionText} — ⏰ ${horario}\n`;
     });
-
-    resposta += `${index + 1}️⃣ ${actionText} — ⏰ ${horario}\n`;
   });
 
   return resposta;
