@@ -42,6 +42,7 @@ export async function listarCompromissosPorPeriodo({
     const horario = new Date(r.when).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "America/Sao_Paulo",
     });
 
     function capitalizeFirst(text) {
