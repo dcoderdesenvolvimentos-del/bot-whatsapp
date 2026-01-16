@@ -45,11 +45,6 @@ function buildWhen(lembrete) {
       hora = 0;
     }
 
-    // 12h da tarde nunca é meia-noite
-    if (hora === 0) {
-      hora = 12;
-    }
-
     const agoraBR = new Date(
       new Date().toLocaleString("en-US", {
         timeZone: "America/Sao_Paulo",
