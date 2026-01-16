@@ -74,26 +74,6 @@ export async function createReminder(userDocId, data) {
   console.log("🔥 USER DOC ID:", userDocId);
   console.log("🔥 DATA COMPLETO:", data);
 
-  // 🚑 CASO CRÍTICO — "HOJE às X horas"
-  if (
-    offsetDiasFinal === 0 &&
-    typeof hora === "number" &&
-    typeof minuto === "number"
-  ) {
-    const whenHoje = criarTimestampHojeComHoraBR(hora, minuto);
-
-    console.log("🧪 DEBUG HOJE:", {
-      agora: Date.now(),
-      whenHoje,
-      hora,
-      minuto,
-    });
-
-    if (whenHoje < Date.now()) {
-      return "❌ Esse horário já passou hoje. Tente um horário futuro.";
-    }
-  }
-
   // =========================
   // 🔁 CASO MÚLTIPLO
   // =========================
@@ -171,6 +151,26 @@ export async function createReminder(userDocId, data) {
    */
   if (typeof data.offset_ms === "number" && data.offset_ms > 0) {
     const when = Date.now() + data.offset_ms;
+
+    // 🚑 CASO CRÍTICO — "HOJE às X horas"
+    if (
+      offsetDiasFinal === 0 &&
+      typeof hora === "number" &&
+      typeof minuto === "number"
+    ) {
+      const whenHoje = criarTimestampHojeComHoraBR(hora, minuto);
+
+      console.log("🧪 DEBUG HOJE:", {
+        agora: Date.now(),
+        whenHoje,
+        hora,
+        minuto,
+      });
+
+      if (whenHoje < Date.now()) {
+        return "❌ Esse horário já passou hoje. Tente um horário futuro.";
+      }
+    }
 
     await addReminder(phone, {
       text: data.acao,
