@@ -9,6 +9,9 @@ import { showHelpMessage } from "../responses/helpResponse.js";
 import { db } from "../config/firebase.js";
 import { addRecurringReminder } from "../services/reminderService.js";
 import { listarCompromissosPorPeriodo } from "../handlers/listarCompromissosPorPeriodo.js";
+import { canUseReceipt } from "../services/receiptLimit.js";
+import { processReceipt } from "../modules/receiptReader/receipt.controller.js";
+
 import {
   createList,
   addItemsToList,
@@ -46,11 +49,29 @@ function formatDateDMY(isoDate) {
   return `${day}-${month}-${year}`;
 }
 
+async function handleReceiptFlow(userId, imageUrl) {
+  const allowed = await canUseReceipt(userId, 30);
+
+  if (!allowed) {
+    return (
+      "📸 Você atingiu o limite de *30 comprovantes neste mês*.\n\n" +
+      "🔄 O limite será renovado automaticamente no próximo mês 🙂"
+    );
+  }
+
+  await processReceipt(imageUrl, userId);
+
+  return (
+    "🧾 *Comprovante recebido!*\n\n" +
+    "Estou analisando e, se tudo estiver certo, o gasto será salvo automaticamente 💾"
+  );
+}
+
 /* =========================
    ROUTER PRINCIPAL
 =========================  */
 
-export async function routeIntent(userDocId, text) {
+export async function routeIntent(userDocId, text, media) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
@@ -358,6 +379,13 @@ export async function routeIntent(userDocId, text) {
   if (userData.stage !== "active") {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
+  /* =========================
+   COMPROVANTE (IMAGEM)
+========================= */
+
+  if (media?.hasImage) {
+    return await handleReceiptFlow(userDocId, media.imageUrl);
+  }
 
   try {
     const data = await analyzeIntent(normalizedFixed);
@@ -379,6 +407,12 @@ export async function routeIntent(userDocId, text) {
     }
 
     switch (intent) {
+      case "registrar_gasto_comprovante":
+        return (
+          "📸 Pode enviar a *foto do comprovante* agora.\n\n" +
+          "Eu identifico o valor, a data e salvo o gasto automaticamente 💾"
+        );
+
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
 

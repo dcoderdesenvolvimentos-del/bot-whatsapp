@@ -350,6 +350,20 @@ Exemplos de mensagens do usuário:
 - quais lembretes  eu tenho esse mês
 - me manda meus lembretes  do mês que vem
 
+INTENÇÃO: registrar_gasto_comprovante
+QUANDO USAR:
+- Usuário enviar imagem de comprovante
+- Usuário disser algo como:
+  "vou mandar um comprovante"
+  "salva esse comprovante"
+  "registra esse pagamento"
+  "olha esse comprovante"
+RETORNE:
+{
+  "intencao": "registrar_gasto_comprovante"
+}
+
+
 
 
 🛒 CRIAR LISTA:
