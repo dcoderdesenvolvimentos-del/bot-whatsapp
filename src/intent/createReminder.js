@@ -57,15 +57,7 @@ function buildWhen(lembrete) {
     const mes = agoraBR.getMonth();
     const dia = agoraBR.getDate() + lembrete.offset_dias;
 
-    return Date.UTC(
-      ano,
-      mes,
-      dia,
-      hora + 3, // BR → UTC
-      lembrete.minuto,
-      0,
-      0
-    );
+    return Date.UTC(ano, mes, dia, hora, lembrete.minuto, 0, 0);
   }
 
   throw new Error("Não foi possível calcular o horário do lembrete");
