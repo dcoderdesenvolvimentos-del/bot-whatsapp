@@ -33,7 +33,7 @@ import vision from "@google-cloud/vision";
 
 const visionClient = new vision.ImageAnnotatorClient();
 
-/* ===========================
+/* ==========================
    HELPERS
 ========================= */
 
