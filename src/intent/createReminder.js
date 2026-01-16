@@ -160,7 +160,7 @@ export async function createReminder(userDocId, data) {
       typeof hora === "number" &&
       typeof minuto === "number"
     ) {
-      const whenHoje = criarTimestampHojeComHoraBR(hora, minuto);
+      const whenHoje = criarTimestampHojeComHoraUTC(hora, minuto);
 
       console.log("🧪 DEBUG HOJE:", {
         agora: Date.now(),
@@ -297,7 +297,7 @@ export async function createReminder(userDocId, data) {
     typeof hora === "number" &&
     typeof minuto === "number"
   ) {
-    const whenHoje = criarTimestampHojeComHoraBR(hora, minuto);
+    const whenHoje = criarTimestampHojeComHoraUTC(hora, minuto);
 
     // ⛔ se ainda assim for passado, bloqueia
     if (whenHoje < Date.now()) {
