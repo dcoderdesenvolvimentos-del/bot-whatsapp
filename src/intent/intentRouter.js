@@ -10,7 +10,6 @@ import { db } from "../config/firebase.js";
 import { addRecurringReminder } from "../services/reminderService.js";
 import { listarCompromissosPorPeriodo } from "../handlers/listarCompromissosPorPeriodo.js";
 import { canUseReceipt } from "../services/receiptLimit.js";
-import { processReceipt } from "../modules/receiptReader/receipt.controller.js";
 
 import {
   createList,
@@ -47,24 +46,6 @@ function formatDateDMY(isoDate) {
   if (!isoDate) return "";
   const [year, month, day] = isoDate.split("-");
   return `${day}-${month}-${year}`;
-}
-
-async function handleReceiptFlow(userId, imageUrl) {
-  const allowed = await canUseReceipt(userId, 30);
-
-  if (!allowed) {
-    return (
-      "📸 Você atingiu o limite de *30 comprovantes neste mês*.\n\n" +
-      "🔄 O limite será renovado automaticamente no próximo mês 🙂"
-    );
-  }
-
-  await processReceipt(imageUrl, userId);
-
-  return (
-    "🧾 *Comprovante recebido!*\n\n" +
-    "Estou analisando e, se tudo estiver certo, o gasto será salvo automaticamente 💾"
-  );
 }
 
 /* =========================
@@ -381,7 +362,7 @@ export async function routeIntent(userDocId, text, media) {
   }
   /* =========================
    COMPROVANTE (IMAGEM)
-========================= */
+ ======================== */
 
   if (media?.hasImage) {
     return await handleReceiptFlow(userDocId, media.imageUrl);
@@ -690,4 +671,71 @@ export async function routeIntent(userDocId, text, media) {
     console.error("❌ Erro na IA:", err);
     return "❌ Ops! Algo deu errado. Tente novamente.";
   }
+}
+
+/* =========================
+   📸 COMPROVANTE — FUNÇÕES AUXILIARES
+========================= */
+
+async function handleReceiptFlow(userId, imageUrl) {
+  const allowed = await canUseReceipt(userId, 30);
+
+  if (!allowed) {
+    return (
+      "📸 Você atingiu o limite de *30 comprovantes neste mês*.\n\n" +
+      "🔄 O limite será renovado automaticamente no próximo mês 🙂"
+    );
+  }
+
+  // 🔹 por enquanto só simula
+  console.log("📸 Comprovante recebido:", imageUrl);
+
+  // futuramente entra OCR aqui
+  return (
+    "🧾 *Comprovante recebido!*\n\n" +
+    "Estou analisando e, se tudo estiver certo, o gasto será salvo automaticamente 💾"
+  );
+}
+
+import { db } from "../config/firebase.js";
+
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+async function canUseReceipt(userId, limit = 30) {
+  const ref = db.collection("users").doc(userId);
+  const snap = await ref.get();
+  const month = getCurrentMonth();
+
+  if (!snap.exists) {
+    await ref.set(
+      {
+        receipt_usage: { month, count: 1 },
+      },
+      { merge: true }
+    );
+    return true;
+  }
+
+  const usage = snap.data().receipt_usage;
+
+  if (!usage || usage.month !== month) {
+    await ref.set(
+      {
+        receipt_usage: { month, count: 1 },
+      },
+      { merge: true }
+    );
+    return true;
+  }
+
+  if (usage.count >= limit) return false;
+
+  await ref.update({
+    "receipt_usage.count": usage.count + 1,
+  });
+
+  return true;
 }
