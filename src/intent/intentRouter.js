@@ -52,7 +52,7 @@ function formatDateDMY(isoDate) {
    ROUTER PRINCIPAL
 =========================  */
 
-export async function routeIntent(userDocId, text, media) {
+export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
@@ -360,11 +360,13 @@ export async function routeIntent(userDocId, text, media) {
   if (userData.stage !== "active") {
     return "⚠️ Finalize seu cadastro antes de continuar 🙂";
   }
-  /* =========================
-   COMPROVANTE (IMAGEM)
- ======================== */
 
-  if (media?.hasImage) {
+  /* =========================
+   📸 COMPROVANTE (IMAGEM)
+========================= */
+
+  if (media?.hasImage && media.imageUrl) {
+    console.log("📸 IMAGEM RECEBIDA NO ROUTER:", media.imageUrl);
     return await handleReceiptFlow(userDocId, media.imageUrl);
   }
 
@@ -676,10 +678,10 @@ export async function routeIntent(userDocId, text, media) {
 /* =========================
    📸 COMPROVANTE — FUNÇÕES AUXILIARES
 ========================= */
-
 async function handleReceiptFlow(userId, imageUrl) {
-  const allowed = await canUseReceipt(userId, 30);
+  console.log("📸 Processando comprovante:", imageUrl);
 
+  const allowed = await canUseReceipt(userId, 30);
   if (!allowed) {
     return (
       "📸 Você atingiu o limite de *30 comprovantes neste mês*.\n\n" +
@@ -687,17 +689,8 @@ async function handleReceiptFlow(userId, imageUrl) {
     );
   }
 
-  // 🔹 por enquanto só simula
-  console.log("📸 Comprovante recebido:", imageUrl);
-
-  // futuramente entra OCR aqui
   return (
     "🧾 *Comprovante recebido!*\n\n" +
-    "Estou analisando e, se tudo estiver certo, o gasto será salvo automaticamente 💾"
+    "Vou analisar e salvar seu gasto automaticamente 💾"
   );
-}
-
-function getCurrentMonth() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
