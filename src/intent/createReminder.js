@@ -1,20 +1,22 @@
 import { addReminder } from "../services/reminderService.js";
 import { createTimestampBR } from "../utils/dateUtils.js";
 
-function criarTimestampHojeComHoraBR(hora, minuto) {
-  const hojeBR = new Date(
+function criarTimestampHojeComHoraUTC(hora, minuto) {
+  const agoraBR = new Date(
     new Date().toLocaleString("en-US", {
       timeZone: "America/Sao_Paulo",
     })
   );
 
-  // força HOJE às 00:00
-  hojeBR.setHours(0, 0, 0, 0);
-
-  // agora aplica a hora desejada
-  hojeBR.setHours(hora, minuto, 0, 0);
-
-  return hojeBR.getTime();
+  return Date.UTC(
+    agoraBR.getFullYear(),
+    agoraBR.getMonth(),
+    agoraBR.getDate(),
+    hora,
+    minuto,
+    0,
+    0
+  );
 }
 
 // 🔧 helper para data/hora no fuso do Brasil
