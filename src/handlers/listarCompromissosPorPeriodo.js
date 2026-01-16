@@ -1,5 +1,25 @@
 import { db } from "../firebase.js";
 
+function startOfTodayBR() {
+  const now = new Date();
+  const hojeBR = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
+
+  hojeBR.setHours(0, 0, 0, 0);
+  return hojeBR.getTime();
+}
+
+function startOfDayFromTimestampBR(timestamp) {
+  const d = new Date(
+    new Date(timestamp).toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo",
+    })
+  );
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
 function startOfDay(dateStr) {
   return new Date(dateStr + "T00:00:00").getTime();
 }
@@ -37,10 +57,27 @@ export async function listarCompromissosPorPeriodo({
 
   let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
+  // 👇 COLOQUE ISSO AQUI
+  const hojeInicioBR = startOfTodayBR();
+  const agora = Date.now();
+  const LIMITE_MS = 6 * 60 * 60 * 1000; // 6h
+
   let lastDate = null;
 
   snapshot.forEach((doc) => {
     const r = doc.data();
+
+    const inicioDiaCompromissoBR = startOfDayFromTimestampBR(r.when);
+
+    // ❌ REGRA 1 — mês/semana: não mostrar dias anteriores a hoje
+    if (inicioDiaCompromissoBR < hojeInicioBR) {
+      return;
+    }
+
+    // ❌ REGRA 2 — HOJE: respeita limite de 6h
+    if (inicioDiaCompromissoBR === hojeInicioBR && r.when < agora - LIMITE_MS) {
+      return;
+    }
 
     const dataObj = new Date(r.when);
 
