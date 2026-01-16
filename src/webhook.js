@@ -36,6 +36,9 @@ export async function handleWebhook(payload, sendMessage) {
     const user = payload.phone;
     let text = "";
 
+    const imageUrl = payload.image?.imageUrl || payload.image?.url || null;
+    const hasImage = !!imageUrl;
+
     if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
       const rawText = await audioToText(payload.audio.audioUrl);
@@ -49,8 +52,8 @@ export async function handleWebhook(payload, sendMessage) {
       console.log("🔘 Botão clicado:", text);
     }
 
-    if (!text) {
-      console.log("⚠️ Nenhum texto processável encontrado.");
+    if (!text && !hasImage) {
+      console.log("⚠️ Nenhum texto ou imagem processável encontrado.");
       return;
     }
 
@@ -60,7 +63,10 @@ export async function handleWebhook(payload, sendMessage) {
     const userDoc = await getOrCreateUser({ phone: user });
     console.log("🔍 USER DOC ID:", userDoc.id);
 
-    const response = await routeIntent(userDoc.id, text.toLowerCase());
+    const response = await routeIntent(userDoc.id, text.toLowerCase(), {
+      hasImage,
+      imageUrl,
+    });
 
     // ✅ TRATAMENTO DE RESPOSTAS
     if (response === null || response === undefined || response === "") {
