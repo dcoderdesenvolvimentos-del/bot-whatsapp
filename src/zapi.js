@@ -67,6 +67,11 @@ const text = payload.message?.text || "";
 
 const imageUrl = payload.message?.image?.url || null;
 
+console.log("📩 WEBHOOK Z-API:", {
+  text,
+  imageUrl,
+});
+
 await routeIntent(userId, text, {
   hasImage: !!imageUrl,
   imageUrl,
