@@ -4,6 +4,17 @@ import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
+import express from "express";
+import zapiWebhook from "./zapiWebhook.js";
+
+const app = express();
+
+app.use(express.json());
+app.use("/zapi", zapiWebhook);
+
+app.listen(3000, () => {
+  console.log("🚀 Servidor rodando na porta 3000");
+});
 
 startScheduler();
 
