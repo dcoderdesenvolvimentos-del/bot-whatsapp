@@ -1,24 +1,6 @@
 import { addReminder } from "../services/reminderService.js";
 import { createTimestampBR } from "../utils/dateUtils.js";
 
-function criarTimestampHojeComHoraUTC(hora, minuto) {
-  const agoraBR = new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "America/Sao_Paulo",
-    })
-  );
-
-  return Date.UTC(
-    agoraBR.getFullYear(),
-    agoraBR.getMonth(),
-    agoraBR.getDate(),
-    hora,
-    minuto,
-    0,
-    0
-  );
-}
-
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
   return new Date(
@@ -47,6 +29,11 @@ function buildWhen(lembrete) {
       hora = 0;
     }
 
+    // 12h da tarde nunca é meia-noite
+    if (hora === 0) {
+      hora = 12;
+    }
+
     const agoraBR = new Date(
       new Date().toLocaleString("en-US", {
         timeZone: "America/Sao_Paulo",
@@ -57,7 +44,15 @@ function buildWhen(lembrete) {
     const mes = agoraBR.getMonth();
     const dia = agoraBR.getDate() + lembrete.offset_dias;
 
-    return Date.UTC(ano, mes, dia, hora, lembrete.minuto, 0, 0);
+    return Date.UTC(
+      ano,
+      mes,
+      dia,
+      hora + 3, // BR → UTC
+      lembrete.minuto,
+      0,
+      0
+    );
   }
 
   throw new Error("Não foi possível calcular o horário do lembrete");
@@ -145,26 +140,6 @@ export async function createReminder(userDocId, data) {
    */
   if (typeof data.offset_ms === "number" && data.offset_ms > 0) {
     const when = Date.now() + data.offset_ms;
-
-    // 🚑 CASO CRÍTICO — "HOJE às X horas"
-    if (
-      offsetDiasFinal === 0 &&
-      typeof hora === "number" &&
-      typeof minuto === "number"
-    ) {
-      const whenHoje = criarTimestampHojeComHoraUTC(hora, minuto);
-
-      console.log("🧪 DEBUG HOJE:", {
-        agora: Date.now(),
-        whenHoje,
-        hora,
-        minuto,
-      });
-
-      if (whenHoje < Date.now()) {
-        return "❌ Esse horário já passou hoje. Tente um horário futuro.";
-      }
-    }
 
     await addReminder(phone, {
       text: data.acao,
@@ -281,39 +256,6 @@ export async function createReminder(userDocId, data) {
   // 🧠 Só hora → hoje
   if (hora !== null && minuto === null) {
     minuto = 0;
-  }
-
-  // 🎯 CASO ESPECIAL — "HOJE às X horas"
-  if (
-    offsetDiasFinal === 0 &&
-    typeof hora === "number" &&
-    typeof minuto === "number"
-  ) {
-    const whenHoje = criarTimestampHojeComHoraUTC(hora, minuto);
-
-    // ⛔ se ainda assim for passado, bloqueia
-    if (whenHoje < Date.now()) {
-      return "❌ Esse horário já passou hoje. Tente um horário futuro.";
-    }
-
-    await addReminder(phone, {
-      text: data.acao,
-      when: whenHoje,
-    });
-
-    const dataFormatadaBR = new Date(whenHoje).toLocaleString("pt-BR", {
-      timeZone: "America/Sao_Paulo",
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-
-    const actionText = data.acao.charAt(0).toUpperCase() + data.acao.slice(1);
-
-    return (
-      `✅ *Lembrete criado!*\n\n` +
-      `📌 ${actionText}\n` +
-      `🕐 ${dataFormatadaBR}`
-    );
   }
 
   // 🕒 AGORA SIM: cria timestamp
