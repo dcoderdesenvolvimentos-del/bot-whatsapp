@@ -1,6 +1,22 @@
 import { addReminder } from "../services/reminderService.js";
 import { createTimestampBR } from "../utils/dateUtils.js";
 
+function criarTimestampHojeComHoraBR(hora, minuto) {
+  const hojeBR = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo",
+    })
+  );
+
+  // força HOJE às 00:00
+  hojeBR.setHours(0, 0, 0, 0);
+
+  // agora aplica a hora desejada
+  hojeBR.setHours(hora, minuto, 0, 0);
+
+  return hojeBR.getTime();
+}
+
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
   return new Date(
@@ -256,6 +272,39 @@ export async function createReminder(userDocId, data) {
   // 🧠 Só hora → hoje
   if (hora !== null && minuto === null) {
     minuto = 0;
+  }
+
+  // 🎯 CASO ESPECIAL — "HOJE às X horas"
+  if (
+    offsetDiasFinal === 0 &&
+    typeof hora === "number" &&
+    typeof minuto === "number"
+  ) {
+    const whenHoje = criarTimestampHojeComHoraBR(hora, minuto);
+
+    // ⛔ se ainda assim for passado, bloqueia
+    if (whenHoje < Date.now()) {
+      return "❌ Esse horário já passou hoje. Tente um horário futuro.";
+    }
+
+    await addReminder(phone, {
+      text: data.acao,
+      when: whenHoje,
+    });
+
+    const dataFormatadaBR = new Date(whenHoje).toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+
+    const actionText = data.acao.charAt(0).toUpperCase() + data.acao.slice(1);
+
+    return (
+      `✅ *Lembrete criado!*\n\n` +
+      `📌 ${actionText}\n` +
+      `🕐 ${dataFormatadaBR}`
+    );
   }
 
   // 🕒 AGORA SIM: cria timestamp
