@@ -29,6 +29,9 @@ import {
 } from "../services/expenseService.js";
 
 import { slugify, capitalize } from "../utils/textUtils.js";
+import vision from "@google-cloud/vision";
+
+const visionClient = new vision.ImageAnnotatorClient();
 
 /* ===========================
    HELPERS
@@ -689,8 +692,24 @@ async function handleReceiptFlow(userId, imageUrl) {
     );
   }
 
+  const text = await runOCR(imageUrl);
+
+  if (!text) {
+    return (
+      "⚠️ Não consegui identificar texto nesse comprovante.\n\n" +
+      "📸 Tente enviar uma foto mais nítida ou um print do comprovante."
+    );
+  }
+
+  console.log("🧾 TEXTO EXTRAÍDO PELO OCR:\n", text);
+
   return (
-    "🧾 *Comprovante recebido!*\n\n" +
-    "Vou analisar e salvar seu gasto automaticamente 💾"
+    "✅ *Comprovante lido com sucesso!*\n\n" +
+    "Já consegui identificar as informações. Em breve vou salvar o gasto 💾"
   );
+}
+
+async function runOCR(imageUrl) {
+  const [result] = await visionClient.textDetection(imageUrl);
+  return result.fullTextAnnotation?.text || "";
 }
