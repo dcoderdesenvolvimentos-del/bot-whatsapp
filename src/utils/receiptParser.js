@@ -43,16 +43,22 @@ export function parseReceiptText(text) {
     }
   }
 
-  // 🥈 FALLBACK: MAIOR VALOR (ignorando impostos)
+  // 🥈 FALLBACK: MAIOR VALOR MONETÁRIO REAL
   if (!valor) {
     const valores = [];
 
     for (const line of lines) {
       const l = normalizeText(line);
 
-      if (/TRIBUTO|IMPOSTO|ICMS|ISS|LEI|TAXA/.test(l)) continue;
+      // ❌ ignora identificadores institucionais
+      if (/CNPJ|CPF|IE|INSCRICAO|CHAVE|CODIGO|PROTOCOLO|SERIE|NFC|ECF/.test(l))
+        continue;
 
-      const match = l.match(/(\d+[.,]\d{2})/);
+      // ❌ ignora números longos ou fracionados
+      if (/\d{4,}/.test(l)) continue;
+      if (/\//.test(l)) continue;
+
+      const match = l.match(/\b(\d{1,3}[.,]\d{2})\b/);
       if (match) {
         valores.push(parseFloat(match[1].replace(",", ".")));
       }
@@ -80,6 +86,9 @@ export function parseReceiptText(text) {
     "CNPJ",
     "CPF",
     "IE",
+    "CODIGO", // ⬅️ NOVO
+    "DESCRICAO", // ⬅️ NOVO
+    "QTDE", // ⬅️ NOVO
     "VALOR",
     "TOTAL",
     "FORMA DE PAGAMENTO",
