@@ -10,7 +10,7 @@ import { db } from "../config/firebase.js";
 import { addRecurringReminder } from "../services/reminderService.js";
 import { listarCompromissosPorPeriodo } from "../handlers/listarCompromissosPorPeriodo.js";
 import { canUseReceipt } from "../services/receiptLimit.js";
-
+import { parseReceiptText } from "../utils/receiptParser.js";
 import {
   createList,
   addItemsToList,
@@ -406,6 +406,41 @@ export async function routeIntent(userDocId, text, media = {}) {
           "Eu identifico o valor, a data e salvo o gasto automaticamente 💾"
         );
 
+      case "confirmar_salvar_comprovante": {
+        const user = await getUser(userDocId);
+
+        if (!user?.tempReceipt) {
+          return "⚠️ Nenhum comprovante pendente para salvar.";
+        }
+
+        const dados = user.tempReceipt;
+
+        await createExpense(userDocId, {
+          valor: dados.valor,
+          local: dados.local,
+          categoria: "outros",
+          origem: "comprovante",
+          data: dados.data,
+          hora: dados.hora,
+          createdAt: Date.now(),
+        });
+
+        await updateUser(userDocId, {
+          tempReceipt: null,
+        });
+
+        return (
+          "💾 *Gasto salvo com sucesso!*\n\n" +
+          `💰 R$ ${dados.valor.toFixed(2)}\n` +
+          `📅 ${dados.data || "—"}\n` +
+          `⏰ ${dados.hora || "—"}`
+        );
+      }
+
+      case "cancelar_comprovante":
+        await updateUser(userDocId, { tempReceipt: null });
+        return "❌ Comprovante descartado. Nenhum gasto foi salvo.";
+
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
 
@@ -699,21 +734,43 @@ async function handleReceiptFlow(userId, imageUrl) {
     );
   }
 
-  const text = await runOCR(imageUrl);
+  const ocrText = await runOCR(imageUrl);
 
-  if (!text) {
+  if (!ocrText) {
     return (
       "⚠️ Não consegui identificar texto nesse comprovante.\n\n" +
       "📸 Tente enviar uma foto mais nítida ou um print do comprovante."
     );
   }
 
-  console.log("🧾 TEXTO EXTRAÍDO PELO OCR:\n", text);
+  console.log("🧾 TEXTO EXTRAÍDO PELO OCR:\n", ocrText);
 
-  return (
-    "✅ *Comprovante lido com sucesso!*\n\n" +
-    "Já consegui identificar as informações. Em breve vou salvar o gasto 💾"
-  );
+  const dados = parseReceiptText(ocrText);
+
+  if (!dados.valor) {
+    return "⚠️ Não consegui identificar o valor do comprovante.";
+  }
+
+  // 🔹 salva temporariamente no usuário
+  await updateUser(userId, {
+    tempReceipt: dados,
+  });
+
+  // 🔹 AQUI entra a CONFIRMAÇÃO
+  return {
+    type: "buttons",
+    text:
+      "💳 *Comprovante identificado*\n\n" +
+      `📍 Local: ${dados.local}\n` +
+      `📅 Data: ${dados.data || "não identificada"}\n` +
+      `⏰ Horário: ${dados.hora || "não identificado"}\n` +
+      `💰 Valor: R$ ${dados.valor.toFixed(2)}\n\n` +
+      "Deseja salvar esse gasto?",
+    buttons: [
+      { id: "confirmar_salvar_comprovante", text: "✅ Salvar" },
+      { id: "cancelar_comprovante", text: "❌ Cancelar" },
+    ],
+  };
 }
 
 async function runOCR(imageUrl) {
