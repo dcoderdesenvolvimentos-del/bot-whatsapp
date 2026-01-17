@@ -1,3 +1,63 @@
+const blacklist = [
+  // fiscais / administrativas
+  "COMPROVANTE",
+  "REIMPRESSAO",
+  "DOCUMENTO",
+  "AUXILIAR",
+  "NOTA FISCAL",
+  "CONSUMIDOR",
+  "CNPJ",
+  "CPF",
+  "IE",
+  "CODIGO",
+  "DESCRICAO",
+  "QTDE",
+  "ITEM",
+  "ITENS",
+  "VALOR",
+  "TOTAL",
+  "VALOR PAGO",
+  "AUTORIZACAO",
+  "PROTOCOLO",
+  "OPERADOR",
+  "DATA",
+  "HORA",
+  "SERIE",
+  "NFC",
+  "ECF",
+  "TRIBUTOS",
+  "IMPOSTO",
+  "LEI",
+
+  // pagamento (❗ ESSENCIAL)
+
+  "FORMA DE PAGAMENTO",
+  "MA DE PAGAMENTO",
+  "PAGAMENTO",
+  "CARTAO",
+  "CREDITO",
+  "DEBITO",
+  "PIX",
+  "DINHEIRO",
+  "TRANSFERENCIA",
+  "TAO DE CREDITO",
+  "CONSULTE",
+  "CHAVE",
+  "CHAVE DE ACESSO",
+  "CONSULTE PELA CHAVE",
+  "PORTAL",
+  "PORTAL NFC",
+  "PORTAL NFCE",
+  "FAZENDA",
+  "SEFAZ",
+  "GOV",
+  "HTTP",
+  "HTTPS",
+  "WWW",
+  "URL",
+  // OCR quebrado
+];
+
 function isValidCompanyName(line, blacklist) {
   if (!line) return false;
 
@@ -140,66 +200,6 @@ export function parseReceiptText(text) {
       break;
     }
   }
-
-  const blacklist = [
-    // fiscais / administrativas
-    "COMPROVANTE",
-    "REIMPRESSAO",
-    "DOCUMENTO",
-    "AUXILIAR",
-    "NOTA FISCAL",
-    "CONSUMIDOR",
-    "CNPJ",
-    "CPF",
-    "IE",
-    "CODIGO",
-    "DESCRICAO",
-    "QTDE",
-    "ITEM",
-    "ITENS",
-    "VALOR",
-    "TOTAL",
-    "VALOR PAGO",
-    "AUTORIZACAO",
-    "PROTOCOLO",
-    "OPERADOR",
-    "DATA",
-    "HORA",
-    "SERIE",
-    "NFC",
-    "ECF",
-    "TRIBUTOS",
-    "IMPOSTO",
-    "LEI",
-
-    // pagamento (❗ ESSENCIAL)
-
-    "FORMA DE PAGAMENTO",
-    "MA DE PAGAMENTO",
-    "PAGAMENTO",
-    "CARTAO",
-    "CREDITO",
-    "DEBITO",
-    "PIX",
-    "DINHEIRO",
-    "TRANSFERENCIA",
-    "TAO DE CREDITO",
-    "CONSULTE",
-    "CHAVE",
-    "CHAVE DE ACESSO",
-    "CONSULTE PELA CHAVE",
-    "PORTAL",
-    "PORTAL NFC",
-    "PORTAL NFCE",
-    "FAZENDA",
-    "SEFAZ",
-    "GOV",
-    "HTTP",
-    "HTTPS",
-    "WWW",
-    "URL",
-    // OCR quebrado
-  ];
 
   // 🔎 só analisa linhas ANTES do CNPJ
   const indexCnpj = lines.findIndex((l) => normalizeText(l).includes("CNPJ"));
