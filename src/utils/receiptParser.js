@@ -134,6 +134,7 @@ export function parseReceiptText(text) {
     "LEI",
 
     // pagamento (❗ ESSENCIAL)
+
     "FORMA DE PAGAMENTO",
     "MA DE PAGAMENTO",
     "PAGAMENTO",
@@ -143,7 +144,22 @@ export function parseReceiptText(text) {
     "PIX",
     "DINHEIRO",
     "TRANSFERENCIA",
-    "TAO DE CREDITO", // OCR quebrado
+    "TAO DE CREDITO",
+    "CONSULTE",
+    "CHAVE",
+    "CHAVE DE ACESSO",
+    "CONSULTE PELA CHAVE",
+    "PORTAL",
+    "PORTAL NFC",
+    "PORTAL NFCE",
+    "FAZENDA",
+    "SEFAZ",
+    "GOV",
+    "HTTP",
+    "HTTPS",
+    "WWW",
+    "URL",
+    // OCR quebrado
   ];
 
   // 🔎 só analisa linhas ANTES do CNPJ
@@ -153,6 +169,14 @@ export function parseReceiptText(text) {
 
   for (const line of candidateLines) {
     const l = normalizeText(line);
+    // ❌ ignora frases imperativas / instruções
+    if (
+      l.startsWith("CONSULTE") ||
+      l.startsWith("ACESSE") ||
+      l.startsWith("VERIFIQUE") ||
+      l.startsWith("INFORME")
+    )
+      continue;
 
     if (blacklist.some((w) => l.includes(w))) continue;
     if (l.length < 6) continue;
