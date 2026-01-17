@@ -35,6 +35,11 @@ const visionClient = new vision.ImageAnnotatorClient({
   credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
 });
 
+console.log(
+  "GOOGLE_VISION_CREDENTIALS exists?",
+  !!process.env.GOOGLE_VISION_CREDENTIALS
+);
+
 /* ==========================
    HELPERS
 ========================= */
