@@ -31,18 +31,14 @@ import {
 import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 
-const credentials = JSON.parse(
-  Buffer.from(process.env.GOOGLE_VISION_CREDENTIALS_B64, "base64").toString(
-    "utf-8"
-  )
-);
-
 const visionClient = new vision.ImageAnnotatorClient({
-  credentials,
+  credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
 });
 
-console.log("VISION B64 EXISTS:", !!process.env.GOOGLE_VISION_CREDENTIALS_B64);
-console.log("VISION JSON KEYS:", Object.keys(credentials || {}));
+console.log(
+  "GOOGLE_VISION_CREDENTIALS exists?",
+  !!process.env.GOOGLE_VISION_CREDENTIALS
+);
 
 /* ==========================
    HELPERS
