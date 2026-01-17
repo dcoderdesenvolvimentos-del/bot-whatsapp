@@ -86,34 +86,46 @@ export function parseReceiptText(text) {
     "CNPJ",
     "CPF",
     "IE",
-    "CODIGO", // ⬅️ NOVO
-    "DESCRICAO", // ⬅️ NOVO
-    "QTDE", // ⬅️ NOVO
+    "CODIGO",
+    "DESCRICAO",
+    "QTDE",
+    "ITEM",
+    "ITENS",
+    "FORMA DE PAGAMENTO",
+    "MA DE PAGAMENTO", // OCR quebrado
+    "PAGAMENTO",
     "VALOR",
     "TOTAL",
-    "FORMA DE PAGAMENTO",
+    "VALOR PAGO",
     "AUTORIZACAO",
     "PROTOCOLO",
+    "OPERADOR",
     "DATA",
     "HORA",
     "SERIE",
     "NFC",
     "ECF",
+    "TRIBUTOS",
+    "IMPOSTO",
+    "LEI",
   ];
 
-  for (const line of lines) {
+  // 🔎 só analisa linhas ANTES do CNPJ
+  const indexCnpj = lines.findIndex((l) => normalizeText(l).includes("CNPJ"));
+
+  const candidateLines = indexCnpj > 0 ? lines.slice(0, indexCnpj) : lines;
+
+  for (const line of candidateLines) {
     const l = normalizeText(line);
 
-    // ignora lixo comum
     if (blacklist.some((w) => l.includes(w))) continue;
-    if (l.length < 5) continue;
-    if (/\d{4,}/.test(l)) continue;
+    if (l.length < 6) continue;
+    if (/\d/.test(l)) continue;
 
-    // padrão típico de nome comercial
     if (/^[A-Z\s&.-]+$/.test(l)) {
       local = stripCompanySuffix(l);
 
-      // 🔎 DETECÇÃO DE TIPO
+      // 🔎 tipo do estabelecimento
       if (/POSTO|COMBUSTIVEL|GASOLINA|ETANOL|DIESEL/.test(l)) tipo = "posto";
       else if (/FARMACIA|DROGARIA/.test(l)) tipo = "farmacia";
       else if (/SUPERMERCADO|MERCADO|ATACAD|HIPER/.test(l)) tipo = "mercado";
