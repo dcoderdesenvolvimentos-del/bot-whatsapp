@@ -1,29 +1,129 @@
 export function parseReceiptText(text) {
-  const cleanText = text.replace(/\n+/g, " ").toUpperCase();
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
-  // 💰 VALOR
-  const valorMatch = cleanText.match(/R\$?\s?(\d{1,3}(?:\.\d{3})*,\d{2})/);
+  /* ==========================
+     🔧 HELPERS
+  ========================== */
 
-  // 📅 DATA (09/12/25 ou 09/12/2025)
-  const dataMatch = cleanText.match(/\b(\d{2}\/\d{2}\/\d{2,4})\b/);
+  const normalizeText = (str) =>
+    str
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
 
-  // ⏰ HORÁRIO (17:38 ou 17:38:22)
-  const horaMatch = cleanText.match(/\b(\d{2}:\d{2})(?::\d{2})?\b/);
+  const stripCompanySuffix = (name) =>
+    name
+      .replace(
+        /\b(LTDA|ME|EPP|EIRELI|SA|S\/A|COMERCIAL|INDUSTRIA|SERVICOS)\b/g,
+        "",
+      )
+      .replace(/\s{2,}/g, " ")
+      .trim();
 
-  // 📍 LOCAL (heurística simples)
-  const localMatch = cleanText.match(
-    /(EMPORIO|SUPERMERCADO|LTDA|ME|EIRELI|COMERCIO|PNEUS|MERCADO)[A-Z\s]{0,40}/
-  );
+  /* ==========================
+     💰 EXTRAIR VALOR TOTAL
+  ========================== */
+
+  let valor = null;
+
+  // 🥇 PRIORIDADE: VALOR TOTAL / VALOR PAGO
+  for (const line of lines) {
+    const l = normalizeText(line);
+
+    if (/VALOR\s*TOTAL|VALOR\s*PAGO|TOTAL\s*R\$|TOTAL\s*A\s*PAGAR/.test(l)) {
+      const match = l.match(/(\d+[.,]\d{2})/);
+      if (match) {
+        valor = parseFloat(match[1].replace(",", "."));
+        break;
+      }
+    }
+  }
+
+  // 🥈 FALLBACK: MAIOR VALOR (ignorando impostos)
+  if (!valor) {
+    const valores = [];
+
+    for (const line of lines) {
+      const l = normalizeText(line);
+
+      if (/TRIBUTO|IMPOSTO|ICMS|ISS|LEI|TAXA/.test(l)) continue;
+
+      const match = l.match(/(\d+[.,]\d{2})/);
+      if (match) {
+        valores.push(parseFloat(match[1].replace(",", ".")));
+      }
+    }
+
+    if (valores.length) {
+      valor = Math.max(...valores);
+    }
+  }
+
+  /* ==========================
+     🏪 NOME DO ESTABELECIMENTO
+  ========================== */
+
+  let local = null;
+  let tipo = "outros";
+
+  const blacklist = [
+    "COMPROVANTE",
+    "REIMPRESSAO",
+    "DOCUMENTO",
+    "AUXILIAR",
+    "NOTA FISCAL",
+    "CONSUMIDOR",
+    "CNPJ",
+    "CPF",
+    "IE",
+    "VALOR",
+    "TOTAL",
+    "FORMA DE PAGAMENTO",
+    "AUTORIZACAO",
+    "PROTOCOLO",
+    "DATA",
+    "HORA",
+    "SERIE",
+    "NFC",
+    "ECF",
+  ];
+
+  for (const line of lines) {
+    const l = normalizeText(line);
+
+    // ignora lixo comum
+    if (blacklist.some((w) => l.includes(w))) continue;
+    if (l.length < 5) continue;
+    if (/\d{4,}/.test(l)) continue;
+
+    // padrão típico de nome comercial
+    if (/^[A-Z\s&.-]+$/.test(l)) {
+      local = stripCompanySuffix(l);
+
+      // 🔎 DETECÇÃO DE TIPO
+      if (/POSTO|COMBUSTIVEL|GASOLINA|ETANOL|DIESEL/.test(l)) tipo = "posto";
+      else if (/FARMACIA|DROGARIA/.test(l)) tipo = "farmacia";
+      else if (/SUPERMERCADO|MERCADO|ATACAD|HIPER/.test(l)) tipo = "mercado";
+      else if (
+        /PIZZA|LANCH|BURGER|RESTAURANTE|IFOOD|DELIVERY|BAR|LANCHONETE/.test(l)
+      )
+        tipo = "delivery";
+
+      break;
+    }
+  }
+
+  /* ==========================
+     📦 RESULTADO FINAL
+  ========================== */
 
   return {
-    valor: valorMatch
-      ? parseFloat(valorMatch[1].replace(/\./g, "").replace(",", "."))
-      : null,
-
-    data: dataMatch ? dataMatch[1] : null,
-
-    hora: horaMatch ? horaMatch[1] : null,
-
-    local: localMatch ? localMatch[0].trim() : "Comprovante",
+    valor: valor || null,
+    local: local || "Local não identificado",
+    tipo,
   };
 }
