@@ -81,6 +81,9 @@ function isValidCompanyName(line, blacklist) {
 }
 
 export function parseReceiptText(text) {
+  let valor = null;
+  let local = null;
+  let tipo = "outros";
   const lines = text
     .split("\n")
     .map((l) => l.trim())
@@ -109,8 +112,6 @@ export function parseReceiptText(text) {
   /* ==========================
      💰 EXTRAIR VALOR TOTAL
   ========================== */
-
-  let valor = null;
 
   // 🥇 PRIORIDADE: VALOR TOTAL / VALOR PAGO
   for (const line of lines) {
@@ -171,9 +172,6 @@ export function parseReceiptText(text) {
       local = stripCompanySuffix(candidate);
     }
   }
-
-  let local = null;
-  let tipo = "outros";
 
   /* ==========================
      📅 DATA E ⏰ HORA
