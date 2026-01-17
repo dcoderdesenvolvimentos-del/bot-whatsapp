@@ -31,8 +31,6 @@ import {
 import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 
-import vision from "@google-cloud/vision";
-
 const credentials = JSON.parse(
   Buffer.from(process.env.GOOGLE_VISION_CREDENTIALS_B64, "base64").toString(
     "utf-8"
