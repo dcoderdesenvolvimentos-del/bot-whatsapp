@@ -188,7 +188,7 @@ export function parseReceiptText(text) {
     const match = line.match(/\b(\d{2}\/\d{2}\/\d{2,4})\b/);
     if (match) {
       const [d, m, y] = match[1].split("/");
-      data = y.length === 2 ? `20${y}-${m}-${d}` : `${y}-${m}-${d}`;
+      data = y.length === 2 ? `20${d}-${m}-${y}` : `${d}-${m}-${y}`;
       break;
     }
   }
@@ -204,33 +204,43 @@ export function parseReceiptText(text) {
 
   // 🔎 só analisa linhas ANTES do CNPJ
 
-  for (const line of candidateLines) {
+  /* 🥇 PRIORIDADE: LINHA DO CNPJ */
+  for (const line of lines) {
     const l = normalizeText(line);
-    // ❌ ignora frases imperativas / instruções
-    if (
-      l.startsWith("CONSULTE") ||
-      l.startsWith("ACESSE") ||
-      l.startsWith("VERIFIQUE") ||
-      l.startsWith("INFORME")
-    )
-      continue;
 
-    if (blacklist.some((w) => l.includes(w))) continue;
-    if (l.length < 6) continue;
-    if (/\d/.test(l)) continue;
+    if (l.includes("CNPJ")) {
+      // remove tudo antes do CNPJ
+      const afterCnpj = l.split("CNPJ").pop();
 
-    if (/^[A-Z\s&.-]+$/.test(l)) {
+      // remove números, símbolos e lixo
+      const cleaned = afterCnpj
+        .replace(/[:.\d\/\-]/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      if (cleaned.length >= 6) {
+        local = stripCompanySuffix(cleaned);
+
+        // classificação básica
+        if (/SUPERMERCADO|MERCADO|ATACAD/.test(cleaned)) tipo = "mercado";
+        else if (/FARMACIA|DROGARIA/.test(cleaned)) tipo = "farmacia";
+        else if (/POSTO|COMBUSTIVEL/.test(cleaned)) tipo = "posto";
+        else if (/RESTAURANTE|LANCH|PIZZA|BAR/.test(cleaned))
+          tipo = "alimentacao";
+
+        break;
+      }
+    }
+  }
+
+  /* 🥈 FALLBACK: heurística antiga */
+  if (!local) {
+    for (const line of lines) {
+      const l = normalizeText(line);
+
+      if (!isValidCompanyName(l)) continue;
+
       local = stripCompanySuffix(l);
-
-      // 🔎 tipo do estabelecimento
-      if (/POSTO|COMBUSTIVEL|GASOLINA|ETANOL|DIESEL/.test(l)) tipo = "posto";
-      else if (/FARMACIA|DROGARIA/.test(l)) tipo = "farmacia";
-      else if (/SUPERMERCADO|MERCADO|ATACAD|HIPER/.test(l)) tipo = "mercado";
-      else if (
-        /PIZZA|LANCH|BURGER|RESTAURANTE|IFOOD|DELIVERY|BAR|LANCHONETE/.test(l)
-      )
-        tipo = "delivery";
-
       break;
     }
   }
