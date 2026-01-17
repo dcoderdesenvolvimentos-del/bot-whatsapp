@@ -1,3 +1,25 @@
+function isValidCompanyName(line, blacklist) {
+  if (!line) return false;
+
+  const l = line;
+
+  if (blacklist.some((w) => l.includes(w))) return false;
+  if (l.length < 6) return false;
+  if (/\d/.test(l)) return false;
+  if (!/^[A-Z\s&.-]+$/.test(l)) return false;
+
+  // ❌ frases administrativas
+  if (
+    l.startsWith("CONSULTE") ||
+    l.startsWith("ACESSE") ||
+    l.startsWith("VERIFIQUE") ||
+    l.startsWith("INFORME")
+  )
+    return false;
+
+  return true;
+}
+
 export function parseReceiptText(text) {
   const lines = text
     .split("\n")
@@ -72,6 +94,23 @@ export function parseReceiptText(text) {
   /* ==========================
      🏪 NOME DO ESTABELECIMENTO
   ========================== */
+
+  const normalizedLines = lines.map(normalizeText);
+
+  // 🔴 TENTATIVA A: primeira linha válida do cupom
+  for (const l of normalizedLines.slice(0, 5)) {
+    if (isValidCompanyName(l, blacklist)) {
+      local = stripCompanySuffix(l);
+      break;
+    }
+  }
+
+  if (!local && indexCnpj > 0) {
+    const candidate = normalizeText(lines[indexCnpj - 1]);
+    if (isValidCompanyName(candidate, blacklist)) {
+      local = stripCompanySuffix(candidate);
+    }
+  }
 
   let local = null;
   let tipo = "outros";
