@@ -31,7 +31,9 @@ import {
 import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 
-const visionClient = new vision.ImageAnnotatorClient();
+const visionClient = new vision.ImageAnnotatorClient({
+  credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
+});
 
 /* ==========================
    HELPERS
