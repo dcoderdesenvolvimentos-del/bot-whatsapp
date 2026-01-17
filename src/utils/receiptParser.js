@@ -155,6 +155,9 @@ export function parseReceiptText(text) {
   /* ==========================
      🏪 NOME DO ESTABELECIMENTO
   ========================== */
+  const indexCnpj = lines.findIndex((l) => normalizeText(l).includes("CNPJ"));
+
+  const candidateLines = indexCnpj > 0 ? lines.slice(0, indexCnpj) : lines;
 
   const normalizedLines = lines.map(normalizeText);
 
@@ -200,9 +203,6 @@ export function parseReceiptText(text) {
   }
 
   // 🔎 só analisa linhas ANTES do CNPJ
-  const indexCnpj = lines.findIndex((l) => normalizeText(l).includes("CNPJ"));
-
-  const candidateLines = indexCnpj > 0 ? lines.slice(0, indexCnpj) : lines;
 
   for (const line of candidateLines) {
     const l = normalizeText(line);
