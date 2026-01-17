@@ -1,7 +1,6 @@
-export function createTimestampBR({ offset_dias, hora, minuto }) {
+export function createTimestampBR({ offset_dias = 0, hora, minuto }) {
   const now = new Date();
 
-  // Cria a data/hora SEM fuso horário (local puro)
   const date = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -12,15 +11,16 @@ export function createTimestampBR({ offset_dias, hora, minuto }) {
     0
   );
 
-  // Compensa o offset do Brasil (-3h = -180 min)
-  const offsetBR = 3 * 60 * 60 * 1000; // 3 horas em milissegundos
-
-  return date.getTime() + offsetBR;
+  // ❗ NÃO mexe em timezone
+  return date.getTime();
 }
 
 export function createDateBR() {
   const now = new Date();
-  const [year, month, day] = now.toISOString().split("T")[0].split("-");
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+
   return `${day}-${month}-${year}`;
 }
 

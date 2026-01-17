@@ -1,6 +1,7 @@
 import { db } from "../firebase.js";
 import { createDateBR, createHourBR } from "../utils/dateUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { parseBRL } from "../utils/moneyUtils.js";
 
 // 🔧 Converte "DD-MM-YYYY" em Firestore Timestamp
 function parseDateToTimestamp(dateStr, isEnd = false) {
@@ -20,8 +21,14 @@ function parseDateToTimestamp(dateStr, isEnd = false) {
 }
 
 export async function createExpense(userId, data) {
+  const valor = parseBRL(data.valor);
+
+  if (valor === null) {
+    throw new Error("Valor inválido para gasto");
+  }
+
   await db.collection("gastos").doc(userId).collection("itens").add({
-    valor: data.valor,
+    valor,
     local: data.local,
     categoria: data.categoria,
     timestamp: Timestamp.now(),
@@ -83,9 +90,15 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
 }
 
 export async function criarGastoParcelado(userId, data) {
-  const { valor_total, parcelas, descricao, categoria } = data;
+  const { parcelas, descricao, categoria } = data;
 
-  const valorParcela = Number((valor_total / parcelas).toFixed(2));
+  const valorTotal = parseBRL(data.valor_total);
+
+  if (!valorTotal || !parcelas) {
+    throw new Error("Valor ou número de parcelas inválido");
+  }
+
+  const valorParcela = Number((valorTotal / parcelas).toFixed(2));
 
   const gastos = [];
 
@@ -118,10 +131,8 @@ export async function criarGastoParcelado(userId, data) {
   return (
     `💳 *Compra parcelada registrada com sucesso!*\n\n` +
     `📦 Item: ${descricao}\n` +
-    `💰 Valor total: R$ ${valor_total.toFixed(2)}\n` +
-    `🔢 Parcelas: ${parcelas}x de R$ ${(valor_total / parcelas).toFixed(
-      2
-    )}\n\n` +
+    `💰 Valor total: R$ ${valorTotal.toFixed(2)}\n` +
+    `🔢 Parcelas: ${parcelas}x de R$ ${valorParcela.toFixed(2)}\n\n` +
     `📅 As parcelas foram distribuídas nos próximos ${parcelas} meses.`
   );
 }

@@ -10,6 +10,23 @@ function nowInSaoPaulo() {
   );
 }
 
+function buildLocalDate({ hora, minuto, isToday = true }) {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0–11
+  const day = now.getDate();
+
+  const date = new Date(year, month, day, hora, minuto, 0, 0);
+
+  // se for "hoje" mas o horário já passou, joga para amanhã
+  if (isToday && date.getTime() <= Date.now()) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  return date.getTime();
+}
+
 function buildWhen(lembrete) {
   // CASO 1 — offset em minutos
   if (typeof lembrete.offset_ms === "number") {
@@ -56,6 +73,16 @@ function buildWhen(lembrete) {
   }
 
   throw new Error("Não foi possível calcular o horário do lembrete");
+}
+
+function normalizeReminderData(data) {
+  // caso venha em array (IA nova)
+  if (Array.isArray(data.lembretes) && data.lembretes.length > 0) {
+    return data.lembretes[0];
+  }
+
+  // fallback antigo
+  return data;
 }
 
 export async function createReminder(userDocId, data) {

@@ -30,6 +30,7 @@ import {
 
 import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
+import { parseBRL } from "../utils/moneyUtils.js";
 
 const visionClient = new vision.ImageAnnotatorClient({
   credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
@@ -435,6 +436,10 @@ export async function routeIntent(userDocId, text, media = {}) {
         start: start.getTime(),
         end: end.getTime(),
       };
+    }
+
+    if (data.valor_total) {
+      data.valor_total = parseBRL(data.valor_total);
     }
 
     switch (intent) {
