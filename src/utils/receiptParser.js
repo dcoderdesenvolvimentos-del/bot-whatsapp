@@ -76,7 +76,34 @@ export function parseReceiptText(text) {
   let local = null;
   let tipo = "outros";
 
+  /* ==========================
+     📅 DATA E ⏰ HORA
+  ========================== */
+
+  let data = null;
+  let hora = null;
+
+  // DATA: DD/MM/YY ou DD/MM/YYYY
+  for (const line of lines) {
+    const match = line.match(/\b(\d{2}\/\d{2}\/\d{2,4})\b/);
+    if (match) {
+      const [d, m, y] = match[1].split("/");
+      data = y.length === 2 ? `20${y}-${m}-${d}` : `${y}-${m}-${d}`;
+      break;
+    }
+  }
+
+  // HORA: HH:MM
+  for (const line of lines) {
+    const match = line.match(/\b(\d{2}:\d{2})\b/);
+    if (match) {
+      hora = match[1];
+      break;
+    }
+  }
+
   const blacklist = [
+    // fiscais / administrativas
     "COMPROVANTE",
     "REIMPRESSAO",
     "DOCUMENTO",
@@ -91,9 +118,6 @@ export function parseReceiptText(text) {
     "QTDE",
     "ITEM",
     "ITENS",
-    "FORMA DE PAGAMENTO",
-    "MA DE PAGAMENTO", // OCR quebrado
-    "PAGAMENTO",
     "VALOR",
     "TOTAL",
     "VALOR PAGO",
@@ -108,6 +132,18 @@ export function parseReceiptText(text) {
     "TRIBUTOS",
     "IMPOSTO",
     "LEI",
+
+    // pagamento (❗ ESSENCIAL)
+    "FORMA DE PAGAMENTO",
+    "MA DE PAGAMENTO",
+    "PAGAMENTO",
+    "CARTAO",
+    "CREDITO",
+    "DEBITO",
+    "PIX",
+    "DINHEIRO",
+    "TRANSFERENCIA",
+    "TAO DE CREDITO", // OCR quebrado
   ];
 
   // 🔎 só analisa linhas ANTES do CNPJ
@@ -141,10 +177,11 @@ export function parseReceiptText(text) {
   /* ==========================
      📦 RESULTADO FINAL
   ========================== */
-
   return {
     valor: valor || null,
     local: local || "Local não identificado",
     tipo,
+    data,
+    hora,
   };
 }
