@@ -90,6 +90,30 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
 }
 
 export async function criarGastoParcelado(userId, data) {
+  const isPagamentoRecorrente =
+    /emprestimo|financiamento|consorcio|credito|parcela do/i.test(
+      data.descricao
+    );
+
+  if (isPagamentoRecorrente && data.parcelas === 1) {
+    // trata como gasto normal
+  }
+
+  // ⚠️ 1 parcela NÃO é compra parcelada
+  if (data.parcelas === 1) {
+    return await createExpense(userId, {
+      valor: data.valor_total,
+      local: data.descricao,
+      categoria: data.categoria || "outros",
+    }).then(() => {
+      return (
+        "💾 *Pagamento registrado com sucesso!*\n\n" +
+        `📦 ${data.descricao}\n` +
+        `💰 Valor: R$ ${Number(data.valor_total).toFixed(2)}`
+      );
+    });
+  }
+
   const { parcelas, descricao, categoria } = data;
 
   const valorTotal = parseBRL(data.valor_total);

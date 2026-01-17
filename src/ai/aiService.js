@@ -168,6 +168,9 @@ retorne:
   "categoria": categoria adequada
 }
 
+⚠️ Importante:
+Se o usuário mencionar “paguei a parcela”, “parcela do empréstimo”, “parcela do financiamento” sem indicar múltiplas parcelas, trate como gasto simples, não como compra parcelada.
+
 
 
 ============================
