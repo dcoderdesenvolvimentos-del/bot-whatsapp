@@ -380,6 +380,44 @@ export async function routeIntent(userDocId, text, media = {}) {
     return await handleReceiptFlow(userDocId, media.imageUrl);
   }
 
+  /* =========================
+   🔘 COMANDOS DIRETOS (BOTÕES)
+========================= */
+
+  if (normalized === "cancelar_comprovante") {
+    await updateUser(userDocId, { tempReceipt: null });
+    return "❌ Comprovante descartado. Nenhum gasto foi salvo.";
+  }
+
+  if (normalized === "confirmar_salvar_comprovante") {
+    const user = await getUser(userDocId);
+
+    if (!user?.tempReceipt) {
+      return "⚠️ Nenhum comprovante pendente para salvar.";
+    }
+
+    const dados = user.tempReceipt;
+
+    await createExpense(userDocId, {
+      valor: dados.valor,
+      local: dados.local,
+      categoria: "outros",
+      origem: "comprovante",
+      data: dados.data,
+      hora: dados.hora,
+      createdAt: Date.now(),
+    });
+
+    await updateUser(userDocId, { tempReceipt: null });
+
+    return (
+      "💾 *Gasto salvo com sucesso!*\n\n" +
+      `💰 R$ ${dados.valor.toFixed(2)}\n` +
+      `📅 ${dados.data || "—"}\n` +
+      `⏰ ${dados.hora || "—"}`
+    );
+  }
+
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
@@ -405,41 +443,6 @@ export async function routeIntent(userDocId, text, media = {}) {
           "📸 Pode enviar a *foto do comprovante* agora.\n\n" +
           "Eu identifico o valor, a data e salvo o gasto automaticamente 💾"
         );
-
-      case "confirmar_salvar_comprovante": {
-        const user = await getUser(userDocId);
-
-        if (!user?.tempReceipt) {
-          return "⚠️ Nenhum comprovante pendente para salvar.";
-        }
-
-        const dados = user.tempReceipt;
-
-        await createExpense(userDocId, {
-          valor: dados.valor,
-          local: dados.local,
-          categoria: "outros",
-          origem: "comprovante",
-          data: dados.data,
-          hora: dados.hora,
-          createdAt: Date.now(),
-        });
-
-        await updateUser(userDocId, {
-          tempReceipt: null,
-        });
-
-        return (
-          "💾 *Gasto salvo com sucesso!*\n\n" +
-          `💰 R$ ${dados.valor.toFixed(2)}\n` +
-          `📅 ${dados.data || "—"}\n` +
-          `⏰ ${dados.hora || "—"}`
-        );
-      }
-
-      case "cancelar_comprovante":
-        await updateUser(userDocId, { tempReceipt: null });
-        return "❌ Comprovante descartado. Nenhum gasto foi salvo.";
 
       case "AJUDA_GERAL":
         return showHelpMessage(userDocId);
