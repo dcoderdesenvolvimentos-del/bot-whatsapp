@@ -340,7 +340,7 @@ export function parseReceiptText(text) {
     const match = line.match(/\b(\d{2}\/\d{2}\/\d{2,4})\b/);
     if (match) {
       const [d, m, y] = match[1].split("/");
-      data = y.length === 2 ? `-${d}/${m}/20${y}` : `${d}/${m}/${y}`;
+      data = y.length === 2 ? `${d}/${m}/20${y}` : `${d}/${m}/${y}`;
       break;
     }
   }
@@ -391,7 +391,7 @@ export function parseReceiptText(text) {
     for (const line of lines) {
       const l = normalizeText(line);
 
-      if (!isValidCompanyName(l)) continue;
+      if (!isValidCompanyName(l, blacklist)) continue;
 
       local = stripCompanySuffix(l);
       break;
