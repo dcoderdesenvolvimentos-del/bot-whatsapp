@@ -59,35 +59,32 @@ function buildLocalDate({ hora, minuto, isToday = true }) {
 }
 
 function buildWhen(lembrete) {
-  // ⭐ 1. DIA DA SEMANA (PRIORIDADE MÁXIMA)
+  // ⭐ 1. DIA DA SEMANA (manda em tudo)
   if (typeof lembrete.weekday === "number") {
     const hora = typeof lembrete.hora === "number" ? lembrete.hora : 9;
     const minuto = typeof lembrete.minuto === "number" ? lembrete.minuto : 0;
-
     return nextWeekdayBR(lembrete.weekday, hora, minuto);
   }
 
-  // ⭐ 2. OFFSET EM MILISSEGUNDOS (daqui X minutos/horas)
+  // ⭐ 2. OFFSET MS
   if (typeof lembrete.offset_ms === "number") {
     return Date.now() + lembrete.offset_ms;
   }
 
-  // ⭐ 3. OFFSET EM DIAS + HORA
+  // ⭐ 3. OFFSET DIAS
   if (
     typeof lembrete.offset_dias === "number" &&
-    typeof lembrete.hora === "number" &&
-    typeof lembrete.minuto === "number"
+    typeof lembrete.hora === "number"
   ) {
     return createTimestampBR({
       offset_dias: lembrete.offset_dias,
       hora: lembrete.hora,
-      minuto: lembrete.minuto,
+      minuto: lembrete.minuto ?? 0,
     });
   }
 
-  // 🛡️ 4. FALLBACK ABSOLUTO (NUNCA QUEBRA)
-  console.warn("⚠️ buildWhen fallback:", lembrete);
-  return Date.now() + 5 * 60 * 1000; // +5 minutos
+  // 🛡️ NUNCA QUEBRAR
+  return Date.now() + 5 * 60 * 1000;
 }
 
 function normalizeReminderData(data) {
