@@ -317,6 +317,30 @@ AJUDA GERAL
   "minuto": 0
 }
 
+REGRAS IMPORTANTES DE DATA:
+
+- Se o usuário mencionar um DIA DA SEMANA (ex: terça-feira, quarta, sexta),
+  NÃO calcule offset_dias.
+- Nesse caso, retorne o campo:
+  "weekday": número do dia da semana
+  (0=domingo, 1=segunda, 2=terça, 3=quarta, 4=quinta, 5=sexta, 6=sábado)
+
+- Nunca retorne weekday e offset_dias juntos.
+- Se não houver dia da semana explícito, use offset_dias normalmente.
+
+{
+  "intencao": "criar_lembrete",
+  "lembretes": [
+    {
+      "acao": "reunião em governador valadares",
+      "weekday": 2,
+      "hora": 9,
+      "minuto": 0
+    }
+  ]
+}
+
+
 Quando a intenção for listar compromissos por período, retorne SEMPRE no formato JSON:
 
 {
