@@ -1,9 +1,5 @@
 import { addReminder } from "../services/reminderService.js";
-import {
-  createTimestampBR,
-  nextWeekdayBR,
-  extractWeekdayFromText,
-} from "../utils/dateUtils.js";
+import { createTimestampBR, nextWeekdayBR } from "../utils/dateUtils.js";
 
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
@@ -12,6 +8,37 @@ function nowInSaoPaulo() {
       timeZone: "America/Sao_Paulo",
     }),
   );
+}
+
+function extractWeekdayFromText(text) {
+  if (!text) return null;
+
+  const map = {
+    domingo: 0,
+    segunda: 1,
+    "segunda-feira": 1,
+    terça: 2,
+    "terça-feira": 2,
+    terca: 2,
+    quarta: 3,
+    "quarta-feira": 3,
+    quinta: 4,
+    "quinta-feira": 4,
+    sexta: 5,
+    "sexta-feira": 5,
+    sábado: 6,
+    sabado: 6,
+  };
+
+  const lower = text.toLowerCase();
+
+  for (const key in map) {
+    if (lower.includes(key)) {
+      return map[key];
+    }
+  }
+
+  return null;
 }
 
 function buildLocalDate({ hora, minuto, isToday = true }) {
@@ -86,8 +113,14 @@ export async function createReminder(userDocId, data) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
-      lembrete.when = buildWhen(lembrete);
+      const weekday = extractWeekdayFromText(data.texto_original || "");
 
+      if (typeof weekday === "number") {
+        lembrete.weekday = weekday;
+        delete lembrete.offset_dias; // ❗ IGNORA A IA
+      }
+
+      lembrete.when = buildWhen(lembrete);
       await createReminder(userDocId, lembrete);
 
       resumos.push({
