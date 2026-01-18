@@ -8,7 +8,7 @@ export function createTimestampBR({ offset_dias = 0, hora, minuto }) {
     hora,
     minuto,
     0,
-    0
+    0,
   );
 
   // ❗ NÃO mexe em timezone
@@ -35,4 +35,32 @@ export function createHourBR() {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// Calculo pra saber qual dia do calendario é a proxima semana,
+// exemplo: Terça dia 20
+export function nextWeekdayBR(targetWeekday, hour = 0, minute = 0) {
+  const now = new Date();
+
+  const result = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hour,
+    minute,
+    0,
+    0,
+  );
+
+  const currentWeekday = result.getDay(); // 0–6
+  let diff = targetWeekday - currentWeekday;
+
+  // se já passou hoje, joga pra próxima semana
+  if (diff < 0 || (diff === 0 && result <= now)) {
+    diff += 7;
+  }
+
+  result.setDate(result.getDate() + diff);
+
+  return result.getTime();
 }

@@ -1,12 +1,12 @@
 import { addReminder } from "../services/reminderService.js";
-import { createTimestampBR } from "../utils/dateUtils.js";
+import { createTimestampBR, nextWeekdayBR } from "../utils/dateUtils.js";
 
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
   return new Date(
     new Date().toLocaleString("en-US", {
       timeZone: "America/Sao_Paulo",
-    })
+    }),
   );
 }
 
@@ -28,6 +28,29 @@ function buildLocalDate({ hora, minuto, isToday = true }) {
 }
 
 function buildWhen(lembrete) {
+  // ⭐ CASO NOVO — DIA DA SEMANA (PRIORIDADE ALTA)
+  if (typeof lembrete.weekday === "number") {
+    const hora = typeof lembrete.hora === "number" ? lembrete.hora : 9;
+    const minuto = typeof lembrete.minuto === "number" ? lembrete.minuto : 0;
+
+    return nextWeekdayBR(lembrete.weekday, hora, minuto);
+  }
+
+  // 👇 SEU CÓDIGO ANTIGO CONTINUA IGUAL
+  if (typeof lembrete.offset_ms === "number") {
+    return Date.now() + lembrete.offset_ms;
+  }
+
+  if (
+    typeof lembrete.offset_dias === "number" &&
+    typeof lembrete.hora === "number" &&
+    typeof lembrete.minuto === "number"
+  ) {
+    // ... seu código atual
+  }
+
+  throw new Error("Não foi possível calcular o horário do lembrete");
+
   // CASO 1 — offset em minutos
   if (typeof lembrete.offset_ms === "number") {
     return Date.now() + lembrete.offset_ms;
@@ -54,7 +77,7 @@ function buildWhen(lembrete) {
     const agoraBR = new Date(
       new Date().toLocaleString("en-US", {
         timeZone: "America/Sao_Paulo",
-      })
+      }),
     );
 
     const ano = agoraBR.getFullYear();
@@ -68,7 +91,7 @@ function buildWhen(lembrete) {
       hora + 3, // BR → UTC
       lembrete.minuto,
       0,
-      0
+      0,
     );
   }
 
