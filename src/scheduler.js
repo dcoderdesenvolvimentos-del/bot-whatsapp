@@ -42,6 +42,9 @@ export function startScheduler() {
           return text.charAt(0).toUpperCase() + text.slice(1);
         }
 
+        console.log("NOW:", new Date().toString());
+        console.log("ISO:", new Date().toISOString());
+
         const actionText = capitalizeFirst(reminder.text);
 
         const message = `⏰ *_LEMBRETE_*
