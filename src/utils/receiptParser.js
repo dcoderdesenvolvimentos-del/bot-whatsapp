@@ -153,6 +153,56 @@ const blacklist = [
   "GERTEC",
   "VERIFONE",
   "INGENICO",
+  "LARANJINHA",
+  "SAFRAPAY", // variação sem espaço
+  "VERO",
+  "GLOBALPAYMENTS",
+  "GLOBAL PAYMENTS",
+  "FIRSTDATA",
+  "FIRST DATA",
+
+  "PAGBANK", // você tem PagSeguro, mas não PagBank explícito
+  "BIZ",
+  "PAYPAL",
+  "SQUARE",
+
+  "CLOUDWALK", // marca-mãe do InfinitePay
+  "PAGBRASIL",
+  "BRASPAG",
+
+  "STRIPE",
+  "EBANX",
+  "DLOCAL",
+  "DLOCALGO",
+
+  "MOLLIE", // aparece em OCR internacional
+  "WORLDPAY",
+
+  "STONECO", // razão social da Stone
+  "CIELOPAY", // variação real de OCR
+  "REDECARDS", // variação OCR comum
+
+  "GETNET LATAM",
+  "ADYEN NV",
+
+  "SAFE2PAY",
+  "IUGU",
+  "PAGHIPER",
+  "ASAAS",
+  "MUNDIPAGG",
+  "MUNDI PAGG",
+
+  "PAYU",
+  "PAGUEVELOZ",
+  "AKATUS",
+
+  "NEON PAGAMENTOS",
+  "C6 PAY",
+  "INTER PAY",
+
+  "PIX BACEN",
+  "BACEN",
+  "BANCO CENTRAL",
 
   // ===============================
   // BANCOS / INSTITUIÇÕES
