@@ -222,72 +222,13 @@ export function parseReceiptText(text) {
         local = stripCompanySuffix(cleaned);
 
         // classificação básica
-        if (
-          /SUPERMERCADO|MERCADO|ATACAD|HIPER|HORTIFRUTI|HORTI/.test(cleaned)
-        ) {
-          tipo = "mercado";
-        } else if (
-          /FARMACIA|DROGARIA|DROGASIL|DROGA|PACHECO|RAIA/.test(cleaned)
-        ) {
-          tipo = "farmacia";
-        } else if (
-          /POSTO|COMBUSTIVEL|GASOLINA|ETANOL|DIESEL|SHELL|IPIRANGA|BR/.test(
-            cleaned,
-          )
-        ) {
-          tipo = "posto";
-        } else if (
-          /RESTAURANTE|LANCH|LANCHE|PIZZA|BAR|HAMBURGUER|BURGER|CHURRASC|ESPET|FOOD/.test(
-            cleaned,
-          )
-        ) {
+        if (/SUPERMERCADO|MERCADO|ATACAD/.test(cleaned)) tipo = "mercado";
+        else if (/FARMACIA|DROGARIA/.test(cleaned)) tipo = "farmacia";
+        else if (/POSTO|COMBUSTIVEL/.test(cleaned)) tipo = "posto";
+        else if (/RESTAURANTE|LANCH|PIZZA|BAR/.test(cleaned))
           tipo = "alimentacao";
-        } else if (/PADARIA|PANIFICAD|PAO|CONFEITARIA/.test(cleaned)) {
+        else if (/PADARIA|PANIFICAD|PAO|CONFEITARIA/.test(cleaned))
           tipo = "padaria";
-        } else if (/UBER|99|TAXI|TRANSPORTE|ONIBUS|METRO|TREM/.test(cleaned)) {
-          tipo = "transporte";
-        } else if (/ALUGUEL|IMOBILIARIA|CONDOMINIO/.test(cleaned)) {
-          tipo = "moradia";
-        } else if (/LUZ|ENERGIA|ELETRIC|ENEL|CPFL|ELETROPAULO/.test(cleaned)) {
-          tipo = "energia";
-        } else if (/AGUA|SABESP|SANEPAR|CAESB/.test(cleaned)) {
-          tipo = "agua";
-        } else if (/INTERNET|NET|CLARO|VIVO|TIM|OI|TELECOM/.test(cleaned)) {
-          tipo = "internet";
-        } else if (
-          /ESCOLA|FACULDADE|CURSO|EDUCACAO|ENSINO|COLEGIO/.test(cleaned)
-        ) {
-          tipo = "educacao";
-        } else if (/ACADEMIA|GYM|FITNESS|PERSONAL/.test(cleaned)) {
-          tipo = "academia";
-        } else if (
-          /MEDICO|CLINICA|HOSPITAL|EXAME|CONSULTA|ODONTO|DENTISTA/.test(cleaned)
-        ) {
-          tipo = "saude";
-        } else if (/ROUPA|VESTUARIO|CALCADO|SAPATO|TENIS|MODA/.test(cleaned)) {
-          tipo = "vestuario";
-        } else if (
-          /SHOPPING|LOJA|MAGAZINE|CASAS|AMERICANAS|HAVAN/.test(cleaned)
-        ) {
-          tipo = "compras";
-        } else if (/CINEMA|TEATRO|SHOW|EVENTO|INGRESSO/.test(cleaned)) {
-          tipo = "lazer";
-        } else if (
-          /STREAMING|NETFLIX|SPOTIFY|AMAZON|PRIME|DISNEY/.test(cleaned)
-        ) {
-          tipo = "assinatura";
-        } else if (/BANCO|TARIFA|IOF|JUROS|ANUIDADE/.test(cleaned)) {
-          tipo = "banco";
-        } else if (/PET|VETERINARIO|PETSHOP|RACAO/.test(cleaned)) {
-          tipo = "pet";
-        } else if (/OFICINA|MANUTENCAO|AUTO|MECANICA|LAVAGEM/.test(cleaned)) {
-          tipo = "veiculo";
-        } else if (/DOACAO|IGREJA|OFERTA|DIZIMO/.test(cleaned)) {
-          tipo = "doacao";
-        } else {
-          tipo = "Outros";
-        }
-
         break;
       }
     }
