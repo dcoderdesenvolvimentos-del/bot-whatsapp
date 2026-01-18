@@ -40,8 +40,10 @@ export function createHourBR() {
 // Calculo pra saber qual dia do calendario é a proxima semana,
 // exemplo: Terça dia 20
 export function nextWeekdayBR(targetWeekday, hour = 0, minute = 0) {
+  // ⚠️ Data LOCAL (não UTC)
   const now = new Date();
 
+  // Começa HOJE no horário desejado
   const result = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -55,14 +57,18 @@ export function nextWeekdayBR(targetWeekday, hour = 0, minute = 0) {
   const currentWeekday = result.getDay(); // 0–6
   let diff = targetWeekday - currentWeekday;
 
-  // se já passou hoje, joga pra próxima semana
+  // Se for hoje e já passou, ou se for dia anterior → próxima semana
   if (diff < 0 || (diff === 0 && result <= now)) {
     diff += 7;
   }
 
   result.setDate(result.getDate() + diff);
 
-  return result.getTime();
+  // ❗ NÃO usar Date.UTC
+  // ❗ NÃO somar +3
+  // ❗ NÃO converter timezone
+
+  return result.getTime(); // timestamp correto
 }
 
 export function extractWeekdayFromText(text) {
