@@ -110,6 +110,10 @@ export async function createReminder(userDocId, data) {
     const resumos = [];
 
     for (const lembrete of data.lembretes) {
+      for (const lembrete of data.lembretes) {
+        lembrete.texto_original = textoOriginal;
+      }
+
       const weekday = extractWeekdayFromText(data.texto_original || "");
 
       if (typeof weekday === "number") {
