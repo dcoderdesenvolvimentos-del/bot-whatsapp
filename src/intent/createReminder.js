@@ -304,11 +304,14 @@ export async function createReminder(userDocId, data) {
   }
 
   // 🕒 AGORA SIM: cria timestamp
-  const when = createTimestampBR({
-    offset_dias: offsetDiasFinal,
-    hora,
-    minuto,
-  });
+  const when =
+    typeof data.when === "number"
+      ? data.when // 🔒 já calculado (weekday / buildWhen)
+      : createTimestampBR({
+          offset_dias: offsetDiasFinal,
+          hora,
+          minuto,
+        });
 
   // ⛔ Bloqueia passado
   if (when < Date.now()) {
