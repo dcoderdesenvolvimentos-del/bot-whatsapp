@@ -15,6 +15,14 @@ export function createTimestampBR({ offset_dias = 0, hora, minuto }) {
   return date.getTime();
 }
 
+export function nowBR() {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo",
+    }),
+  );
+}
+
 export function createDateBR() {
   const now = new Date();
   const day = String(now.getDate()).padStart(2, "0");

@@ -183,7 +183,7 @@ export async function createReminder(userDocId, data) {
    * Se existir offset_ms, ignora TODO o resto
    */
   if (typeof data.offset_ms === "number" && data.offset_ms > 0) {
-    const when = Date.now() + data.offset_ms;
+    const when = nowBR().getTime() + data.offset_ms;
 
     await addReminder(phone, {
       text: data.acao,
