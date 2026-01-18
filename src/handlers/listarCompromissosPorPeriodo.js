@@ -1,21 +1,13 @@
 import { db } from "../firebase.js";
 
 function startOfTodayBR() {
-  const now = new Date();
-  const hojeBR = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-  );
-
-  hojeBR.setHours(0, 0, 0, 0);
-  return hojeBR.getTime();
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
 }
 
 function startOfDayFromTimestampBR(timestamp) {
-  const d = new Date(
-    new Date(timestamp).toLocaleString("en-US", {
-      timeZone: "America/Sao_Paulo",
-    })
-  );
+  const d = new Date(timestamp);
   d.setHours(0, 0, 0, 0);
   return d.getTime();
 }
@@ -84,18 +76,15 @@ export async function listarCompromissosPorPeriodo({
     const data = dataObj.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
-      timeZone: "America/Sao_Paulo",
     });
 
     const diaSemana = dataObj.toLocaleDateString("pt-BR", {
       weekday: "short",
-      timeZone: "America/Sao_Paulo",
     });
 
     const horario = dataObj.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "America/Sao_Paulo",
     });
 
     // Cabeçalho do dia
