@@ -1,5 +1,5 @@
 import { addReminder } from "../services/reminderService.js";
-import { createTimestampBR, nextWeekdayBR } from "../utils/dateUtils.js";
+import { createTimestampBR, nextWeekdayBR, nowBR } from "../utils/dateUtils.js";
 
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
