@@ -201,9 +201,7 @@ export async function createReminder(userDocId, data) {
     return (
       `✅ *Lembrete criado!*\n\n` +
       `📌 ${actionText}\n` +
-      `🕐 ${dateObj.toLocaleString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-      })}`
+      `🕐 ${dateObj.toLocaleString("pt-BR", {})}`
     );
   }
 
@@ -238,9 +236,7 @@ export async function createReminder(userDocId, data) {
     return (
       `✅ *Lembrete criado!*\n\n` +
       `📌 ${actionText}\n` +
-      `🕐 ${dateObj.toLocaleString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-      })}`
+      `🕐 ${dateObj.toLocaleString("pt-BR", {})}`
     );
   }
 
@@ -344,7 +340,6 @@ export async function createReminder(userDocId, data) {
   // 🔍 DEBUG FINAL (agora confiável)
   // 📅 FORMATAÇÃO FINAL (forçando Brasil)
   const dataFormatadaBR = new Date(when).toLocaleString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
     dateStyle: "short",
     timeStyle: "short",
   });
