@@ -64,3 +64,34 @@ export function nextWeekdayBR(targetWeekday, hour = 0, minute = 0) {
 
   return result.getTime();
 }
+
+export function extractWeekdayFromText(text) {
+  if (!text) return null;
+
+  const map = {
+    domingo: 0,
+    segunda: 1,
+    "segunda-feira": 1,
+    terça: 2,
+    "terça-feira": 2,
+    terca: 2,
+    quarta: 3,
+    "quarta-feira": 3,
+    quinta: 4,
+    "quinta-feira": 4,
+    sexta: 5,
+    "sexta-feira": 5,
+    sábado: 6,
+    sabado: 6,
+  };
+
+  const lower = text.toLowerCase();
+
+  for (const key in map) {
+    if (lower.includes(key)) {
+      return map[key];
+    }
+  }
+
+  return null;
+}

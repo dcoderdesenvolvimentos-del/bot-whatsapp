@@ -1,5 +1,9 @@
 import { addReminder } from "../services/reminderService.js";
-import { createTimestampBR, nextWeekdayBR } from "../utils/dateUtils.js";
+import {
+  createTimestampBR,
+  nextWeekdayBR,
+  extractWeekdayFromText,
+} from "../utils/dateUtils.js";
 
 // 🔧 helper para data/hora no fuso do Brasil
 function nowInSaoPaulo() {
@@ -28,7 +32,7 @@ function buildLocalDate({ hora, minuto, isToday = true }) {
 }
 
 function buildWhen(lembrete) {
-  // ⭐ CASO NOVO — DIA DA SEMANA (PRIORIDADE ALTA)
+  // ⭐ 1. DIA DA SEMANA (PRIORIDADE MÁXIMA)
   if (typeof lembrete.weekday === "number") {
     const hora = typeof lembrete.hora === "number" ? lembrete.hora : 9;
     const minuto = typeof lembrete.minuto === "number" ? lembrete.minuto : 0;
@@ -36,66 +40,27 @@ function buildWhen(lembrete) {
     return nextWeekdayBR(lembrete.weekday, hora, minuto);
   }
 
-  // 👇 SEU CÓDIGO ANTIGO CONTINUA IGUAL
+  // ⭐ 2. OFFSET EM MILISSEGUNDOS (daqui X minutos/horas)
   if (typeof lembrete.offset_ms === "number") {
     return Date.now() + lembrete.offset_ms;
   }
 
+  // ⭐ 3. OFFSET EM DIAS + HORA
   if (
     typeof lembrete.offset_dias === "number" &&
     typeof lembrete.hora === "number" &&
     typeof lembrete.minuto === "number"
   ) {
-    // ... seu código atual
+    return createTimestampBR({
+      offset_dias: lembrete.offset_dias,
+      hora: lembrete.hora,
+      minuto: lembrete.minuto,
+    });
   }
 
-  throw new Error("Não foi possível calcular o horário do lembrete");
-
-  // CASO 1 — offset em minutos
-  if (typeof lembrete.offset_ms === "number") {
-    return Date.now() + lembrete.offset_ms;
-  }
-
-  // CASO 2 — offset em dias + hora/minuto
-  if (
-    typeof lembrete.offset_dias === "number" &&
-    typeof lembrete.hora === "number" &&
-    typeof lembrete.minuto === "number"
-  ) {
-    let hora = lembrete.hora;
-
-    // normalização
-    if (hora === 24) {
-      hora = 0;
-    }
-
-    // 12h da tarde nunca é meia-noite
-    if (hora === 0) {
-      hora = 12;
-    }
-
-    const agoraBR = new Date(
-      new Date().toLocaleString("en-US", {
-        timeZone: "America/Sao_Paulo",
-      }),
-    );
-
-    const ano = agoraBR.getFullYear();
-    const mes = agoraBR.getMonth();
-    const dia = agoraBR.getDate() + lembrete.offset_dias;
-
-    return Date.UTC(
-      ano,
-      mes,
-      dia,
-      hora + 3, // BR → UTC
-      lembrete.minuto,
-      0,
-      0,
-    );
-  }
-
-  throw new Error("Não foi possível calcular o horário do lembrete");
+  // 🛡️ 4. FALLBACK ABSOLUTO (NUNCA QUEBRA)
+  console.warn("⚠️ buildWhen fallback:", lembrete);
+  return Date.now() + 5 * 60 * 1000; // +5 minutos
 }
 
 function normalizeReminderData(data) {
