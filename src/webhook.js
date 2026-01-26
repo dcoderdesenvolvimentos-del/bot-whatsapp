@@ -4,10 +4,18 @@ import { sendMessage, sendButtonList } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUser } from "./services/userService.js";
+import { getOrCreateUserByPhone } from "./services/userResolver.js";
 
 const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
+  const phone = payload.phone;
+
+  const { uid } = await getOrCreateUserByPhone(phone);
+
+  // passa o uid pra frente
+  const response = await routeIntent(uid, phone, text, media);
+
   if (payload?.action?.includes("payment") || payload?.type === "payment") {
     console.log("🔔 Webhook do Mercado Pago detectado!");
     await handleMpWebhook(payload);

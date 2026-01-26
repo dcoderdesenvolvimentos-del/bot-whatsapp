@@ -4,13 +4,18 @@ import { Timestamp } from "firebase-admin/firestore";
 
 const COLLECTION = "reminders";
 
-export async function addReminder(phone, { text, when }) {
-  return db.collection(COLLECTION).add({
+export async function addReminder({ uid, phone, text, when }) {
+  if (!uid || !phone) {
+    throw new Error("UID ou phone ausente ao criar lembrete");
+  }
+
+  return db.collection("reminders").add({
+    uid,
     phone,
     text,
-    when, // 🔥 SEMPRE timestamp UTC
+    when,
     sent: false,
-    createdAt: nowUTC(),
+    createdAt: Timestamp.now(),
   });
 }
 
