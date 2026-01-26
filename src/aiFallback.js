@@ -44,6 +44,8 @@ Quando houver um lembrete, responda APENAS em JSON:
 
 
 
+
+
 Regras:
 - "amanhã" => dayOffset = 1
 - "depois de amanhã" => dayOffset = 2
