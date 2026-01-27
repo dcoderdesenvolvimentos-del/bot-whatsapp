@@ -8,6 +8,17 @@ import { getOrCreateUserByPhone } from "./services/userResolver.js";
 const processedMessages = new Set();
 
 export async function handleWebhook(payload) {
+  // ❌ ignora eventos que NÃO são mensagem
+  const hasText = !!payload.text?.message;
+  const hasAudio = !!payload.audio?.audioUrl;
+  const hasImage = !!payload.image?.imageUrl;
+  const hasButton = !!payload.buttonsResponseMessage;
+
+  if (!hasText && !hasAudio && !hasImage && !hasButton) {
+    console.log("🚫 Evento ignorado (não é mensagem do usuário)");
+    return;
+  }
+
   try {
     const phone = payload.phone;
     if (!phone) {
