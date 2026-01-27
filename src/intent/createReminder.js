@@ -134,6 +134,7 @@ async function createReminderCore(uid, data) {
  * Função pública (único / múltiplos)
  * ============================================================
  */
+
 export async function createReminder(userDocId, data) {
   const phone = userDocId;
   if (!phone) return "❌ Usuário inválido.";
