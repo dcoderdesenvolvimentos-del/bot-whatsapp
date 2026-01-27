@@ -4,17 +4,21 @@ import { db } from "./config/firebase.js";
 const COLLECTION = "reminders";
 
 // 🔹 Adicionar lembrete
-export async function addReminder(user, data) {
-  if (!data?.text || !data?.when) {
+export async function addReminder(uid, data) {
+  if (!uid) {
+    throw new Error("UID não informado ao salvar lembrete");
+  }
+
+  if (!data?.text || !data?.when || !data?.phone) {
     throw new Error("Tentativa de salvar lembrete inválido");
   }
 
-  return db.collection("users").doc(user).collection("reminders").add({
-    user,
+  return db.collection("users").doc(uid).collection("reminders").add({
     text: data.text,
-    when: data.when, // ✅ único campo de data
+    when: data.when, // Timestamp
+    phone: data.phone, // 🔑 ponte com WhatsApp
     sent: false,
-    createdAt: Date.now(),
+    createdAt: Timestamp.now(),
   });
 }
 
