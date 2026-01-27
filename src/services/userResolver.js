@@ -1,57 +1,62 @@
-import { db } from "../firebase.js";
+import { db } from "../config/firebase.js";
 import { Timestamp } from "firebase-admin/firestore";
 
 /**
- * 🔑 Resolve usuário pelo telefone
- * - Se existir → retorna UID
- * - Se não existir → cria e retorna UID
+ * 🔐 Resolve usuário REAL pelo telefone
+ * REGRA: 1 telefone limpo = 1 UID
  */
-
-export async function getOrCreateUserByPhone(phone) {
-  if (!phone) {
-    throw new Error("Telefone não informado");
+export async function getOrCreateUserByPhone(rawPhone) {
+  // 1️⃣ validação básica
+  if (!rawPhone || typeof rawPhone !== "string") {
+    return null;
   }
 
-  // 🔒 BLOQUEIO DEFINITIVO DE PHONES INVÁLIDOS
-  const phoneClean = String(phone).trim();
-
+  // 2️⃣ ignora eventos que NÃO são usuários
   if (
-    phoneClean.includes("@") || // bloqueia @lid, @status etc
-    !/^\d{10,15}$/.test(phoneClean) // só números, tamanho válido
+    rawPhone === "status@broadcast" ||
+    rawPhone.endsWith("@broadcast") ||
+    rawPhone.endsWith("@lid")
   ) {
-    throw new Error(`Telefone inválido ignorado: ${phoneClean}`);
+    return null;
   }
 
-  // 1️⃣ índice telefone → uid
-  const phoneIndexRef = db.collection("phoneIndex").doc(phoneClean);
+  // 3️⃣ normaliza telefone (SÓ NÚMEROS)
+  const phone = rawPhone.replace(/\D/g, "");
+
+  if (phone.length < 8) {
+    return null;
+  }
+
+  // 4️⃣ phoneIndex é a fonte da verdade
+  const phoneIndexRef = db.collection("phoneIndex").doc(phone);
   const phoneIndexSnap = await phoneIndexRef.get();
 
-  // 2️⃣ se já existe, RETORNA
+  // 5️⃣ já existe → retorna UID
   if (phoneIndexSnap.exists) {
     return {
       uid: phoneIndexSnap.data().uid,
-      phone: phoneClean,
+      phone,
     };
   }
 
-  // 3️⃣ cria UID UMA ÚNICA VEZ
-  const userRef = db.collection("users").doc(); // ok aqui, só aqui
+  // 6️⃣ cria novo usuário (ÚNICO LUGAR QUE CRIA)
+  const userRef = db.collection("users").doc();
 
   await userRef.set({
-    phone: phoneClean,
-    createdAt: Timestamp.now(),
+    phone,
     stage: "first_contact",
     active: true,
+    createdAt: Timestamp.now(),
   });
 
-  // 4️⃣ cria o índice (ESSENCIAL)
   await phoneIndexRef.set({
     uid: userRef.id,
+    phone,
     createdAt: Timestamp.now(),
   });
 
   return {
     uid: userRef.id,
-    phone: phoneClean,
+    phone,
   };
 }
