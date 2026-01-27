@@ -119,14 +119,14 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
 }
 
 export async function getExpensesDetailedByPeriod(
-  userId,
+  phone,
   startDate,
   endDate,
   categoria = null,
 ) {
   let query = db
     .collection("users")
-    .doc(userId)
+    .doc(phone)
     .collection("gastos")
     .where("timestamp", ">=", startDate)
     .where("timestamp", "<=", endDate);
@@ -217,7 +217,7 @@ export async function criarGastoParcelado(userId, data) {
 }
 
 export async function getExpensesForAnalysis(
-  userId,
+  phone,
   startDate,
   endDate,
   categoria = null,
@@ -232,7 +232,7 @@ export async function getExpensesForAnalysis(
 
   let query = db
     .collection("users")
-    .doc(userId)
+    .doc(phone)
     .collection("gastos")
     .where("timestamp", ">=", startTs)
     .where("timestamp", "<=", endTs);
