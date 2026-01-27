@@ -63,9 +63,9 @@ export async function getTodayExpenses(userId) {
   const { inicio, fim } = getHojeRangeBR();
 
   const snapshot = await db
-    .collection("gastos")
+    .collection("users")
     .doc(userId)
-    .collection("itens")
+    .collection("gastos")
     .where("timestamp", ">=", inicio)
     .where("timestamp", "<=", fim)
     .get();
@@ -102,9 +102,9 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
   console.log("📅 end:", end.toDate());
 
   const snapshot = await db
-    .collection("gastos")
+    .collection("users")
     .doc(userId)
-    .collection("itens")
+    .collection("gastos")
     .where("timestamp", ">=", start)
     .where("timestamp", "<=", end)
     .get();
@@ -119,15 +119,15 @@ export async function getExpensesByPeriod(userId, startDate, endDate) {
 }
 
 export async function getExpensesDetailedByPeriod(
-  phone,
+  userId,
   startDate,
   endDate,
   categoria = null,
 ) {
   let query = db
+    .collection("users")
+    .doc(userId)
     .collection("gastos")
-    .doc(phone)
-    .collection("itens")
     .where("timestamp", ">=", startDate)
     .where("timestamp", "<=", endDate);
 
@@ -217,7 +217,7 @@ export async function criarGastoParcelado(userId, data) {
 }
 
 export async function getExpensesForAnalysis(
-  phone,
+  userId,
   startDate,
   endDate,
   categoria = null,
@@ -231,9 +231,9 @@ export async function getExpensesForAnalysis(
   console.log("end:", endTs.toDate());
 
   let query = db
+    .collection("users")
+    .doc(userId)
     .collection("gastos")
-    .doc(phone)
-    .collection("itens")
     .where("timestamp", ">=", startTs)
     .where("timestamp", "<=", endTs);
 
