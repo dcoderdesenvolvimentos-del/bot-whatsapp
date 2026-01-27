@@ -20,6 +20,16 @@ export async function handleWebhook(payload) {
       return;
     }
 
+    // 🔒 BLOQUEIO DEFINITIVO DE PHONES INVÁLIDOS
+    const phoneClean = String(phone).trim();
+
+    if (
+      phoneClean.includes("@") || // bloqueia @lid, @status etc
+      !/^\d{10,15}$/.test(phoneClean) // só números, tamanho válido
+    ) {
+      throw new Error(`Telefone inválido ignorado: ${phoneClean}`);
+    }
+
     // 🔑 RESOLVE USUÁRIO UMA ÚNICA VEZ
     const { uid } = await getOrCreateUserByPhone(phone);
 
