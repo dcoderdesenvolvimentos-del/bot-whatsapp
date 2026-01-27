@@ -1,24 +1,5 @@
 import { db } from "../config/firebase.js";
 
-export async function getOrCreateUser({ uid }) {
-  if (!uid || typeof uid !== "string") {
-    throw new Error(`UID inválido recebido no getOrCreateUser: ${uid}`);
-  }
-  const userRef = db.collection("users").doc(uid);
-  const doc = await userRef.get();
-
-  if (!doc.exists) {
-    await userRef.set({
-      phone,
-      createdAt: Date.now(),
-      active: false,
-      plan: "free",
-    });
-  }
-
-  return userRef;
-}
-
 export async function getUser(uid) {
   const userRef = db.collection("users").doc(uid);
   const doc = await userRef.get();
