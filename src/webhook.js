@@ -94,7 +94,7 @@ export async function handleWebhook(payload) {
     // 🚀 CHAMA O CORE COM UID
     const response = await routeIntent({
       uid,
-      phone: user,
+      phone: phone,
       text: text.toLowerCase(),
       media: {
         hasImage,
