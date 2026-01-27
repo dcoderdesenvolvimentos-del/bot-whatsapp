@@ -73,7 +73,7 @@ function formatDateDMY(date) {
    ROUTER PRINCIPAL
 =========================  */
 
-export async function routeIntent(userDocId, text, media = {}) {
+export async function routeIntent(userDocId, phone, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
