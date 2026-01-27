@@ -13,9 +13,6 @@ export async function handleWebhook(payload, sendMessage) {
 
   const { uid } = await getOrCreateUserByPhone(phone);
 
-  // passa o uid pra frente
-  const response = await routeIntent(uid, phone, text, media);
-
   if (payload?.action?.includes("payment") || payload?.type === "payment") {
     console.log("🔔 Webhook do Mercado Pago detectado!");
     await handleMpWebhook(payload);
@@ -43,6 +40,7 @@ export async function handleWebhook(payload, sendMessage) {
 
     const user = payload.phone;
     let text = "";
+    let media = { hasImage: false, imageUrl: null };
 
     const imageUrl = payload.image?.imageUrl || payload.image?.url || null;
     const hasImage = !!imageUrl;

@@ -100,6 +100,7 @@ function buildWhen(data) {
  * 🔥 CORE
  * ÚNICA função que cria lembrete individual
  * ============================================================
+ *
  */
 async function createReminderCore(phone, data) {
   const when = buildWhen(data);
