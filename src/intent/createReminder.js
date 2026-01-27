@@ -114,8 +114,7 @@ async function createReminderCore(phone, data) {
     throw new Error("❌ Não consegui identificar o lembrete.");
   }
 
-  await addReminder({
-    uid,
+  await addReminder(uid, {
     phone,
     texto,
     when,
