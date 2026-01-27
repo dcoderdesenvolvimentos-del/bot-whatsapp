@@ -14,6 +14,12 @@ export async function handleWebhook(payload) {
       throw new Error("Telefone não encontrado no payload");
     }
 
+    // 🚫 BLOQUEIO ABSOLUTO
+    if (!phone || phone === "status@broadcast" || phone.includes("broadcast")) {
+      console.log("🚫 Mensagem de sistema ignorada:", phone);
+      return;
+    }
+
     // 🔑 RESOLVE USUÁRIO UMA ÚNICA VEZ
     const { uid } = await getOrCreateUserByPhone(phone);
 
