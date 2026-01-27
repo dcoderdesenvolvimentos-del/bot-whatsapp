@@ -33,6 +33,16 @@ export async function getOrCreateUserByPhone(phone) {
     };
   }
 
+  // 3️⃣ cria usuário
+  const userRef = db.collection("users").doc();
+
+  await userRef.set({
+    phone: phoneClean,
+    createdAt: Timestamp.now(),
+    stage: "first_contact",
+    active: true,
+  });
+
   // 4️⃣ cria índice
   await phoneIndexRef.set({
     uid: userRef.id,
