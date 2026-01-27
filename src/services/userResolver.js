@@ -6,8 +6,7 @@ import { Timestamp } from "firebase-admin/firestore";
  * - Se existir → retorna UID
  * - Se não existir → cria e retorna UID
  */
-
-/** export async function getOrCreateUserByPhone(phone) {
+export async function getOrCreateUserByPhone(phone) {
   if (!phone) {
     throw new Error("Telefone não informado");
   }
@@ -45,4 +44,4 @@ import { Timestamp } from "firebase-admin/firestore";
     uid: userRef.id,
     phone,
   };
-} */
+}
