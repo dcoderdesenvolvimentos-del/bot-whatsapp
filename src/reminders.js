@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { db } from "./config/firebase.js";
 
 const COLLECTION = "reminders";
@@ -8,7 +9,7 @@ export async function addReminder(user, data) {
     throw new Error("Tentativa de salvar lembrete inválido");
   }
 
-  return db.collection("reminders").add({
+  return db.collection("users").doc(user).collection("reminders").add({
     user,
     text: data.text,
     when: data.when, // ✅ único campo de data
@@ -20,6 +21,8 @@ export async function addReminder(user, data) {
 // 🔹 Listar lembretes do usuário
 export async function listReminders(user) {
   const snapshot = await db
+    .collection("users")
+    .doc(user)
     .collection("reminders")
     .where("user", "==", user)
     .where("sent", "==", false)
@@ -37,6 +40,8 @@ export async function getPendingReminders() {
   const now = Date.now();
 
   const snap = await db
+    .collection("users")
+    .doc(useId)
     .collection(COLLECTION)
     .where("sent", "==", false)
     .where("when", "<=", now)
@@ -58,6 +63,8 @@ export async function markAsSent(id) {
 // 🔹 Deletar um lembrete
 export async function deleteReminderByIndex(user, index) {
   const snapshot = await db
+    .collection("users")
+    .doc(user)
     .collection("reminders")
     .where("user", "==", user)
     .where("sent", "==", false)
@@ -79,6 +86,8 @@ export async function deleteReminderByIndex(user, index) {
 // 🔹 Deletar todos os lembretes
 export async function deleteAllReminders(user) {
   const snapshot = await db
+    .collection("users")
+    .doc(user)
     .collection("reminders")
     .where("user", "==", user)
     .where("sent", "==", false)
