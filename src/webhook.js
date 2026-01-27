@@ -3,31 +3,37 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendMessage, sendButtonList } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
-import { getOrCreateUser } from "./services/userService.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 
 const processedMessages = new Set();
 
-export async function handleWebhook(payload, sendMessage) {
-  const phone = payload.phone;
-
-  const { uid } = await getOrCreateUserByPhone(phone);
-
-  if (payload?.action?.includes("payment") || payload?.type === "payment") {
-    console.log("🔔 Webhook do Mercado Pago detectado!");
-    await handleMpWebhook(payload);
-    return null;
-  }
-
+export async function handleWebhook(payload) {
   try {
+    const phone = payload.phone;
+    if (!phone) {
+      throw new Error("Telefone não encontrado no payload");
+    }
+
+    // 🔑 RESOLVE USUÁRIO UMA ÚNICA VEZ
+    const { uid } = await getOrCreateUserByPhone(phone);
+
+    // 💳 Webhook Mercado Pago
+    if (payload?.action?.includes("payment") || payload?.type === "payment") {
+      console.log("🔔 Webhook do Mercado Pago detectado!");
+      await handleMpWebhook(payload);
+      return;
+    }
+
     const messageId =
       payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
+
     if (!messageId) return;
     if (processedMessages.has(messageId)) {
       console.log("⚠️ Mensagem duplicada ignorada:", messageId);
       return;
     }
     processedMessages.add(messageId);
+
     if (!payload || payload.fromMe) return;
     if (
       payload.type === "DeliveryCallback" ||
@@ -38,69 +44,55 @@ export async function handleWebhook(payload, sendMessage) {
       return;
     }
 
-    const user = payload.phone;
     let text = "";
-    let media = { hasImage: false, imageUrl: null };
-
     const imageUrl = payload.image?.imageUrl || payload.image?.url || null;
     const hasImage = !!imageUrl;
 
     if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
       const rawText = await audioToText(payload.audio.audioUrl);
-      console.log("📝 Texto transcrito (cru):", rawText);
       text = normalizeSpeech(rawText);
-      console.log("🧹 Texto normalizado:", text);
     } else if (payload.text?.message) {
       text = payload.text.message.trim();
     } else if (payload.buttonsResponseMessage?.buttonId) {
       text = payload.buttonsResponseMessage.buttonId;
-      console.log("🔘 Botão clicado:", text);
     }
 
-    if (!text && !hasImage) {
-      console.log("⚠️ Nenhum texto ou imagem processável encontrado.");
-      return;
-    }
+    if (!text && !hasImage) return;
 
-    console.log("👤 User:", user);
+    console.log("👤 Phone:", phone);
+    console.log("🆔 UID:", uid);
     console.log("💬 Texto:", text);
 
-    const userDoc = await getOrCreateUser({ phone: user });
-    console.log("🔍 USER DOC ID:", userDoc.id);
-
-    const response = await routeIntent(userDoc.id, text.toLowerCase(), {
+    // 🚀 CHAMA O CORE COM UID
+    const response = await routeIntent(uid, text.toLowerCase(), {
       hasImage,
       imageUrl,
     });
 
-    // ✅ TRATAMENTO DE RESPOSTAS
-    if (response === null || response === undefined || response === "") {
-      console.log("⚠️ Resposta vazia. Ignorada.");
-      return;
-    }
+    if (!response) return;
 
     // 🔘 Botões
     if (typeof response === "object" && response.type === "buttons") {
-      await sendButtonList(user, response.text, response.buttons);
+      await sendButtonList(phone, response.text, response.buttons);
       return;
     }
 
     // 💳 Pix
     if (typeof response === "object" && response.type === "pix") {
-      await sendMessage(user, response.text);
-      await sendMessage(user, response.pixCode);
+      await sendMessage(phone, response.text);
+      await sendMessage(phone, response.pixCode);
       return;
     }
 
-    // 💬 Mensagem simples (string OU objeto com "message")
+    // 💬 Texto simples
     if (typeof response === "string") {
-      await sendMessage(user, response);
+      await sendMessage(phone, response);
       return;
     }
 
     if (typeof response === "object" && response.message) {
-      await sendMessage(user, response.message);
+      await sendMessage(phone, response.message);
       return;
     }
 
