@@ -92,15 +92,15 @@ export async function handleWebhook(payload) {
     console.log("💬 Texto:", text);
 
     // 🚀 CHAMA O CORE COM UID
-    const response = await routeIntent({
+    const response = await routeIntent(
       uid,
-      phone: phone,
-      text: text.toLowerCase(),
-      media: {
+      phone, // ✅ STRING
+      text.toLowerCase(), // ✅ TEXTO
+      {
         hasImage,
         imageUrl,
       },
-    });
+    );
 
     if (!response) return;
 
