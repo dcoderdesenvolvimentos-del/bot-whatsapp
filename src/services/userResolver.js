@@ -34,7 +34,7 @@ export async function getOrCreateUserByPhone(phone) {
   }
 
   // 3️⃣ cria usuário
-  const userRef = db.collection("users").doc();
+  const userRef = db.collection("users").doc(uid);
 
   await userRef.set({
     phone: phoneClean,
