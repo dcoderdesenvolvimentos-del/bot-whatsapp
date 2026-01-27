@@ -136,8 +136,8 @@ async function createReminderCore(uid, data) {
  */
 
 export async function createReminder(userDocId, data) {
-  const phone = userDocId;
-  if (!phone) return "❌ Usuário inválido.";
+  const uid = userDocId;
+  if (!uid) return "❌ Usuário inválido.";
 
   // normaliza tudo para array
   const itens = Array.isArray(data.lembretes) ? data.lembretes : [data];
@@ -146,7 +146,7 @@ export async function createReminder(userDocId, data) {
 
   for (const item of itens) {
     try {
-      const r = await createReminderCore(phone, item);
+      const r = await createReminderCore(uid, item);
       resultados.push(r);
     } catch (err) {
       return err.message;
