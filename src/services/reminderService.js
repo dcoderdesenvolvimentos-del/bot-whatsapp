@@ -9,7 +9,7 @@ export async function addReminder({ uid, phone, text, when }) {
     throw new Error("UID ou phone ausente ao criar lembrete");
   }
 
-  return db.collection("reminders").add({
+  return db.collection("users").doc(uid).collection("reminders").add({
     uid,
     phone,
     text,
@@ -23,6 +23,8 @@ export async function getPendingReminders() {
   const now = Timestamp.now();
 
   const snap = await db
+    .collection("users")
+    .doc(uid)
     .collection("reminders")
     .where("sent", "==", false)
     .where("when", "<=", now)

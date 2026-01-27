@@ -102,7 +102,7 @@ function buildWhen(data) {
  * ============================================================
  *
  */
-async function createReminderCore(phone, data) {
+async function createReminderCore(uid, data) {
   const when = buildWhen(data);
 
   if (!when || when.toMillis() <= Timestamp.now().toMillis()) {
