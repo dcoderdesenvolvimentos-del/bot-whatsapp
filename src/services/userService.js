@@ -1,7 +1,7 @@
 import { db } from "../config/firebase.js";
 
 export async function getOrCreateUser({ uid }) {
-  const userRef = db.collection("").doc(uid);
+  const userRef = db.collection("users").doc(uid);
   const doc = await userRef.get();
 
   if (!doc.exists) {
