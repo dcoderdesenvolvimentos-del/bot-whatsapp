@@ -11,37 +11,47 @@ export async function getOrCreateUserByPhone(phone) {
     throw new Error("Telefone não informado");
   }
 
-  // 1️⃣ coleção de índice por telefone
-  const phoneIndexRef = db.collection("phoneIndex").doc(phone);
+  // 🔒 BLOQUEIO DEFINITIVO DE PHONES INVÁLIDOS
+  const phoneClean = String(phone).trim();
+
+  if (
+    phoneClean.includes("@") || // bloqueia @lid, @status etc
+    !/^\d{10,15}$/.test(phoneClean) // só números, tamanho válido
+  ) {
+    throw new Error(`Telefone inválido ignorado: ${phoneClean}`);
+  }
+
+  // 1️⃣ índice por telefone
+  const phoneIndexRef = db.collection("phoneIndex").doc(phoneClean);
   const phoneIndexSnap = await phoneIndexRef.get();
 
-  // 2️⃣ já existe → retorna UID
+  // 2️⃣ já existe
   if (phoneIndexSnap.exists) {
     return {
       uid: phoneIndexSnap.data().uid,
-      phone,
+      phone: phoneClean,
     };
   }
 
-  // 3️⃣ não existe → cria novo usuário
+  // 3️⃣ cria usuário
   const userRef = db.collection("users").doc();
 
   await userRef.set({
-    phone,
+    phone: phoneClean,
     createdAt: Timestamp.now(),
     stage: "first_contact",
     active: true,
   });
 
-  // 4️⃣ cria o índice telefone → uid
+  // 4️⃣ cria índice
   await phoneIndexRef.set({
     uid: userRef.id,
-    phone,
+    phone: phoneClean,
     createdAt: Timestamp.now(),
   });
 
   return {
     uid: userRef.id,
-    phone,
+    phone: phoneClean,
   };
 }
