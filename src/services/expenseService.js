@@ -51,7 +51,7 @@ export async function createExpense(userId, data) {
     throw new Error("Valor inválido para gasto");
   }
 
-  await db.collection("users").doc(uid).collection("gastos").add({
+  await db.collection("users").doc(userId).collection("gastos").add({
     valor,
     local: data.local,
     categoria: data.categoria,
