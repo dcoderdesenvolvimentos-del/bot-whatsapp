@@ -12,7 +12,15 @@ export async function getOrCreateUserByPhone(phone) {
     throw new Error("Telefone não informado");
   }
 
-  const phoneClean = phone.trim();
+  // 🔒 BLOQUEIO DEFINITIVO DE PHONES INVÁLIDOS
+  const phoneClean = String(phone).trim();
+
+  if (
+    phoneClean.includes("@") || // bloqueia @lid, @status etc
+    !/^\d{10,15}$/.test(phoneClean) // só números, tamanho válido
+  ) {
+    throw new Error(`Telefone inválido ignorado: ${phoneClean}`);
+  }
 
   // 1️⃣ índice telefone → uid
   const phoneIndexRef = db.collection("phoneIndex").doc(phoneClean);
