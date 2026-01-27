@@ -1,7 +1,7 @@
 import { db } from "../config/firebase.js";
 
 export async function getOrCreateUser({ uid }) {
-  if (!userId || typeof userId !== "string") {
+  if (!uid || typeof uid !== "string") {
     throw new Error(`UID inválido recebido no getOrCreateUser: ${uid}`);
   }
   const userRef = db.collection("users").doc(uid);
