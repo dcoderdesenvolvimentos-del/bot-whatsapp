@@ -102,7 +102,7 @@ function buildWhen(data) {
  * ============================================================
  *
  */
-async function createReminderCore(uid, phone, data) {
+async function createReminderCore(uid, data) {
   const when = buildWhen(data);
 
   if (!when || when.toMillis() <= Timestamp.now().toMillis()) {
@@ -114,19 +114,16 @@ async function createReminderCore(uid, phone, data) {
     throw new Error("❌ Não consegui identificar o lembrete.");
   }
 
+  // 🔥 SALVA PELO UID (CORRETO)
   await addReminder(uid, {
-    phone,
-    texto,
+    text: texto,
     when,
   });
 
-  // 🔥 DESCRIÇÃO DA IA É GERADA PARA TODO LEMBRETE INDIVIDUAL
   let descricaoIA = null;
   try {
     descricaoIA = await generateReminderDescription(texto);
-  } catch {
-    // falha da IA não quebra o fluxo
-  }
+  } catch {}
 
   return { texto, when, descricaoIA };
 }
