@@ -61,19 +61,23 @@ export async function handleWebhook(payload) {
     }
     processedMessages.add(messageId);
 
-    if (!payload || payload.fromMe) return;
-    if (
-      payload.type === "DeliveryCallback" ||
-      payload.type === "ReadCallback" ||
-      payload.isEdit ||
-      payload.isStatusReply
-    ) {
-      return;
-    }
-
     let text = "";
     const imageUrl = payload.image?.imageUrl || payload.image?.url || null;
     const hasImage = !!imageUrl;
+
+    // 🚫 ignora mensagens do próprio bot
+    if (payload.fromMe) return;
+
+    // 🚫 ignora eventos sem texto, áudio ou imagem
+    const hasText =
+      payload.text?.message || payload.buttonsResponseMessage?.buttonId;
+
+    const hasAudio = payload.audio?.audioUrl;
+
+    if (!hasText && !hasAudio && !hasImage) {
+      console.log("🚫 Evento ignorado (não é mensagem do usuário)");
+      return;
+    }
 
     if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
