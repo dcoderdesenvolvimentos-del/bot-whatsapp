@@ -1,17 +1,13 @@
 import { analyzeIntent } from "../ai/aiService.js";
 import { createReminder } from "./createReminder.js";
-import { listReminders } from "./listReminders.js";
 import { deleteReminder } from "./deleteReminder.js";
 import { createPixPayment } from "./mercadoPago.js";
 import { getUser, updateUser } from "../services/userService.js";
-import { INTENT_PROMPT } from "../ai/prompt.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
-import { db } from "../config/firebase.js";
 import { addRecurringReminder } from "../services/reminderService.js";
 import { listarCompromissosPorPeriodo } from "../handlers/listarCompromissosPorPeriodo.js";
 import { canUseReceipt } from "../services/receiptLimit.js";
 import { parseReceiptText } from "../utils/receiptParser.js";
-import { listarTodasListas } from "../services/listService.js";
 import { sendMessage } from "../zapi.js";
 import { normalizeText } from "../utils/normalizeSpeech.js";
 
@@ -84,14 +80,15 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
   const normalized = normalize(text);
 
   /* =========================
-     1️⃣ BUSCAR USUÁRIO
-  ========================= */
+   1️⃣ BUSCAR USUÁRIO
+========================= */
 
-  let userData = await getUser(userDocId);
+  const userData = await getUser(userDocId);
 
   /* =========================
-     2️⃣ PRIMEIRO CONTATO (ANTI-BAN)
-  ========================= */
+   2️⃣ PRIMEIRO CONTATO (ANTI-BAN)
+   ⚠️ REGRA: respondeu → encerra
+========================= */
 
   if (!userData) {
     await updateUser(userDocId, {
@@ -103,22 +100,11 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
     return "Oi! 😊 Tudo bem com você?";
   }
 
-  if (!userData.stage) {
-    await updateUser(userDocId, { stage: "first_contact" });
-    return "Oi! 😊 Tudo bem com você?";
-  }
-
   /* =========================
-     3️⃣ DELAY HUMANO
-  ========================= */
+   3️⃣ ONBOARDING POR STAGE
+========================= */
 
-  await new Promise((r) => setTimeout(r, 1500));
-
-  /* =========================
-     4️⃣ ONBOARDING POR STAGE
-  ========================= */
-
-  // 👉 Perguntar nome
+  // 👉 Perguntar nome (SEGUNDA mensagem)
   if (userData.stage === "first_contact") {
     await updateUser(userDocId, {
       stage: "awaiting_name",
@@ -138,7 +124,6 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
       tempName: displayName,
     });
 
-    // 🔘 RETORNA COM BOTÕES
     return {
       type: "buttons",
       text: `✨ *Só confirmando rapidinho...*\n\n👉 Seu nome é *${displayName}*?`,
@@ -166,7 +151,7 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
         `• amanhã às 17h30 ir para a academia\n` +
         `• listar lembretes\n` +
         `• excluir lembretes\n\n` +
-        `🎤 Pode falar comigo por áudio ou texto, do jeito que preferir 😉`
+        `🎤 Pode falar comigo por áudio ou texto 😉`
       );
     }
 
@@ -181,6 +166,15 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
 
     return "Responda apenas *sim* ou *não*, por favor 🙂";
   }
+
+  /* =========================
+   4️⃣ DELAY HUMANO (SÓ USUÁRIO ATIVO)
+========================= */
+
+  if (userData.stage === "active") {
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+
   // =========================
   // AQUI O CLIENTE ESCOLHE UM PLANO
   // =========================
