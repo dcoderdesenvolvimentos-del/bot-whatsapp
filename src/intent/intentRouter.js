@@ -100,16 +100,6 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
    ⚠️ REGRA: respondeu → encerra
 ========================= */
 
-  if (!userData) {
-    await updateUser(userDocId, {
-      stage: "first_contact",
-      messages: 1,
-      createdAt: Date.now(),
-    });
-
-    return "Oi! 😊 Tudo bem com você?";
-  }
-
   /* =========================
    3️⃣ ONBOARDING POR STAGE
 ========================= */
