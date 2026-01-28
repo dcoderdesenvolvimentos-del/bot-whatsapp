@@ -5,7 +5,10 @@ import { handleMpWebhook } from "./mpWebhook.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 
+console.log("📦 PAYLOAD:", JSON.stringify(payload, null, 2));
+
 const processedMessages = new Set();
+
 export async function handleWebhook(payload, sendMessage) {
   try {
     // 1️⃣ valida payload
