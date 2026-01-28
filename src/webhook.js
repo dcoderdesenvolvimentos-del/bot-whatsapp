@@ -6,78 +6,41 @@ import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 
 const processedMessages = new Set();
-
-export async function handleWebhook(payload) {
-  // ❌ ignora eventos que NÃO são mensagem
-  const hasText = !!payload.text?.message;
-  const hasAudio = !!payload.audio?.audioUrl;
-  const hasImage = !!payload.image?.imageUrl;
-  const hasButton = !!payload.buttonsResponseMessage;
-
-  if (!hasText && !hasAudio && !hasImage && !hasButton) {
-    console.log("🚫 Evento ignorado (não é mensagem do usuário)");
-    return;
-  }
-
+export async function handleWebhook(payload, sendMessage) {
   try {
+    // 1️⃣ valida payload
+    if (!payload) return;
+
     const phone = payload.phone;
     if (!phone) {
-      throw new Error("Telefone não encontrado no payload");
-    }
-
-    // 🚫 BLOQUEIO ABSOLUTO
-    if (!phone || phone === "status@broadcast" || phone.includes("broadcast")) {
-      console.log("🚫 Mensagem de sistema ignorada:", phone);
+      console.log("🚫 Payload sem phone");
       return;
     }
 
-    // 🔒 BLOQUEIO DEFINITIVO DE PHONES INVÁLIDOS
-    const phoneClean = String(phone).trim();
-
-    if (
-      phoneClean.includes("@") || // bloqueia @lid, @status etc
-      !/^\d{10,15}$/.test(phoneClean) // só números, tamanho válido
-    ) {
-      throw new Error(`Telefone inválido ignorado: ${phoneClean}`);
-    }
-
-    // 🔑 RESOLVE USUÁRIO UMA ÚNICA VEZ
-    const { uid } = await getOrCreateUserByPhone(phone);
-
-    // 💳 Webhook Mercado Pago
-    if (payload?.action?.includes("payment") || payload?.type === "payment") {
-      console.log("🔔 Webhook do Mercado Pago detectado!");
-      await handleMpWebhook(payload);
-      return;
-    }
-
-    const messageId =
-      payload.messageId || payload.zaapId || payload.id || payload?.text?.id;
-
-    if (!messageId) return;
-    if (processedMessages.has(messageId)) {
-      console.log("⚠️ Mensagem duplicada ignorada:", messageId);
-      return;
-    }
-    processedMessages.add(messageId);
-
-    let text = "";
-    const imageUrl = payload.image?.imageUrl || payload.image?.url || null;
-    const hasImage = !!imageUrl;
-
-    // 🚫 ignora mensagens do próprio bot
+    // 2️⃣ ignora mensagens do próprio bot
     if (payload.fromMe) return;
 
-    // 🚫 ignora eventos sem texto, áudio ou imagem
+    // 3️⃣ ignora eventos sem texto, áudio ou imagem
     const hasText =
       payload.text?.message || payload.buttonsResponseMessage?.buttonId;
 
     const hasAudio = payload.audio?.audioUrl;
+    const hasImage = payload.image?.imageUrl || payload.image?.url;
 
     if (!hasText && !hasAudio && !hasImage) {
       console.log("🚫 Evento ignorado (não é mensagem do usuário)");
       return;
     }
+
+    // 4️⃣ resolve usuário (AQUI é o lugar certo)
+    const { uid } = await getOrCreateUserByPhone(phone);
+
+    console.log("👤 Phone:", phone);
+    console.log("🆔 UID:", uid);
+
+    // 5️⃣ extrai texto
+    let text = "";
+    let media = { hasImage: false, imageUrl: null };
 
     if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
@@ -89,50 +52,38 @@ export async function handleWebhook(payload) {
       text = payload.buttonsResponseMessage.buttonId;
     }
 
-    if (!text && !hasImage) return;
+    if (hasImage) {
+      media = {
+        hasImage: true,
+        imageUrl: payload.image?.imageUrl || payload.image?.url,
+      };
+    }
 
-    console.log("👤 Phone:", phone);
-    console.log("🆔 UID:", uid);
+    if (!text && !media.hasImage) return;
+
     console.log("💬 Texto:", text);
 
-    // 🚀 CHAMA O CORE COM UID
-    const response = await routeIntent(
-      uid,
-      phone, // ✅ STRING
-      text.toLowerCase(), // ✅ TEXTO
-      {
-        hasImage,
-        imageUrl,
-      },
-    );
+    // 6️⃣ chama o router
+    const response = await routeIntent(uid, text.toLowerCase(), media);
 
     if (!response) return;
 
-    // 🔘 Botões
-    if (typeof response === "object" && response.type === "buttons") {
-      await sendButtonList(phone, response.text, response.buttons);
-      return;
-    }
-
-    // 💳 Pix
-    if (typeof response === "object" && response.type === "pix") {
-      await sendMessage(phone, response.text);
-      await sendMessage(phone, response.pixCode);
-      return;
-    }
-
-    // 💬 Texto simples
+    // 7️⃣ envia resposta
     if (typeof response === "string") {
       await sendMessage(phone, response);
       return;
     }
 
-    if (typeof response === "object" && response.message) {
-      await sendMessage(phone, response.message);
+    if (response.type === "buttons") {
+      await sendButtonList(phone, response.text, response.buttons);
       return;
     }
 
-    console.warn("⚠️ Tipo de resposta não tratado:", response);
+    if (response.type === "pix") {
+      await sendMessage(phone, response.text);
+      await sendMessage(phone, response.pixCode);
+      return;
+    }
   } catch (err) {
     console.error("❌ Erro no webhook:", err);
   }
