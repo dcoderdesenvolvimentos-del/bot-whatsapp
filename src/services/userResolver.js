@@ -44,7 +44,7 @@ export async function getOrCreateUserByPhone(rawPhone) {
 
   await userRef.set({
     phone,
-    stage: "first_contact",
+    stage: "ghost",
     active: true,
     createdAt: Timestamp.now(),
   });

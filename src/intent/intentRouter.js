@@ -72,6 +72,16 @@ function formatDateDMY(date) {
 export async function routeIntent(userDocId, phone, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  // 👻 USUÁRIO AINDA NÃO FALOU DE VERDADE
+  if (userData.stage === "ghost") {
+    await updateUser(userDocId, {
+      stage: "first_contact",
+      messages: 1,
+    });
+
+    return "Oi! 😊 Tudo bem com você?";
+  }
+
   if (!userDocId) {
     console.error("❌ userDocId inválido");
     return "Erro ao identificar usuário.";
