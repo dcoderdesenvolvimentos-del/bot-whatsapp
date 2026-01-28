@@ -24,26 +24,41 @@ export async function addReminder(uid, data) {
 export async function getPendingReminders() {
   const now = Timestamp.now();
 
-  const snap = await db
+  const usersSnap = await db.collection("users").get();
+
+  const reminders = [];
+
+  for (const userDoc of usersSnap.docs) {
+    const uid = userDoc.id;
+
+    const snap = await db
+      .collection("users")
+      .doc(uid)
+      .collection("reminders")
+      .where("sent", "==", false)
+      .where("when", "<=", now)
+      .get();
+
+    snap.forEach((doc) => {
+      reminders.push({
+        id: doc.id,
+        uid,
+        ...doc.data(),
+      });
+    });
+  }
+
+  console.log("🔔 Lembretes encontrados:", reminders.length);
+  return reminders;
+}
+
+export async function markAsSent(uid, reminderId) {
+  return db
     .collection("users")
     .doc(uid)
     .collection("reminders")
-    .where("sent", "==", false)
-    .where("when", "<=", now)
-    .get();
-
-  console.log("🔔 Lembretes encontrados:", snap.size);
-
-  return snap.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-}
-
-export async function markAsSent(id) {
-  await db.collection(COLLECTION).doc(id).update({
-    sent: true,
-  });
+    .doc(reminderId)
+    .update({ sent: true });
 }
 
 // 👇 stubs pra não quebrar imports antigos

@@ -5,6 +5,8 @@ import { db } from "../firebase.js";
  */
 export async function listarTodasListas(userId) {
   const snapshot = await db
+    .collection("users")
+    .doc(userId)
     .collection("listas")
     .where("user", "==", userId) // ⚠️ ajuste se o campo for phone/userId
     .get();

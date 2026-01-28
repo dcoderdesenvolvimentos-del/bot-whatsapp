@@ -1,5 +1,6 @@
 import { getPendingReminders, markAsSent } from "./services/reminderService.js";
 import { sendMessage } from "./zapi.js";
+import { db } from "./config/firebase.js";
 
 let isRunning = false;
 
@@ -14,7 +15,13 @@ export function startScheduler() {
       const pendentes = await getPendingReminders();
 
       for (const r of pendentes) {
-        // 🔥 CORREÇÃO PRINCIPAL
+        // 🔹 busca o usuário
+        const userSnap = await db.collection("users").doc(r.uid).get();
+        if (!userSnap.exists) continue;
+
+        const { phone } = userSnap.data();
+        if (!phone) continue;
+
         const dateObj = r.when.toDate();
 
         const msg = `⏰ *_LEMBRETE_*
@@ -30,8 +37,8 @@ export function startScheduler() {
         })}
 💡 Estou passando pra te lembrar 😉`;
 
-        await sendMessage(r.phone, msg);
-        await markAsSent(r.id);
+        await sendMessage(phone, msg);
+        await markAsSent(r.uid, r.id);
       }
     } catch (err) {
       console.error("❌ Erro no scheduler:", err);
