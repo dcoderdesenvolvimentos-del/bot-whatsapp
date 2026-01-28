@@ -8,7 +8,7 @@ export async function createList(userId, nomeLista) {
   const listaId = slugify(nomeLista);
 
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
@@ -31,7 +31,7 @@ export async function addItemsToList(userId, listaId, items = []) {
   if (!items.length) return;
 
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
@@ -58,7 +58,7 @@ export async function addItemsToSpecificList(userId, listaId, items = []) {
   if (!items.length) return;
 
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
@@ -85,7 +85,7 @@ export async function addItemsToSpecificList(userId, listaId, items = []) {
  */
 export async function getList(userId, listaId) {
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
@@ -98,7 +98,7 @@ export async function getList(userId, listaId) {
  * Lista todas as listas do usuário
  */
 export async function getAllLists(userId) {
-  const ref = db.collection("user_listas").doc(userId).collection("listas");
+  const ref = db.collection("users").doc(userId).collection("listas");
 
   const snap = await ref.get();
 
@@ -115,7 +115,7 @@ export async function removeItemsFromList(userId, listaId, itemsToRemove = []) {
   if (!itemsToRemove.length) return;
 
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
@@ -138,7 +138,7 @@ export async function removeItemsFromList(userId, listaId, itemsToRemove = []) {
  */
 export async function deleteList(userId, listaId) {
   const ref = db
-    .collection("user_listas")
+    .collection("users")
     .doc(userId)
     .collection("listas")
     .doc(listaId);
