@@ -76,6 +76,39 @@ function formatDateDMY(date) {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  function buildTimestampFromReceipt(data, hora) {
+    // data: "24-01-2026"
+    // hora: "14:32" (opcional)
+
+    if (!data) return Date.now();
+
+    const [day, month, year] = data.split("-").map(Number);
+
+    let hours = 12;
+    let minutes = 0;
+
+    if (hora && hora.includes(":")) {
+      [hours, minutes] = hora.split(":").map(Number);
+    }
+
+    return new Date(year, month - 1, day, hours, minutes).getTime();
+  }
+
+  function buildTimestampFromText(dataStr, hora) {
+    if (!dataStr) return Date.now();
+
+    const [day, month, year] = dataStr.split("-").map(Number);
+
+    let h = 12;
+    let m = 0;
+
+    if (hora && hora.includes(":")) {
+      [h, m] = hora.split(":").map(Number);
+    }
+
+    return new Date(year, month - 1, day, h, m).getTime();
+  }
+
   if (!userDocId) {
     console.error("❌ userDocId inválido");
     return "Erro ao identificar usuário.";
@@ -415,15 +448,15 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     const dados = user.tempReceipt;
+    const timestamp = buildTimestampFromReceipt(dados.data, dados.hora);
 
     await createExpense(userDocId, {
       valor: dados.valor,
       local: dados.local,
       categoria: "outros",
       origem: "comprovante",
-      data: dados.data,
-      hora: dados.hora,
-      createdAt: Date.now(),
+      timestamp, // ✅ DATA REAL DO GASTO
+      createdAt: Date.now(), // opcional: quando foi cadastrado
     });
 
     await updateUser(userDocId, { tempReceipt: null });
@@ -670,22 +703,27 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       /* Salva Gastos */
       case "criar_gasto": {
-        const { valor, local, categoria } = data;
+        const { valor, local, categoria, data: dataStr, hora } = data;
 
         if (!valor || !local) {
           return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
         }
 
+        const timestamp = buildTimestampFromText(dataStr, hora);
+
         await createExpense(userDocId, {
           valor,
           local,
           categoria: categoria || "outros",
+          timestamp, // ✅ data REAL do gasto
+          createdAt: Date.now(), // quando foi cadastrado
         });
 
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${valor}\n` +
           `📍 Local: ${capitalize(local)}\n` +
+          `📅 Data: ${dataStr || "hoje"}\n` +
           `🏷️ Categoria: ${capitalize(categoria)}`
         );
       }
