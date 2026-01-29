@@ -75,6 +75,28 @@ export async function handleWebhook(payload, sendMessage) {
 
     console.log("💬 Texto:", text);
 
+    // TRAVA ANTI-DUPLICAÇÃO
+    const messageId = payload.messageId;
+    if (messageId) {
+      const alreadyProcessed = await hasProcessedMessage(messageId);
+      if (alreadyProcessed) {
+        console.log("🔁 Mensagem duplicada ignorada:", messageId);
+        return;
+      }
+
+      await markMessageAsProcessed(messageId);
+    }
+    async function markMessageAsProcessed(messageId) {
+      await db.collection("processedMessages").doc(messageId).set({
+        processedAt: new Date(),
+      });
+    }
+
+    async function hasProcessedMessage(messageId) {
+      const doc = await db.collection("processedMessages").doc(messageId).get();
+      return doc.exists;
+    }
+
     // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
 

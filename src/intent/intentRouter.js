@@ -759,24 +759,33 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       /* Salva Gastos */
       case "criar_gasto": {
-        const { valor, local, categoria, data: dataStr, hora } = data;
+        console.log("🧠 DATA DA IA:", data);
+
+        const { valor, local, categoria } = data;
 
         if (!valor || !local) {
           return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
         }
 
-        const date = buildDateFromText(dataStr, hora);
+        let date = null;
 
-        const timestamp = date
-          ? Timestamp.fromDate(date) // 📅 data falada
-          : Timestamp.now(); // fallback → hoje
+        // 1️⃣ tenta data vinda da IA
+        if (data.data) {
+          date = buildDateFromText(data.data, data.hora);
+        }
+
+        // 2️⃣ fallback: extrai do texto original
+        if (!date) {
+          date = extractDateFromRawText(text);
+        }
+
+        const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         await createExpense(userDocId, {
           valor,
           local,
           categoria: categoria || "outros",
-
-          timestamp, // ✅ Timestamp Firestore
+          timestamp,
           createdAt: Timestamp.now(),
         });
 
@@ -784,7 +793,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${valor}\n` +
           `📍 Local: ${capitalize(local)}\n` +
-          `📅 Data: ${dataStr || "hoje"}`
+          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "hoje"}`
         );
       }
 
@@ -1170,4 +1179,15 @@ function menorGasto(gastos) {
   }
 
   return menor;
+}
+
+function extractDateFromRawText(text = "") {
+  const match = text.match(/dia\s+(\d{1,2})/i);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  if (!day || day > 31) return null;
+
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), day, 12, 0);
 }
