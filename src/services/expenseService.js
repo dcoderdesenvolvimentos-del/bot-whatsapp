@@ -51,12 +51,21 @@ export async function createExpense(userId, data) {
     throw new Error("Valor inválido para gasto");
   }
 
-  await db.collection("users").doc(userId).collection("gastos").add({
-    valor,
-    local: data.local,
-    categoria: data.categoria,
-    timestamp: Timestamp.now(),
-  });
+  await db
+    .collection("users")
+    .doc(userId)
+    .collection("gastos")
+    .add({
+      valor,
+      local: data.local,
+      categoria: data.categoria,
+
+      // 🔥 ESSENCIAL
+      timestamp: data.timestamp ?? Timestamp.now(),
+
+      // quando foi cadastrado
+      createdAt: data.createdAt ?? Timestamp.now(),
+    });
 }
 
 export async function getTodayExpenses(userId) {

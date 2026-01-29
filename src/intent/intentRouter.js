@@ -76,22 +76,21 @@ function formatDateDMY(date) {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
-  function buildTimestampFromReceipt(data, hora) {
-    // data: "24-01-2026"
-    // hora: "14:32" (opcional)
+  // Transforma a data do OCR em Timestamp real antes de salvar
+  function buildTimestampFromReceipt(dataStr, horaStr) {
+    // dataStr: "24-01-2026"
+    if (!dataStr) return Date.now();
 
-    if (!data) return Date.now();
+    const [day, month, year] = dataStr.split("-").map(Number);
 
-    const [day, month, year] = data.split("-").map(Number);
+    let h = 12;
+    let m = 0;
 
-    let hours = 12;
-    let minutes = 0;
-
-    if (hora && hora.includes(":")) {
-      [hours, minutes] = hora.split(":").map(Number);
+    if (horaStr && horaStr.includes(":")) {
+      [h, m] = horaStr.split(":").map(Number);
     }
 
-    return new Date(year, month - 1, day, hours, minutes).getTime();
+    return new Date(year, month - 1, day, h, m);
   }
 
   function buildTimestampFromText(dataStr, hora) {
