@@ -1,3 +1,4 @@
+import { db } from "../firebase.js";
 import { audioToText } from "./audio.js";
 import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
