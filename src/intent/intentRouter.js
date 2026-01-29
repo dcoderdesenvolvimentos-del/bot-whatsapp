@@ -745,31 +745,44 @@ export async function routeIntent(userDocId, text, media = {}) {
   ========================= */
 
       /* Salva Gastos */
+
       case "criar_gasto": {
-        console.log("🧠 DATA DA IA:", data);
+        console.log("🧠 IA payload:", data);
+        console.log("🧠 TEXTO ORIGINAL:", text);
 
-        const { valor, local, categoria } = data;
+        let rawValor = data.valor;
 
-        if (!valor || !local) {
-          return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
+        // 🔥 SE A IA DEVOLVEU NUMBER, tenta extrair do texto original
+        if (typeof rawValor === "number") {
+          const match = text.match(/r?\$?\s*(\d{1,5})/i);
+          if (match) {
+            rawValor = match[1]; // string "3200"
+          }
+        }
+
+        const { local, categoria } = data;
+
+        if (!rawValor) {
+          return "🤔 Não consegui identificar o valor do gasto.";
         }
 
         let date = null;
 
-        // 1️⃣ tenta data vinda da IA
+        // 1️⃣ data explícita da IA
         if (data.data) {
           date = buildDateFromText(data.data, data.hora);
         }
 
-        // 2️⃣ fallback: extrai do texto original
+        // 2️⃣ data relativa do texto (ontem, hoje…)
         if (!date) {
-          date = extractDateFromRawText(text);
+          date = extractRelativeDateFromText(text);
         }
 
+        // 3️⃣ fallback absoluto
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         await createExpense(userDocId, {
-          valor: data.valor,
+          valor: rawValor,
           local,
           categoria: categoria || "outros",
           timestamp,
@@ -1177,4 +1190,24 @@ function extractDateFromRawText(text = "") {
 
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), day, 12, 0);
+}
+
+function extractRelativeDateFromText(text = "") {
+  const now = new Date();
+
+  if (/anteontem/i.test(text)) {
+    now.setDate(now.getDate() - 2);
+    return now;
+  }
+
+  if (/ontem/i.test(text)) {
+    now.setDate(now.getDate() - 1);
+    return now;
+  }
+
+  if (/hoje/i.test(text)) {
+    return now;
+  }
+
+  return null;
 }
