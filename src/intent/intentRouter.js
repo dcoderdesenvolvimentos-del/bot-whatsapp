@@ -47,6 +47,14 @@ console.log(
 ========================= */
 
 function normalize(text = "") {
+  if (typeof text !== "string") {
+    if (text?.message && typeof text.message === "string") {
+      text = text.message;
+    } else {
+      text = String(text ?? "");
+    }
+  }
+
   return text
     .toLowerCase()
     .normalize("NFD")
@@ -54,10 +62,6 @@ function normalize(text = "") {
     .trim();
 }
 
-function parseDateDMY(dateStr) {
-  const [day, month, year] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day, 0, 0, 0, 0);
-}
 function formatDateDMY(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -69,7 +73,7 @@ function formatDateDMY(date) {
    ROUTER PRINCIPAL
 =========================  */
 
-export async function routeIntent(userDocId, phone, text, media = {}) {
+export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   if (!userDocId) {
