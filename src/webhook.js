@@ -1,7 +1,6 @@
 import { audioToText } from "./audio.js";
 import { normalizeSpeech } from "./utils/normalizeSpeech.js";
-import { sendMessage, sendButtonList } from "./zapi.js";
-import { handleMpWebhook } from "./mpWebhook.js";
+import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 

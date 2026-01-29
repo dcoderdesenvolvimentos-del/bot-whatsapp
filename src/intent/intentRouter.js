@@ -72,6 +72,22 @@ function formatDateDMY(date) {
 export async function routeIntent(userDocId, phone, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  if (!userDocId) {
+    console.error("❌ userDocId inválido");
+    return "Erro ao identificar usuário.";
+  }
+
+  /* =========================
+     1️⃣ BUSCAR USUÁRIO (ANTES DE TUDO)
+  ========================= */
+
+  const userData = await getUser(userDocId);
+
+  if (!userData) {
+    console.error("❌ Usuário não encontrado:", userDocId);
+    return "Erro ao carregar seus dados. Tente novamente.";
+  }
+
   // 👻 USUÁRIO AINDA NÃO FALOU DE VERDADE
   if (userData.stage === "ghost") {
     await updateUser(userDocId, {
@@ -82,18 +98,11 @@ export async function routeIntent(userDocId, phone, text, media = {}) {
     return "Oi! 😊 Tudo bem com você?";
   }
 
-  if (!userDocId) {
-    console.error("❌ userDocId inválido");
-    return "Erro ao identificar usuário.";
-  }
-
   const normalized = normalize(text);
 
   /* =========================
    1️⃣ BUSCAR USUÁRIO
 ========================= */
-
-  const userData = await getUser(userDocId);
 
   /* =========================
    2️⃣ PRIMEIRO CONTATO (ANTI-BAN)
