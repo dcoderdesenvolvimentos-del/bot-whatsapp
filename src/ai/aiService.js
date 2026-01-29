@@ -69,7 +69,7 @@ Resposta:
 Quando o usuário relatar um gasto, identifique:
 
 - intencao: "criar_gasto"
-- valor: número (ex: 50, 120,90)
+- valor: valor em reais  (ex: 50,00 e 120,90) 
 - local: onde o gasto aconteceu
 - categoria: uma palavra simples e genérica
 
@@ -87,7 +87,7 @@ Importante!:
 
 
 Categorias possíveis:
-alimentação, supermercado, transporte, saúde, lazer, contas, educação, outros isso é voce quem vai definir para entender ode o suario gastou e automaticamente vc vai pensar em uma categoria para aquele gasto.
+alimentação, supermercado, transporte, saúde, lazer, contas, educação, outros isso é voce quem vai definir para entender onde o suario gastou e automaticamente vc vai pensar em uma categoria para aquele gasto.
 
 Exemplos:
 "gastei 50 reais na padaria" →
