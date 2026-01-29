@@ -83,8 +83,17 @@ export async function routeIntent(userDocId, text, media = {}) {
       return null;
     }
 
-    // espera formato DD-MM-YYYY
-    const [day, month, year] = dataStr.split("-").map(Number);
+    let day, month, year;
+
+    // aceita DD-MM-YYYY
+    if (dataStr.includes("-")) {
+      [day, month, year] = dataStr.split("-").map(Number);
+    }
+
+    // aceita DD/MM/YYYY
+    if (dataStr.includes("/")) {
+      [day, month, year] = dataStr.split("/").map(Number);
+    }
 
     if (!day || !month || !year) {
       return null;
@@ -99,7 +108,14 @@ export async function routeIntent(userDocId, text, media = {}) {
       if (!isNaN(mm)) m = mm;
     }
 
-    return new Date(year, month - 1, day, h, m);
+    const date = new Date(year, month - 1, day, h, m);
+
+    // 🔒 validação final
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date;
   }
 
   function buildTimestampFromText(dataStr, hora) {
