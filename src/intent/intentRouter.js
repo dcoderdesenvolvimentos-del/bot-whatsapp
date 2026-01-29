@@ -32,6 +32,7 @@ import {
 import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 import { parseBRL } from "../utils/moneyUtils.js";
+import { Timestamp } from "firebase-admin/firestore";
 
 const visionClient = new vision.ImageAnnotatorClient({
   credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
@@ -77,17 +78,25 @@ export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   // Transforma a data do OCR em Timestamp real antes de salvar
-  function buildTimestampFromReceipt(dataStr, horaStr) {
-    // dataStr: "24-01-2026"
-    if (!dataStr) return Date.now();
+  function buildDateFromReceipt(dataStr, horaStr) {
+    if (!dataStr || typeof dataStr !== "string") {
+      return null;
+    }
 
+    // espera formato DD-MM-YYYY
     const [day, month, year] = dataStr.split("-").map(Number);
+
+    if (!day || !month || !year) {
+      return null;
+    }
 
     let h = 12;
     let m = 0;
 
-    if (horaStr && horaStr.includes(":")) {
-      [h, m] = horaStr.split(":").map(Number);
+    if (horaStr && typeof horaStr === "string" && horaStr.includes(":")) {
+      const [hh, mm] = horaStr.split(":").map(Number);
+      if (!isNaN(hh)) h = hh;
+      if (!isNaN(mm)) m = mm;
     }
 
     return new Date(year, month - 1, day, h, m);
@@ -447,7 +456,9 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     const dados = user.tempReceipt;
-    const timestamp = buildTimestampFromReceipt(dados.data, dados.hora);
+    const date = buildDateFromReceipt(dados.data, dados.hora);
+
+    const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
     await createExpense(userDocId, {
       valor: dados.valor,
