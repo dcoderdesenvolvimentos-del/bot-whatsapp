@@ -23,7 +23,14 @@ export async function handleWebhook(payload, sendMessage) {
 
     // 3️⃣ ignora eventos sem texto, áudio ou imagem
     const hasText =
-      payload.text?.message || payload.buttonsResponseMessage?.buttonId;
+      typeof payload.text?.message === "string" ||
+      typeof payload.buttonsResponseMessage?.buttonId === "string" ||
+      typeof payload.audio?.audioUrl === "string";
+
+    if (!hasText && !payload.image?.imageUrl) {
+      console.log("🚫 Evento ignorado (não é mensagem do usuário)");
+      return;
+    }
 
     const hasAudio = payload.audio?.audioUrl;
     const hasImage = payload.image?.imageUrl || payload.image?.url;
@@ -51,6 +58,10 @@ export async function handleWebhook(payload, sendMessage) {
       text = payload.text.message.trim();
     } else if (payload.buttonsResponseMessage?.buttonId) {
       text = payload.buttonsResponseMessage.buttonId;
+    }
+
+    if (typeof text !== "string") {
+      text = "";
     }
 
     if (hasImage) {
