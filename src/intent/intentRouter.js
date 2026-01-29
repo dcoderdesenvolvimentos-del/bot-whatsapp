@@ -456,17 +456,21 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     const dados = user.tempReceipt;
+
+    // 🔥 AQUI É O PONTO CRÍTICO 🔥
     const date = buildDateFromReceipt(dados.data, dados.hora);
 
-    const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
+    const timestamp = date
+      ? Timestamp.fromDate(date) // data REAL do gasto
+      : Timestamp.now(); // fallback (se OCR falhar)
 
     await createExpense(userDocId, {
       valor: dados.valor,
       local: dados.local,
       categoria: "outros",
-      origem: "comprovante",
-      timestamp, // ✅ DATA REAL DO GASTO
-      createdAt: Timestamp.now(), // opcional: quando foi cadastrado
+
+      timestamp, // ✅ PASSANDO PARA O BANCO
+      createdAt: Timestamp.now(), // quando foi cadastrado
     });
 
     await updateUser(userDocId, { tempReceipt: null });
@@ -474,8 +478,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return (
       "💾 *Gasto salvo com sucesso!*\n\n" +
       `💰 R$ ${dados.valor.toFixed(2)}\n` +
-      `📅 ${dados.data || "—"}\n` +
-      `⏰ ${dados.hora || "—"}`
+      `📅 Data: ${dados.data || "hoje"}`
     );
   }
 
