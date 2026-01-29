@@ -33,6 +33,7 @@ import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 import { parseBRL } from "../utils/moneyUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { handleGastoPorNotificacao } from "../handlers/gastoNotificacao.js";
 
 const visionClient = new vision.ImageAnnotatorClient({
   credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
@@ -745,6 +746,10 @@ export async function routeIntent(userDocId, text, media = {}) {
   ========================= */
 
       /* Salva Gastos */
+
+      case "registrar_gasto_por_notificacao":
+        await handleGastoPorNotificacao(payload);
+        break;
 
       case "criar_gasto": {
         console.log("🧠 IA payload:", data);

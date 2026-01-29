@@ -66,6 +66,9 @@ Resposta:
 { "intencao": "AJUDA_GERAL" }
 
 
+
+
+
 Quando o usuário relatar um gasto, identifique:
 
 - intencao: "criar_gasto"
