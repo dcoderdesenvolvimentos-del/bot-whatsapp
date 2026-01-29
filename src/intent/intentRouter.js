@@ -466,7 +466,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       categoria: "outros",
       origem: "comprovante",
       timestamp, // ✅ DATA REAL DO GASTO
-      createdAt: Date.now(), // opcional: quando foi cadastrado
+      createdAt: Timestamp.now(), // opcional: quando foi cadastrado
     });
 
     await updateUser(userDocId, { tempReceipt: null });
