@@ -118,19 +118,46 @@ export async function routeIntent(userDocId, text, media = {}) {
     return date;
   }
 
-  function buildTimestampFromText(dataStr, hora) {
-    if (!dataStr) return Date.now();
+  function buildDateFromText(dataStr, horaStr) {
+    if (!dataStr || typeof dataStr !== "string") {
+      return null;
+    }
 
-    const [day, month, year] = dataStr.split("-").map(Number);
+    let day, month, year;
+
+    // aceita 24-01-2026
+    if (dataStr.includes("-")) {
+      [day, month, year] = dataStr.split("-").map(Number);
+    }
+
+    // aceita 24/01/2026
+    if (dataStr.includes("/")) {
+      [day, month, year] = dataStr.split("/").map(Number);
+    }
+
+    // se só veio dia (ex: "24"), usa mês/ano atual
+    if (/^\d{1,2}$/.test(dataStr)) {
+      const now = new Date();
+      day = Number(dataStr);
+      month = now.getMonth() + 1;
+      year = now.getFullYear();
+    }
+
+    if (!day || !month || !year) {
+      return null;
+    }
 
     let h = 12;
     let m = 0;
 
-    if (hora && hora.includes(":")) {
-      [h, m] = hora.split(":").map(Number);
+    if (horaStr && horaStr.includes(":")) {
+      const [hh, mm] = horaStr.split(":").map(Number);
+      if (!isNaN(hh)) h = hh;
+      if (!isNaN(mm)) m = mm;
     }
 
-    return new Date(year, month - 1, day, h, m).getTime();
+    const date = new Date(year, month - 1, day, h, m);
+    return isNaN(date.getTime()) ? null : date;
   }
 
   if (!userDocId) {
@@ -738,22 +765,26 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "🤔 Não entendi o gasto. Ex: gastei 50 reais no mercado.";
         }
 
-        const timestamp = buildTimestampFromText(dataStr, hora);
+        const date = buildDateFromText(dataStr, hora);
+
+        const timestamp = date
+          ? Timestamp.fromDate(date) // 📅 data falada
+          : Timestamp.now(); // fallback → hoje
 
         await createExpense(userDocId, {
           valor,
           local,
           categoria: categoria || "outros",
-          timestamp, // ✅ data REAL do gasto
-          createdAt: Date.now(), // quando foi cadastrado
+
+          timestamp, // ✅ Timestamp Firestore
+          createdAt: Timestamp.now(),
         });
 
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${valor}\n` +
           `📍 Local: ${capitalize(local)}\n` +
-          `📅 Data: ${dataStr || "hoje"}\n` +
-          `🏷️ Categoria: ${capitalize(categoria)}`
+          `📅 Data: ${dataStr || "hoje"}`
         );
       }
 
