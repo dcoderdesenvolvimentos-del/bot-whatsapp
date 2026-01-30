@@ -178,6 +178,38 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "Erro ao carregar seus dados. Tente novamente.";
   }
 
+  /* =========================
+   📸 INTERCEPTAÇÃO DE IMAGEM (PRIMEIRO DE TUDO)
+========================= */
+
+  if (media?.hasImage && media.imageUrl) {
+    console.log("📸 IMAGEM INTERCEPTADA NO TOPO:", media.imageUrl);
+
+    const textoOCRRaw = await extrairTextoDaImagem(media.imageUrl);
+
+    console.log("🧾 OCR BRUTO:\n", textoOCRRaw);
+
+    const ocr = textoOCRRaw
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    // 🚨 REGRA ABSOLUTA: NUBANK = NOTIFICAÇÃO
+    if (ocr.includes("NUBANK")) {
+      console.log("🚨 NOTIFICAÇÃO BANCÁRIA (NUBANK) — BLOQUEANDO COMPROVANTE");
+
+      return await handleGastoPorNotificacao({
+        userDocId,
+        imagem: media.imageUrl,
+        textoOCR: textoOCRRaw,
+      });
+    }
+
+    // 🧾 SOMENTE SE NÃO FOR NOTIFICAÇÃO
+    console.log("🧾 IMAGEM SEM NUBANK → COMPROVANTE");
+    return await handleReceiptFlow(userDocId, media.imageUrl);
+  }
+
   // 👻 USUÁRIO AINDA NÃO FALOU DE VERDADE
   if (userData.stage === "ghost") {
     await updateUser(userDocId, {
@@ -272,109 +304,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   if (userData.stage === "active") {
     await new Promise((r) => setTimeout(r, 1500));
-  }
-
-  // =========================
-  // AQUI O CLIENTE ESCOLHE UM PLANO
-  // =========================
-
-  const planMap = {
-    plano_mensal: "monthly",
-    plano_trimestral: "quarterly",
-    plano_semestral: "semiannual",
-    plano_anual: "annual",
-
-    // fallback se o usuário digitar
-    mensal: "monthly",
-    trimestral: "quarterly",
-    semestral: "semiannual",
-    anual: "annual",
-  };
-
-  if (planMap[normalized]) {
-    const planKey = planMap[normalized];
-
-    const pix = await createPixPayment(userDocId, planKey);
-
-    await updateUser(userDocId, {
-      pendingPayment: pix.payment_id,
-      pendingPlan: planKey,
-    });
-
-    return {
-      type: "pix",
-      text:
-        "💳 *Pagamento via PIX - Copia e Cola*\n\n" +
-        "⏳ Após pagamento confirmado, o plano ativa automaticamente 💎",
-      pixCode: pix.pix_copia_e_cola,
-    };
-  }
-
-  // =========================
-  // AQUI O CLIENTE QUER CONTRATAR UM PLANO
-  // =========================
-
-  // 💎 CLIQUE NO BOTÃO PREMIUM
-  if (normalized === "premium") {
-    return {
-      type: "buttons",
-      text:
-        "💎 *Plano Premium — Bot de Lembretes*\n\n" +
-        "Chega de se preocupar com limites e perda de horários importantes ⏰\n\n" +
-        "✨ *Com o Premium você desbloqueia:*\n\n" +
-        "✅ *Lembretes ilimitados* — crie quantos quiser\n" +
-        "🔔 Alertas sempre no horário certo\n" +
-        "📅 Mais organização no seu dia a dia\n" +
-        "⚡ Uso sem bloqueios ou interrupções\n\n" +
-        "📦 *Planos disponíveis:*\n" +
-        "• 🗓️ *Mensal* — R$ 9,90\n" +
-        "• 📆 *Trimestral* — R$ 27,90 *(melhor custo)*\n" +
-        "• 🧾 *Semestral* — R$ 49,90\n" +
-        "• 🏆 *Anual* — R$ 89,90 *(economia máxima)*\n\n" +
-        "👇 *Selecione um plano abaixo:*\n" +
-        "Exemplo: *mensal*",
-      buttons: [
-        { id: "plano_mensal", title: "🗓️ Mensal — R$ 9,90" },
-        { id: "plano_trimestral", title: "📆 Trimestral — R$ 27,90" },
-        { id: "plano_semestral", title: "🧾 Semestral — R$ 49,90" },
-        { id: "plano_anual", title: "🏆 Anual — R$ 89,90" },
-      ],
-    };
-  }
-
-  // 🗓️ PLANO MENSAL
-  if (normalized === "plano_mensal") {
-    return "🗓️ *Plano Mensal selecionado*\n\nValor: *R$ 9,90*\n\nGerando pagamento… 💳";
-  }
-
-  // 📆 PLANO TRIMESTRAL
-  if (normalized === "plano_trimestral") {
-    return "📆 *Plano Trimestral selecionado*\n\nValor: *R$ 27,90*\n\nGerando pagamento… 💳";
-  }
-
-  // 🧾 PLANO SEMESTRAL
-  if (normalized === "plano_semestral") {
-    return "🧾 *Plano Semestral selecionado*\n\nValor: *R$ 49,90*\n\nGerando pagamento… 💳";
-  }
-
-  // 🏆 PLANO ANUAL
-  if (normalized === "plano_anual") {
-    return "🏆 *Plano Anual selecionado*\n\nValor: *R$ 89,90*\n\nGerando pagamento… 💳";
-  }
-
-  // ℹ️ CLIQUE NO BOTÃO SAIBA MAIS
-  if (normalized === "saiba_mais") {
-    return (
-      "ℹ️ *Sobre o Plano Premium*\n\n" +
-      "O Premium foi pensado para quem usa lembretes no dia a dia e quer mais tranquilidade 😊\n\n" +
-      "🎯 *Ideal para você que:*\n\n" +
-      "🚀 Cria lembretes com frequência\n" +
-      "📅 Quer se organizar melhor\n" +
-      "⏰ Não quer correr o risco de esquecer compromissos\n" +
-      "🔕 Não quer travas ou limitações\n\n" +
-      "Com o Premium, você usa o bot sem preocupações e deixa ele cuidar dos seus horários 😉\n\n" +
-      "💎 Quando quiser ativar, é só digitar *premium*"
-    );
   }
 
   // =========================
@@ -486,34 +415,6 @@ export async function routeIntent(userDocId, text, media = {}) {
   /* =========================
    📸 IMAGEM (FORÇAR NOTIFICAÇÃO)
 ========================= */
-
-  if (media?.hasImage && media.imageUrl) {
-    console.log("📸 IMAGEM RECEBIDA:", media.imageUrl);
-
-    const textoOCRRaw = await extrairTextoDaImagem(media.imageUrl);
-
-    console.log("🧾 OCR BRUTO:\n", textoOCRRaw);
-
-    const ocr = textoOCRRaw
-      .toUpperCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-
-    // 🔥 REGRA ABSOLUTA: se tem NUBANK → É NOTIFICAÇÃO
-    if (ocr.includes("NUBANK")) {
-      console.log("🚨 FORÇANDO FLUXO DE NOTIFICAÇÃO (NUBANK)");
-
-      return await handleGastoPorNotificacao({
-        userDocId,
-        imagem: media.imageUrl,
-        textoOCR: textoOCRRaw,
-      });
-    }
-
-    // ❗ SÓ SE NÃO TIVER NUBANK
-    console.log("🧾 NÃO TEM NUBANK → COMPROVANTE");
-    return await handleReceiptFlow(userDocId, media.imageUrl);
-  }
 
   /* =========================
    🔘 COMANDOS DIRETOS (BOTÕES)
