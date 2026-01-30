@@ -1,33 +1,31 @@
-export async function analisarNotificacao(textoOCR) {
+export async function classificarImagemOCR(textoOCR) {
   const prompt = `
-Você recebeu TEXTO de UMA NOTIFICAÇÃO BANCÁRIA (print do celular).
+Você recebeu TEXTO extraído de UMA IMAGEM.
 
-Exemplo real:
-"Compra de R$ 78,95 em MAXPRO TEO…"
-"há 45 min"
+Sua tarefa é APENAS classificar o tipo da imagem.
 
-REGRAS OBRIGATÓRIAS:
-- IGNORE hora do celular (ex: 18:17)
-- IGNORE textos do sistema (status bar)
-- NÃO invente data ou hora exata
-- Se existir tempo relativo ("45min"), use como texto
-- Extraia SOMENTE dados explícitos
+Tipos possíveis:
+- notificacao_bancaria
+- comprovante_fiscal
+- desconhecido
 
-Retorne JSON assim:
+Regras:
+- Notificação bancária: menciona banco (Nubank, Inter, C6, etc),
+  compra aprovada, débito/crédito, valor em reais.
+- Comprovante fiscal: cupom, CNPJ, NFC-e, itens, subtotal, total.
+- NÃO invente.
+- Responda SOMENTE em JSON.
 
-{
-  "valor": 78.95,
-  "estabelecimento": "MAXPRO TEO",
-  "tempo_relativo": "há 45 minutos"
-}
+Formato:
+{ "tipo": "notificacao_bancaria" }
+`;
 
-Se não achar valor:
-{ "erro": "nenhum_valor_encontrado" }
+  const resposta = await chamarSuaIA(`
+${prompt}
 
 Texto OCR:
 """${textoOCR}"""
-`;
+`);
 
-  const resposta = await chamarSuaIA(prompt);
   return JSON.parse(resposta);
 }

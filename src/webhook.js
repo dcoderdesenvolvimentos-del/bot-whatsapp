@@ -9,6 +9,21 @@ import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
 
 const processedMessages = new Set();
 
+if (payload.image?.imageUrl) {
+  const textoOCR = await extrairTextoDaImagem(payload.image.imageUrl);
+
+  const classificacao = await classificarImagemOCR(textoOCR);
+
+  await updateUser(userDocId, {
+    ultimaImagem: {
+      tipo: classificacao.tipo,
+      ocr: textoOCR,
+      imageUrl: payload.image.imageUrl,
+      criadaEm: new Date(),
+    },
+  });
+}
+
 export async function handleWebhook(payload, sendMessage) {
   if (payload.buttonId) {
     await handleBotao(payload);

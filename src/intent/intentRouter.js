@@ -79,6 +79,20 @@ function formatDateDMY(date) {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  const imagem = userData?.ultimaImagem;
+
+  if (imagem?.tipo === "notificacao_bancaria") {
+    return await handleGastoPorNotificacao({
+      userDocId,
+      imagem: imagem.imageUrl,
+      textoOCR: imagem.ocr,
+    });
+  }
+
+  if (imagem?.tipo === "comprovante_fiscal") {
+    return await handleReceiptFlow(userDocId, imagem.imageUrl);
+  }
+
   // Transforma a data do OCR em Timestamp real antes de salvar
   function buildDateFromReceipt(dataStr, horaStr) {
     if (!dataStr || typeof dataStr !== "string") {
@@ -1166,19 +1180,26 @@ export async function handleBotao(payload) {
       valor: gasto.valor,
       estabelecimento: gasto.estabelecimento,
       origem: "notificacao_bancaria",
-      criado_em: new Date(), // data do registro, NÃO da compra
+      criado_em: new Date(),
     });
 
-    delete globalThis.userSession[payload.phone];
-    await sendMessage(payload.phone, "✅ Gasto registrado com sucesso!");
+    // 🔥 LIMPA A IMAGEM PROCESSADA
+    await updateUser(userDocId, {
+      ultimaImagem: null,
+    });
+
+    await sendMessage(phone, "✅ Gasto registrado com sucesso!");
+
     return;
   }
 
   // ❌ CANCELAR
   if (payload.buttonId === "cancelar_gasto") {
-    delete globalThis.userSession[payload.phone];
-    await sendMessage(payload.phone, "❌ Registro cancelado.");
-    return;
+    await updateUser(userDocId, {
+      ultimaImagem: null,
+    });
+
+    await sendMessage(phone, "❌ Registro cancelado.");
   }
 
   // 📲 ESCOLHA MÚLTIPLA
