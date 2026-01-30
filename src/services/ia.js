@@ -41,14 +41,6 @@ Texto OCR:
 """${textoOCR}"""
 `;
 
-  await salvarGasto({
-    valor: gasto.valor,
-    estabelecimento: gasto.estabelecimento,
-    origem: "notificacao_bancaria",
-    criado_em: new Date(),
-  });
-
-  const resposta = await chamarSuaIA(prompt); // mesma função que você já usa
-
+  const resposta = await chamarSuaIA(prompt);
   return JSON.parse(resposta);
 }

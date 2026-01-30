@@ -1,17 +1,15 @@
+// src/handlers/gastoNotificacao.js
 import { extrairTextoDaImagem } from "../services/vision.js";
 import { analisarNotificacao } from "../services/ia.js";
-import { salvarGasto } from "../services/firebase.js";
 import { sendMessage, sendButtonList } from "../zapi.js";
+
+globalThis.userSession ??= {};
 
 export async function handleGastoPorNotificacao(payload) {
   try {
-    // 1️⃣ OCR
     const textoOCR = await extrairTextoDaImagem(payload.imagem);
-
-    // 2️⃣ IA (prompt específico)
     const respostaIA = await analisarNotificacao(textoOCR);
 
-    // 3️⃣ PASSO 6 — decisão de fluxo
     if (respostaIA.erro) {
       await sendMessage(
         payload.phone,
@@ -20,8 +18,13 @@ export async function handleGastoPorNotificacao(payload) {
       return;
     }
 
-    // 4️⃣ Vários gastos → escolha
+    // 🔹 VÁRIOS GASTOS
     if (respostaIA.multiplos) {
+      globalThis.userSession[payload.phone] = {
+        tipo: "notificacao_multiplos",
+        gastos: respostaIA.gastos,
+      };
+
       const buttons = respostaIA.gastos.map((g, i) => ({
         id: `escolher_gasto_${i}`,
         title: `${g.estabelecimento || "Desconhecido"} – R$ ${g.valor}`,
@@ -32,13 +35,16 @@ export async function handleGastoPorNotificacao(payload) {
         "Encontrei mais de um gasto 👇\nQual você quer registrar?",
         buttons,
       );
-
-      // aqui você guarda respostaIA.gastos em cache / session
       return;
     }
 
-    // 5️⃣ Um gasto só → confirmação
+    // 🔹 UM GASTO
     const gasto = respostaIA.gastos[0];
+
+    globalThis.userSession[payload.phone] = {
+      tipo: "notificacao_unico",
+      gasto,
+    };
 
     await sendButtonList(
       payload.phone,
@@ -48,8 +54,6 @@ export async function handleGastoPorNotificacao(payload) {
         { id: "cancelar_gasto", title: "❌ Cancelar" },
       ],
     );
-
-    // aqui você guarda `gasto` em cache / session
   } catch (err) {
     console.error("Erro gasto por notificação:", err);
     await sendMessage(payload.phone, "Deu ruim aqui 😅 tenta de novo pra mim.");

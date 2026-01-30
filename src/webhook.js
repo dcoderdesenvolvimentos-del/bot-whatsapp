@@ -8,6 +8,11 @@ import { getOrCreateUserByPhone } from "./services/userResolver.js";
 const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
+  if (payload.buttonId) {
+    await handleBotao(payload);
+    return;
+  }
+
   console.log("📦 PAYLOAD:", JSON.stringify(payload, null, 2));
   try {
     // 1️⃣ valida payload

@@ -1216,3 +1216,54 @@ function extractRelativeDateFromText(text = "") {
 
   return null;
 }
+
+// src/handlers/handleBotao.js
+import { salvarGasto } from "../services/firebase.js";
+import { sendMessage } from "../zapi.js";
+
+globalThis.userSession ??= {};
+
+export async function handleBotao(payload) {
+  const session = globalThis.userSession[payload.phone];
+  if (!session) return;
+
+  // ✅ CONFIRMAR GASTO ÚNICO
+  if (payload.buttonId === "confirmar_gasto") {
+    const gasto = session.gasto;
+
+    await salvarGasto({
+      valor: gasto.valor,
+      estabelecimento: gasto.estabelecimento,
+      origem: "notificacao_bancaria",
+      criado_em: new Date(),
+    });
+
+    delete globalThis.userSession[payload.phone];
+    await sendMessage(payload.phone, "✅ Gasto registrado com sucesso!");
+    return;
+  }
+
+  // ❌ CANCELAR
+  if (payload.buttonId === "cancelar_gasto") {
+    delete globalThis.userSession[payload.phone];
+    await sendMessage(payload.phone, "❌ Registro cancelado.");
+    return;
+  }
+
+  // 📲 ESCOLHA MÚLTIPLA
+  if (payload.buttonId.startsWith("escolher_gasto_")) {
+    const index = Number(payload.buttonId.split("_").pop());
+    const gasto = session.gastos[index];
+
+    await salvarGasto({
+      valor: gasto.valor,
+      estabelecimento: gasto.estabelecimento,
+      origem: "notificacao_bancaria",
+      criado_em: new Date(),
+    });
+
+    delete globalThis.userSession[payload.phone];
+    await sendMessage(payload.phone, "✅ Gasto registrado com sucesso!");
+    return;
+  }
+}
