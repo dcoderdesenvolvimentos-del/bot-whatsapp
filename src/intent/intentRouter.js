@@ -1218,8 +1218,6 @@ function extractRelativeDateFromText(text = "") {
 }
 
 // src/handlers/handleBotao.js
-import { salvarGasto } from "../services/firebase.js";
-import { sendMessage } from "../zapi.js";
 
 globalThis.userSession ??= {};
 
