@@ -1,4 +1,4 @@
-export async function classificarImagemOCR(textoOCR) {
+export async function analisarNotificacao(textoOCR) {
   const prompt = `
 Você recebeu TEXTO extraído de UMA IMAGEM.
 
