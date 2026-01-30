@@ -1,10 +1,11 @@
 import { db } from "../config/firebase.js";
 import { Timestamp } from "firebase-admin/firestore";
+import crypto from "crypto";
 
-/**
- * 🔐 Resolve usuário REAL pelo telefone
- * REGRA: 1 telefone limpo = 1 UID
- */
+function gerarSlug() {
+  return crypto.randomBytes(4).toString("hex");
+}
+
 export async function getOrCreateUserByPhone(rawPhone) {
   // 1️⃣ validação básica
   if (!rawPhone || typeof rawPhone !== "string") {
@@ -20,30 +21,55 @@ export async function getOrCreateUserByPhone(rawPhone) {
     return null;
   }
 
-  // 3️⃣ normaliza telefone (SÓ NÚMEROS)
+  // 3️⃣ normaliza telefone
   const phone = rawPhone.replace(/\D/g, "");
-
   if (phone.length < 8) {
     return null;
   }
 
-  // 4️⃣ phoneIndex é a fonte da verdade
+  // 4️⃣ consulta índice
   const phoneIndexRef = db.collection("phoneIndex").doc(phone);
   const phoneIndexSnap = await phoneIndexRef.get();
 
-  // 5️⃣ já existe → retorna UID
+  // ─────────────────────────────────────────
+  // 🟢 CASO 1: USUÁRIO JÁ EXISTE
+  // ─────────────────────────────────────────
   if (phoneIndexSnap.exists) {
+    const uid = phoneIndexSnap.data().uid;
+    const userRef = db.collection("users").doc(uid);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      return null; // algo muito errado aconteceu
+    }
+
+    const userData = userSnap.data();
+
+    // 🔥 AQUI ENTRA O SLUG (USUÁRIO ANTIGO)
+    if (!userData.dashboardSlug) {
+      const slug = gerarSlug();
+      await userRef.update({
+        dashboardSlug: slug,
+      });
+      userData.dashboardSlug = slug;
+    }
+
     return {
-      uid: phoneIndexSnap.data().uid,
+      uid,
       phone,
+      dashboardSlug: userData.dashboardSlug,
     };
   }
 
-  // 6️⃣ cria novo usuário (ÚNICO LUGAR QUE CRIA)
+  // ─────────────────────────────────────────
+  // 🟢 CASO 2: USUÁRIO NOVO
+  // ─────────────────────────────────────────
+  const slug = gerarSlug();
   const userRef = db.collection("users").doc();
 
   await userRef.set({
     phone,
+    dashboardSlug: slug, // 🔥 JÁ CRIA COM SLUG
     stage: "ghost",
     active: true,
     createdAt: Timestamp.now(),
@@ -58,5 +84,6 @@ export async function getOrCreateUserByPhone(rawPhone) {
   return {
     uid: userRef.id,
     phone,
+    dashboardSlug: slug,
   };
 }
