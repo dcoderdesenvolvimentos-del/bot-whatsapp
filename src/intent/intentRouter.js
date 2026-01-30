@@ -480,14 +480,18 @@ export async function routeIntent(userDocId, text, media = {}) {
 ========================= */
 
   if (media?.hasImage && media.imageUrl) {
-    const textoOCR = await extrairTextoDaImagem(media.imageUrl);
+    const textoOCRRaw = await extrairTextoDaImagem(media.imageUrl);
 
-    // 🏦 NOTIFICAÇÃO BANCÁRIA
-    if (/NUBANK|COMPRA APROVADA|DEBITO|CREDITO/i.test(textoOCR)) {
+    // 🔥 DECISÃO SEM LIMPEZA
+    const isNotificacao =
+      /NUBANK/i.test(textoOCRRaw) && /COMPRA/i.test(textoOCRRaw);
+
+    if (isNotificacao) {
+      console.log("📲 NOTIFICAÇÃO BANCÁRIA DETECTADA");
       return await handleGastoPorNotificacao({
         userDocId,
         imagem: media.imageUrl,
-        textoOCR,
+        textoOCR: textoOCRRaw,
       });
     }
 
