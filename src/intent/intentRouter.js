@@ -10,6 +10,7 @@ import { canUseReceipt } from "../services/receiptLimit.js";
 import { parseReceiptText } from "../utils/receiptParser.js";
 import { sendMessage } from "../zapi.js";
 import { normalizeText } from "../utils/normalizeSpeech.js";
+import { db } from "./config/firebase.js";
 
 import {
   createList,
