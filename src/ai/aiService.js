@@ -69,6 +69,7 @@ Resposta:
 
 
 
+
 Quando o usuário relatar um gasto, identifique:
 
 - intencao: "criar_gasto"
