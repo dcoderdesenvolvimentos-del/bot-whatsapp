@@ -1,41 +1,28 @@
 export async function analisarNotificacao(textoOCR) {
   const prompt = `
-Você recebeu TEXTO extraído de UM PRINT DE NOTIFICAÇÃO BANCÁRIA.
+Você recebeu TEXTO de UMA NOTIFICAÇÃO BANCÁRIA (print do celular).
 
-Esse texto pode conter UMA ou VÁRIAS notificações de pagamento.
+Exemplo real:
+"Compra de R$ 78,95 em MAXPRO TEO…"
+"há 45 min"
 
-Sua tarefa:
-- Encontrar TODOS os valores monetários em reais (R$).
-- Para cada valor, identificar o nome do local ou pessoa associada (se houver).
+REGRAS OBRIGATÓRIAS:
+- IGNORE hora do celular (ex: 18:17)
+- IGNORE textos do sistema (status bar)
+- NÃO invente data ou hora exata
+- Se existir tempo relativo ("45min"), use como texto
+- Extraia SOMENTE dados explícitos
 
-REGRAS:
-- NÃO invente informações.
-- NÃO escolha um gasto por conta própria.
-- Se não houver NENHUM valor, retorne erro.
+Retorne JSON assim:
 
-Responda APENAS em JSON.
+{
+  "valor": 78.95,
+  "estabelecimento": "MAXPRO TEO",
+  "tempo_relativo": "há 45 minutos"
+}
 
-Formato esperado:
-
-Se não encontrar valor:
+Se não achar valor:
 { "erro": "nenhum_valor_encontrado" }
-
-Se encontrar UM gasto:
-{
-  "multiplos": false,
-  "gastos": [
-    { "valor": 45.90, "estabelecimento": "Uber" }
-  ]
-}
-
-Se encontrar VÁRIOS gastos:
-{
-  "multiplos": true,
-  "gastos": [
-    { "valor": 45.90, "estabelecimento": "Uber" },
-    { "valor": 120.00, "estabelecimento": "Mercado Livre" }
-  ]
-}
 
 Texto OCR:
 """${textoOCR}"""

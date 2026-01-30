@@ -45,6 +45,29 @@ export async function handleWebhook(payload, sendMessage) {
       console.log("🚫 Evento ignorado (não é mensagem do usuário)");
       return;
     }
+    // 📸 SE VEIO IMAGEM
+    if (hasImage) {
+      const imageUrl = payload.image?.imageUrl || payload.image?.url;
+
+      // 🔍 OCR da imagem
+      const textoOCR = await extrairTextoDaImagem(imageUrl);
+
+      // 🏦 DETECTA NOTIFICAÇÃO BANCÁRIA PRIMEIRO
+      if (/NUBANK|COMPRA APROVADA|DEBITO|CREDITO/i.test(textoOCR)) {
+        await handleGastoPorNotificacao({
+          ...payload,
+          imagem: imageUrl, // mantém compatibilidade com o handler
+        });
+        return;
+      }
+
+      // 🧾 SE NÃO FOR NOTIFICAÇÃO, SEGUE FLUXO ANTIGO (COMPROVANTE)
+      await handleComprovante({
+        ...payload,
+        imagem: imageUrl,
+      });
+      return;
+    }
 
     // 4️⃣ resolve usuário (AQUI é o lugar certo)
     const { uid } = await getOrCreateUserByPhone(phone);

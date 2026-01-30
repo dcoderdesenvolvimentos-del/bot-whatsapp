@@ -1233,7 +1233,7 @@ export async function handleBotao(payload) {
       valor: gasto.valor,
       estabelecimento: gasto.estabelecimento,
       origem: "notificacao_bancaria",
-      criado_em: new Date(),
+      criado_em: new Date(), // data do registro, NÃO da compra
     });
 
     delete globalThis.userSession[payload.phone];

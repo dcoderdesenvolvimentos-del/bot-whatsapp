@@ -3,11 +3,26 @@ import { extrairTextoDaImagem } from "../services/vision.js";
 import { analisarNotificacao } from "../services/ia.js";
 import { sendMessage, sendButtonList } from "../zapi.js";
 
+function limparTextoNotificacao(texto) {
+  return texto
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(
+      (l) =>
+        l &&
+        !/SO CHAMA|TIM|VIVO|CLARO|4G|5G|LTE|WI.?FI|BATERIA|%/i.test(l) &&
+        !/^\d{1,2}:\d{2}$/.test(l), // hora do celular
+    )
+    .join("\n");
+}
+
 globalThis.userSession ??= {};
 
 export async function handleGastoPorNotificacao(payload) {
   try {
-    const textoOCR = await extrairTextoDaImagem(payload.imagem);
+    const textoOCRRaw = await extrairTextoDaImagem(payload.imagem);
+    const textoOCR = limparTextoNotificacao(textoOCRRaw);
+
     const respostaIA = await analisarNotificacao(textoOCR);
 
     if (respostaIA.erro) {
@@ -48,7 +63,7 @@ export async function handleGastoPorNotificacao(payload) {
 
     await sendButtonList(
       payload.phone,
-      `Encontrei um gasto de *R$ ${gasto.valor}* no *${gasto.estabelecimento || "local não identificado"}*.\nQuer registrar?`,
+      `📲 *Notificação bancária detectada*\n\n🏪 *Local:* ${gasto.estabelecimento}\n💰 *Valor:* R$ ${gasto.valor}\n⏱️ *Quando:* ${gasto.tempo_relativo || "agora"}\n\nDeseja registrar esse gasto?`,
       [
         { id: "confirmar_gasto", title: "✅ Registrar" },
         { id: "cancelar_gasto", title: "❌ Cancelar" },
