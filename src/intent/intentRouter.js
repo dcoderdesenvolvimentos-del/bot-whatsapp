@@ -479,23 +479,40 @@ export async function routeIntent(userDocId, text, media = {}) {
    📸 COMPROVANTE (IMAGEM)
 ========================= */
 
+  /* =========================
+   📸 IMAGEM (NOTIFICAÇÃO OU COMPROVANTE)
+========================= */
+
   if (media?.hasImage && media.imageUrl) {
+    console.log("📸 IMAGEM RECEBIDA:", media.imageUrl);
+
+    // 1️⃣ OCR BRUTO
     const textoOCRRaw = await extrairTextoDaImagem(media.imageUrl);
 
-    // 🔥 DECISÃO SEM LIMPEZA
-    const isNotificacao =
-      /NUBANK/i.test(textoOCRRaw) && /COMPRA/i.test(textoOCRRaw);
+    console.log("🧾 OCR BRUTO:\n", textoOCRRaw);
 
-    if (isNotificacao) {
+    // 2️⃣ NORMALIZA (remove acentos, caixa alta)
+    const ocr = textoOCRRaw
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    // 3️⃣ DETECÇÃO ROBUSTA DE NOTIFICAÇÃO BANCÁRIA
+    const isNotificacaoBancaria =
+      /NUBANK/.test(ocr) && /COMPRA/.test(ocr) && /R\$|\d+[,\.]\d{2}/.test(ocr);
+
+    if (isNotificacaoBancaria) {
       console.log("📲 NOTIFICAÇÃO BANCÁRIA DETECTADA");
+
       return await handleGastoPorNotificacao({
         userDocId,
         imagem: media.imageUrl,
-        textoOCR: textoOCRRaw,
+        textoOCR: textoOCRRaw, // manda o bruto pra IA
       });
     }
 
-    // 🧾 COMPROVANTE (fluxo antigo, intacto)
+    // 4️⃣ FALLBACK → COMPROVANTE FÍSICO
+    console.log("🧾 NÃO É NOTIFICAÇÃO → FLUXO DE COMPROVANTE");
     return await handleReceiptFlow(userDocId, media.imageUrl);
   }
 
