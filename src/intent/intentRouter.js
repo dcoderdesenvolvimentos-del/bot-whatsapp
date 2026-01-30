@@ -809,11 +809,19 @@ export async function routeIntent(userDocId, text, media = {}) {
           createdAt: Timestamp.now(),
         });
 
+        const userSnap = await db.collection("users").doc(userDocId).get();
+        const { dashboardSlug } = userSnap.data() || {};
+
+        const link = dashboardSlug
+          ? `https://dashboard.mario.com/m/${dashboardSlug}`
+          : null;
+
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${data.valor}\n` +
           `📍 Local: ${capitalize(local)}\n` +
-          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "hoje"}`
+          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "hoje"}` +
+          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
       }
 
