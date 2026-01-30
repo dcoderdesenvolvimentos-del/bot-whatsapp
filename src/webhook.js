@@ -4,66 +4,61 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
-import { handleBotao } from "./handlers/handleBotao.js";
+import { extrairTextoDaImagem } from "./services/vision.js";
+import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
+
+const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
+  if (payload.buttonId) {
+    await handleBotao(payload);
+    return;
+  }
+
+  console.log("📦 PAYLOAD:", JSON.stringify(payload, null, 2));
   try {
+    // 1️⃣ valida payload
     if (!payload) return;
 
-    console.log("📦 PAYLOAD:", JSON.stringify(payload, null, 2));
-
-    /* =========================
-       🔘 BOTÕES (PRIORIDADE)
-    ========================= */
-    if (payload.buttonId) {
-      await handleBotao(payload);
-      return;
-    }
-
-    /* =========================
-       📞 VALIDA PHONE
-    ========================= */
     const phone = payload.phone;
     if (!phone) {
       console.log("🚫 Payload sem phone");
       return;
     }
 
-    /* =========================
-       🤖 IGNORA MENSAGEM DO BOT
-    ========================= */
+    // 2️⃣ ignora mensagens do próprio bot
     if (payload.fromMe) return;
 
-    /* =========================
-       🔎 VERIFICA CONTEÚDO
-    ========================= */
+    // 3️⃣ ignora eventos sem texto, áudio ou imagem
     const hasText =
       typeof payload.text?.message === "string" ||
-      typeof payload.buttonsResponseMessage?.buttonId === "string";
+      typeof payload.buttonsResponseMessage?.buttonId === "string" ||
+      typeof payload.audio?.audioUrl === "string";
 
-    const hasAudio = Boolean(payload.audio?.audioUrl);
-    const hasImage = Boolean(payload.image?.imageUrl || payload.image?.url);
+    if (!hasText && !payload.image?.imageUrl) {
+      console.log("🚫 Evento ignorado (não é mensagem do usuário)");
+      return;
+    }
+
+    const hasAudio = payload.audio?.audioUrl;
+    const hasImage = payload.image?.imageUrl || payload.image?.url;
 
     if (!hasText && !hasAudio && !hasImage) {
       console.log("🚫 Evento ignorado (não é mensagem do usuário)");
       return;
     }
 
-    /* =========================
-       👤 RESOLVE USUÁRIO
-    ========================= */
+    // 4️⃣ resolve usuário (AQUI é o lugar certo)
     const { uid } = await getOrCreateUserByPhone(phone);
 
     console.log("👤 Phone:", phone);
     console.log("🆔 UID:", uid);
 
-    /* =========================
-       ✏️ TEXTO / ÁUDIO
-    ========================= */
+    // 5️⃣ extrai texto
     let text = "";
     let media = { hasImage: false, imageUrl: null };
 
-    if (hasAudio) {
+    if (payload.audio?.audioUrl) {
       console.log("🎤 Áudio recebido");
       const rawText = await audioToText(payload.audio.audioUrl);
       text = normalizeSpeech(rawText);
@@ -73,6 +68,10 @@ export async function handleWebhook(payload, sendMessage) {
       text = payload.buttonsResponseMessage.buttonId;
     }
 
+    if (typeof text !== "string") {
+      text = "";
+    }
+
     if (hasImage) {
       media = {
         hasImage: true,
@@ -80,9 +79,11 @@ export async function handleWebhook(payload, sendMessage) {
       };
     }
 
-    /* =========================
-       🔁 ANTI-DUPLICAÇÃO
-    ========================= */
+    if (!text && !media.hasImage) return;
+
+    console.log("💬 Texto:", text);
+
+    // TRAVA ANTI-DUPLICAÇÃO
     const messageId = payload.messageId;
     if (messageId) {
       const alreadyProcessed = await hasProcessedMessage(messageId);
@@ -93,16 +94,23 @@ export async function handleWebhook(payload, sendMessage) {
 
       await markMessageAsProcessed(messageId);
     }
+    async function markMessageAsProcessed(messageId) {
+      await db.collection("processedMessages").doc(messageId).set({
+        processedAt: new Date(),
+      });
+    }
 
-    /* =========================
-       🧠 ROUTER (DECISÃO)
-    ========================= */
+    async function hasProcessedMessage(messageId) {
+      const doc = await db.collection("processedMessages").doc(messageId).get();
+      return doc.exists;
+    }
+
+    // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
+
     if (!response) return;
 
-    /* =========================
-       📤 ENVIO
-    ========================= */
+    // 7️⃣ envia resposta
     if (typeof response === "string") {
       await sendMessage(phone, response);
       return;
@@ -121,19 +129,4 @@ export async function handleWebhook(payload, sendMessage) {
   } catch (err) {
     console.error("❌ Erro no webhook:", err);
   }
-}
-
-/* =========================
-   🧱 HELPERS ANTI-DUP
-========================= */
-
-async function markMessageAsProcessed(messageId) {
-  await db.collection("processedMessages").doc(messageId).set({
-    processedAt: new Date(),
-  });
-}
-
-async function hasProcessedMessage(messageId) {
-  const doc = await db.collection("processedMessages").doc(messageId).get();
-  return doc.exists;
 }
