@@ -6,7 +6,7 @@ import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 import { extrairTextoDaImagem } from "./services/vision.js";
 import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
-import { handleComprovante } from "./handlers/gastoComprovante.js";
+import { handleReceiptFlow } from "./intent/intentRouter.js";
 
 const processedMessages = new Set();
 
@@ -65,7 +65,7 @@ export async function handleWebhook(payload, sendMessage) {
       }
 
       // 🧾 SE NÃO FOR NOTIFICAÇÃO, SEGUE FLUXO ANTIGO (COMPROVANTE)
-      await handleComprovante({
+      await handleReceiptFlow({
         ...payload,
         imagem: imageUrl,
       });
