@@ -4,6 +4,9 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
+import { extrairTextoDaImagem } from "./services/vision.js";
+import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
+import { handleComprovante } from "./handlers/gastoComprovante.js";
 
 const processedMessages = new Set();
 
