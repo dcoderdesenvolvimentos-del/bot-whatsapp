@@ -640,11 +640,26 @@ export async function routeIntent(userDocId, text, media = {}) {
         const listas = await getAllLists(userDocId);
 
         if (!listas || listas.length === 0) {
+          const userSnap = await db.collection("users").doc(userDocId).get();
+          const { phone } = userSnap.data() || {};
+
+          if (!phone) return;
+
           return await sendMessage(
-            userDocId,
+            phone,
             "📭 Você ainda não tem nenhuma lista criada.",
           );
         }
+
+        // 🔹 busca o usuário
+        const userSnap = await db.collection("users").doc(userDocId).get();
+        const { phone, dashboardSlug } = userSnap.data() || {};
+
+        if (!phone) return;
+
+        const link = dashboardSlug
+          ? `https://dashboard.mario.com/m/${dashboardSlug}`
+          : null;
 
         let resposta = "📋 *Suas listas de compras*\n\n";
 
@@ -664,7 +679,11 @@ export async function routeIntent(userDocId, text, media = {}) {
           "📄 *Ver itens da lista*\n" +
           "Ex: _“ver lista compras do mês”_";
 
-        return await sendMessage(userDocId, resposta);
+        if (link) {
+          resposta += `\n\n📊 *Ver tudo no dashboard:*\n${link}`;
+        }
+
+        return await sendMessage(phone, resposta);
       }
 
       case "remover_item_lista": {
