@@ -19,10 +19,12 @@ export function startScheduler() {
         const userSnap = await db.collection("users").doc(r.uid).get();
         if (!userSnap.exists) continue;
 
-        const { phone } = userSnap.data();
-        if (!phone) continue;
+        const { phone, dashboardSlug } = userSnap.data();
+        if (!phone || !dashboardSlug) continue;
 
         const dateObj = r.when.toDate();
+
+        const link = `https://dashboard.mario.com/m/${dashboardSlug}`;
 
         const msg = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
@@ -35,6 +37,10 @@ export function startScheduler() {
           minute: "2-digit",
           timeZone: "America/Sao_Paulo",
         })}
+
+📊 Ver no dashboard:
+${link}
+
 💡 Estou passando pra te lembrar 😉`;
 
         await sendMessage(phone, msg);
