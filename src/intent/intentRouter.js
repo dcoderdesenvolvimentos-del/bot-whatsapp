@@ -479,7 +479,18 @@ export async function routeIntent(userDocId, text, media = {}) {
 ========================= */
 
   if (media?.hasImage && media.imageUrl) {
-    console.log("📸 IMAGEM RECEBIDA NO ROUTER:", media.imageUrl);
+    const textoOCR = await extrairTextoDaImagem(media.imageUrl);
+
+    // 🏦 NOTIFICAÇÃO BANCÁRIA
+    if (/NUBANK|COMPRA APROVADA|DEBITO|CREDITO/i.test(textoOCR)) {
+      return await handleGastoPorNotificacao({
+        userDocId,
+        imagem: media.imageUrl,
+        textoOCR,
+      });
+    }
+
+    // 🧾 COMPROVANTE (fluxo antigo, intacto)
     return await handleReceiptFlow(userDocId, media.imageUrl);
   }
 
@@ -522,7 +533,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return (
       "💾 *Gasto salvo com sucesso!*\n\n" +
       `💰 R$ ${dados.valor.toFixed(2)}\n` +
-      `📅 Data: ${dados.data || "hoje"}`
+      `📅 Data: ${dados.data || "Hoje"}`
     );
   }
 
