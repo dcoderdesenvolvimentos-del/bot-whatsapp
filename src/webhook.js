@@ -2,11 +2,10 @@ import { db } from "./firebase.js";
 import { audioToText } from "./audio.js";
 import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
-import { routeIntent } from "./intent/intentRouter.js";
+import { routeIntent, handleReceiptFlow } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 import { extrairTextoDaImagem } from "./services/vision.js";
 import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
-import { handleReceiptFlow } from "./intent/intentRouter.js";
 
 const processedMessages = new Set();
 
