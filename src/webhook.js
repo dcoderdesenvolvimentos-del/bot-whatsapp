@@ -4,17 +4,10 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
-import { extrairTextoDaImagem } from "./services/vision.js";
-import { handleGastoPorNotificacao } from "./handlers/gastoNotificacao.js";
 
 const processedMessages = new Set();
 
 export async function handleWebhook(payload, sendMessage) {
-  if (payload.buttonId) {
-    await handleBotao(payload);
-    return;
-  }
-
   console.log("📦 PAYLOAD:", JSON.stringify(payload, null, 2));
   try {
     // 1️⃣ valida payload
