@@ -24,7 +24,7 @@ export function startScheduler() {
 
         const dateObj = r.when.toDate();
 
-        const link = `https://flourishing-cassata-5ced2a.netlify.app/m/${dashboardSlug}`;
+        const link = `https://marioaii.netlify.app/m/${dashboardSlug}`;
 
         const msg = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
