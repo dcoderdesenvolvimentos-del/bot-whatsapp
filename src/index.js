@@ -6,6 +6,7 @@ import { sendMessage } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
 import admin from "firebase-admin";
 import { db } from "./firebase.js";
+import app from "./api.js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
