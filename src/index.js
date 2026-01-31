@@ -36,7 +36,7 @@ const server = http.createServer(async (req, res) => {
         const { slug } = JSON.parse(body);
 
         if (!slug) {
-          res.writeHead(400, { "Content-Type": "application/json" });
+          res.writeHead(400, corsHeaders);
           return res.end(JSON.stringify({ error: "slug obrigatório" }));
         }
 
@@ -47,12 +47,11 @@ const server = http.createServer(async (req, res) => {
           .get();
 
         if (snap.empty) {
-          res.writeHead(401, { "Content-Type": "application/json" });
+          res.writeHead(401, corsHeaders);
           return res.end(JSON.stringify({ error: "slug inválido" }));
         }
 
         const uid = snap.docs[0].id;
-
         const token = await admin.auth().createCustomToken(uid);
 
         res.writeHead(200, {
@@ -63,8 +62,8 @@ const server = http.createServer(async (req, res) => {
         return res.end(JSON.stringify({ token }));
       } catch (err) {
         console.error("magic-login error:", err);
-        res.writeHead(500);
-        return res.end();
+        res.writeHead(500, corsHeaders);
+        res.end();
       }
     });
 
