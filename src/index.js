@@ -7,12 +7,25 @@ import { handleMpWebhook } from "./mpWebhook.js";
 import admin from "./firebaseAdmin.js";
 import { db } from "./config/firebase.js";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 startScheduler();
 
 const server = http.createServer(async (req, res) => {
   // ─────────────────────────────────────
   // 🔐 DASHBOARD MAGIC LOGIN
   // ─────────────────────────────────────
+
+  // 🔓 CORS PRE-FLIGHT
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, corsHeaders);
+    return res.end();
+  }
+
   if (req.method === "POST" && req.url === "/dashboard/magic-login") {
     let body = "";
 
