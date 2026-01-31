@@ -659,7 +659,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         if (!phone) return;
 
         const link = dashboardSlug
-          ? `https://flourishing-cassata-5ced2a.netlify.app/m/${dashboardSlug}`
+          ? `https://marioaii.netlify.app/m/${dashboardSlug}`
           : null;
 
         let resposta = "📋 *Suas listas de compras*\n\n";
@@ -813,7 +813,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         const { dashboardSlug } = userSnap.data() || {};
 
         const link = dashboardSlug
-          ? `https://flourishing-cassata-5ced2a.netlify.app/m/${dashboardSlug}`
+          ? `https://marioaii.netlify.app/m/${dashboardSlug}`
           : null;
 
         return (
