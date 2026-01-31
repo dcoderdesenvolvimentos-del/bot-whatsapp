@@ -4,8 +4,8 @@ import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
-import admin from "./firebaseAdmin.js";
-import { db } from "../config/firebase.js";
+import admin from "firebase-admin";
+import { db } from "./firebase.js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
