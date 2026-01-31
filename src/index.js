@@ -4,11 +4,59 @@ import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
+import admin from "./firebaseAdmin.js";
+import { db } from "./config/firebase.js";
 
 startScheduler();
 
 const server = http.createServer(async (req, res) => {
-  // 🔔 WEBHOOK MERCADO PAGO (tem que vir ANTES!     )
+  // ─────────────────────────────────────
+  // 🔐 DASHBOARD MAGIC LOGIN
+  // ─────────────────────────────────────
+  if (req.method === "POST" && req.url === "/dashboard/magic-login") {
+    let body = "";
+
+    req.on("data", (chunk) => (body += chunk));
+
+    req.on("end", async () => {
+      try {
+        const { slug } = JSON.parse(body);
+
+        if (!slug) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ error: "slug obrigatório" }));
+        }
+
+        const snap = await db
+          .collection("users")
+          .where("dashboardSlug", "==", slug)
+          .limit(1)
+          .get();
+
+        if (snap.empty) {
+          res.writeHead(401, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ error: "slug inválido" }));
+        }
+
+        const uid = snap.docs[0].id;
+
+        const token = await admin.auth().createCustomToken(uid);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ token }));
+      } catch (err) {
+        console.error("magic-login error:", err);
+        res.writeHead(500);
+        return res.end();
+      }
+    });
+
+    return;
+  }
+
+  // ─────────────────────────────────────
+  // 🔔 WEBHOOK MERCADO PAGO
+  // ─────────────────────────────────────
   if (req.method === "POST" && req.url === "/mp/webhook") {
     let body = "";
     req.on("data", (chunk) => (body += chunk));
@@ -27,6 +75,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ─────────────────────────────────────
+  // 🤖 WEBHOOK DO WHATSAPP (PADRÃO)
+  // ─────────────────────────────────────
   if (req.method === "POST") {
     let body = "";
 
@@ -49,10 +100,11 @@ const server = http.createServer(async (req, res) => {
         res.end("erro");
       }
     });
-  } else {
-    res.writeHead(404);
-    res.end();
+    return;
   }
+
+  res.writeHead(404);
+  res.end();
 });
 
-server.listen(3000, () => console.log("Webhook rodando na porta 3000"));
+server.listen(3000, () => console.log("🚀 Mário rodando na porta 3000"));
