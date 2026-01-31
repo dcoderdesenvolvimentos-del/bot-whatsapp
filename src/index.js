@@ -55,7 +55,11 @@ const server = http.createServer(async (req, res) => {
 
         const token = await admin.auth().createCustomToken(uid);
 
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        });
+
         return res.end(JSON.stringify({ token }));
       } catch (err) {
         console.error("magic-login error:", err);
