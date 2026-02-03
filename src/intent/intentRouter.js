@@ -1277,7 +1277,7 @@ async function criarReceita({ userId, valor, descricao, origem }) {
     createdAt: new Date(),
   };
 
-  await db.collection("users").doc(uid).add(receita);
+  await db.collection("users").doc(uid).collection("receitas").add(receita);
 
   console.log("✅ Receita salva com sucesso:", receita);
 
