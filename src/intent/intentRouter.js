@@ -843,14 +843,7 @@ export async function routeIntent(userDocId, text, media = {}) {
             currency: "BRL",
           })}\n` +
           `📍 Local: ${capitalize(local)}\n` +
-          `📅 Data: ${
-            date
-              ? date.toLocaleDateString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })
-              : "Hoje"
-          }` +
+          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
           (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
       }
