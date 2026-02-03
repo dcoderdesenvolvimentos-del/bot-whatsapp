@@ -573,32 +573,21 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     switch (intent) {
-      case "registrar_gasto_comprovante": {
-        console.log("💸 Registrando gasto:", data);
-
-        await criarGasto({
-          userId,
-          valor: data.valor,
-          descricao: data.descricao,
-          categoria: data.categoria,
-        });
-
-        resposta = `💸 Gasto registrado com sucesso!
-Valor: R$ ${data.valor.toFixed(2)}
-Descrição: ${data.descricao || "Gasto"}`;
-        break;
-      }
-
       case "registrar_receita": {
+        console.log("💰 Registrando receita:", data);
+
         await criarReceita({
-          userId,
+          userId: userDocId, // 🔥 AQUI É O PONTO CRÍTICO
           valor: data.valor,
           descricao: data.descricao,
           origem: data.origem,
         });
 
-        return `💰 Receita registrada com sucesso!
-Valor: R$ ${data.valor.toFixed(2)}`;
+        return (
+          "💰 *Receita registrada com sucesso!*\n\n" +
+          `💵 Valor: R$ ${Number(data.valor).toFixed(2)}\n` +
+          `📌 Origem: ${data.origem || "não informada"}`
+        );
       }
 
       case "registrar_gasto_comprovante":
@@ -1267,8 +1256,9 @@ function extractRelativeDateFromText(text = "") {
 
   return null;
 }
+
 async function criarReceita({ userId, valor, descricao, origem }) {
-  if (!valor || isNaN(valor) || valor <= 0) {
+  if (!valor || isNaN(valor) || Number(valor) <= 0) {
     throw new Error("Valor da receita inválido");
   }
 
@@ -1281,9 +1271,9 @@ async function criarReceita({ userId, valor, descricao, origem }) {
     createdAt: new Date(),
   };
 
-  await firestore.collection("receitas").add(receita);
+  await db.collection("receitas").add(receita);
 
-  console.log("✅ Receita salva");
+  console.log("✅ Receita salva com sucesso:", receita);
 
   return receita;
 }

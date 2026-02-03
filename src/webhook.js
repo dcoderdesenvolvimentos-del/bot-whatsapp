@@ -114,13 +114,6 @@ export async function handleWebhook(payload, sendMessage) {
       return;
     }
 
-    if (response) {
-      await sendMessage({
-        phone,
-        text: response,
-      });
-    }
-
     if (response.type === "pix") {
       await sendMessage(phone, response.text);
       await sendMessage(phone, response.pixCode);
