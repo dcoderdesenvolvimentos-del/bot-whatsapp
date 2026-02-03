@@ -840,7 +840,14 @@ export async function routeIntent(userDocId, text, media = {}) {
           "💾 *Gasto salvo com sucesso!*\n\n" +
           `💰 Valor: R$ ${data.valor}\n` +
           `📍 Local: ${capitalize(local)}\n` +
-          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "hoje"}` +
+          `📅 Data: ${
+            date
+              ? date.toLocaleDateString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })
+              : "hoje"
+          }` +
           (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
       }
