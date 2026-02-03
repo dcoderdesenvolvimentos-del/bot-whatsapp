@@ -838,7 +838,10 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
-          `💰 Valor: R$ ${data.valor}\n` +
+          `💰 Valor:  ${Number(data.valor).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n` +
           `📍 Local: ${capitalize(local)}\n` +
           `📅 Data: ${
             date
