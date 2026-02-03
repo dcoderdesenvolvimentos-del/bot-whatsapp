@@ -522,7 +522,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return (
       "💾 *Gasto salvo com sucesso!*\n\n" +
       `💰 R$ ${dados.valor.toFixed(2)}\n` +
-      `📅 Data: ${dados.data || "hoje"}`
+      `📅 Data: ${dados.data || "Hoje"}`
     );
   }
 
@@ -849,7 +849,7 @@ export async function routeIntent(userDocId, text, media = {}) {
                   style: "currency",
                   currency: "BRL",
                 })
-              : "hoje"
+              : "Hoje"
           }` +
           (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
@@ -1284,7 +1284,7 @@ async function criarReceita({ userId, valor, descricao, origem }) {
     createdAt: new Date(),
   };
 
-  await db.collection("receitas").add(receita);
+  await db.collection("users").doc(uid).add(receita);
 
   console.log("✅ Receita salva com sucesso:", receita);
 
