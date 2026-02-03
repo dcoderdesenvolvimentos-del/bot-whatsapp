@@ -760,6 +760,16 @@ export async function routeIntent(userDocId, text, media = {}) {
         await clearShoppingList(userDocId);
         return "🧹 Sua lista de compras foi limpa!";
 
+      case "criar_receita":
+        await criarReceita({
+          userId,
+          valor: data.valor,
+          descricao: data.descricao,
+          origem: data.origem,
+          formaPagamento: data.forma_pagamento,
+        });
+        break;
+
       /* =========================
      Logica Dos Gastos
   ========================= */
@@ -1238,4 +1248,30 @@ function extractRelativeDateFromText(text = "") {
   }
 
   return null;
+}
+
+async function criarReceita({
+  userId,
+  valor,
+  descricao,
+  origem,
+  formaPagamento,
+}) {
+  if (!valor || valor <= 0) {
+    throw new Error("Valor inválido para receita");
+  }
+
+  const receita = {
+    userId,
+    valor: Number(valor),
+    descricao: descricao || "Receita registrada",
+    origem: origem || "não informado",
+    formaPagamento: formaPagamento || "não informado",
+    createdAt: new Date(),
+    tipo: "receita",
+  };
+
+  await firestore.collection("receitas").add(receita);
+
+  return receita;
 }
