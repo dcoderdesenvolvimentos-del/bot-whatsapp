@@ -577,7 +577,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         console.log("💰 Registrando receita:", data);
 
         await criarReceita({
-          userId: userDocId, // 🔥 AQUI É O PONTO CRÍTICO
+          userId: userDocId,
           valor: data.valor,
           descricao: data.descricao,
           origem: data.origem,
@@ -585,7 +585,10 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
-          `💵 Valor: R$ ${Number(data.valor).toFixed(2)}\n` +
+          `💵 Valor: ${Number(data.valor).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n` +
           `📌 Origem: ${data.origem || "não informada"}`
         );
       }
