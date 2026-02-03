@@ -66,29 +66,20 @@ Resposta:
 { "intencao": "AJUDA_GERAL" }
 
 
-Quando o usuário disser que recebeu dinheiro, entrou dinheiro, ganhou dinheiro,
-foi pago por alguém, cliente pagou, salário caiu ou qualquer variação semelhante,
-classifique a ação como "criar_receita".
+Quando o usuário indicar que recebeu dinheiro, entrou dinheiro,
+ganhou dinheiro, foi pago por alguém ou recebeu pagamento,
+use o intent "registrar_receita".
 
-Nunca classifique como gasto frases que indiquem entrada de dinheiro.
-
-Usuário: "Recebi 1200 reais de salário"
+Nunca use intents de gasto para entrada de dinheiro.
+Usuário: "Recebi 1200 reais"
 Resposta:
 {
-  "acao": "criar_receita",
+  "intent": "registrar_receita",
   "valor": 1200,
-  "descricao": "Salário",
-  "origem": "salário"
+  "descricao": "Recebimento",
+  "origem": "não informado"
 }
 
-Usuário: "Um cliente me pagou 500"
-Resposta:
-{
-  "acao": "criar_receita",
-  "valor": 500,
-  "descricao": "Pagamento de cliente",
-  "origem": "cliente"
-}
 
 
 

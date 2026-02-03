@@ -573,6 +573,34 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     switch (intent) {
+      case "registrar_gasto_comprovante": {
+        console.log("💸 Registrando gasto:", data);
+
+        await criarGasto({
+          userId,
+          valor: data.valor,
+          descricao: data.descricao,
+          categoria: data.categoria,
+        });
+
+        resposta = `💸 Gasto registrado com sucesso!
+Valor: R$ ${data.valor.toFixed(2)}
+Descrição: ${data.descricao || "Gasto"}`;
+        break;
+      }
+
+      case "registrar_receita": {
+        await criarReceita({
+          userId,
+          valor: data.valor,
+          descricao: data.descricao,
+          origem: data.origem,
+        });
+
+        return `💰 Receita registrada com sucesso!
+Valor: R$ ${data.valor.toFixed(2)}`;
+      }
+
       case "registrar_gasto_comprovante":
         return (
           "📸 Pode enviar a *foto do comprovante* agora.\n\n" +
@@ -759,16 +787,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "limpar_lista":
         await clearShoppingList(userDocId);
         return "🧹 Sua lista de compras foi limpa!";
-
-      case "criar_receita":
-        await criarReceita({
-          userId,
-          valor: data.valor,
-          descricao: data.descricao,
-          origem: data.origem,
-          formaPagamento: data.forma_pagamento,
-        });
-        break;
 
       /* =========================
      Logica Dos Gastos
@@ -1249,29 +1267,23 @@ function extractRelativeDateFromText(text = "") {
 
   return null;
 }
-
-async function criarReceita({
-  userId,
-  valor,
-  descricao,
-  origem,
-  formaPagamento,
-}) {
-  if (!valor || valor <= 0) {
-    throw new Error("Valor inválido para receita");
+async function criarReceita({ userId, valor, descricao, origem }) {
+  if (!valor || isNaN(valor) || valor <= 0) {
+    throw new Error("Valor da receita inválido");
   }
 
   const receita = {
     userId,
     valor: Number(valor),
-    descricao: descricao || "Receita registrada",
+    descricao: descricao || "Receita",
     origem: origem || "não informado",
-    formaPagamento: formaPagamento || "não informado",
-    createdAt: new Date(),
     tipo: "receita",
+    createdAt: new Date(),
   };
 
   await firestore.collection("receitas").add(receita);
+
+  console.log("✅ Receita salva");
 
   return receita;
 }
