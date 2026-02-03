@@ -87,7 +87,7 @@ Resposta:
 Quando o usuário relatar um gasto, identifique:
 
 - intencao: "criar_gasto"
-- valor: valor em reais  (ex: 50,00 e 120,90) 
+- valor: 5000,
 - local: onde o gasto aconteceu
 - categoria: uma palavra simples e genérica
 
