@@ -547,6 +547,23 @@ export async function routeIntent(userDocId, text, media = {}) {
       return new Date(ano, mes, dia, 12, 0, 0);
     }
 
+    function extractMoneyFromText(text = "") {
+      const normalized = text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      // captura números tipo: 50, 50,00, 5.000, 5000
+      const match = normalized.match(/(\d{1,3}([.,]\d{3})*|\d+)([.,]\d{2})?/);
+
+      if (!match) return null;
+
+      let value = match[0].replace(/\.(?=\d{3})/g, "").replace(",", ".");
+
+      const n = Number(value);
+      return isNaN(n) ? null : n;
+    }
+
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
@@ -578,15 +595,15 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         const receitaDate = resolveDateFromTextForReceita(text);
         const userId = userDocId; // 👈 resolve tudo
-        const valorNormalizado = normalizeMoney(data.valor);
+        const valorExtraido = extractMoneyFromText(text);
 
-        if (!valorNormalizado || valorNormalizado <= 0) {
-          return "🤔 Não consegui entender o valor da receita.\n\n👉 Exemplo: *recebi 50 reais*";
+        if (!valorExtraido) {
+          return "🤔 Não consegui identificar o valor da receita.";
         }
 
         await criarReceita({
           userId,
-          valor: valorNormalizado,
+          valor: valorExtraido,
           descricao: data.descricao,
           origem: data.origem,
           date: receitaDate,
