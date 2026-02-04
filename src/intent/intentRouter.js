@@ -500,18 +500,65 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     function resolveDateFromTextForReceita(text = "") {
-      let date = null;
+      return (
+        extractExplicitDateFromText(text) || // 👈 20 de janeiro
+        extractRelativeMonthFromText(text) || // mês passado dia 21
+        extractRelativeDateFromText(text) || // ontem / hoje
+        new Date()
+      );
+    }
 
-      // 1️⃣ mês relativo + dia explícito
-      date = extractRelativeMonthFromText(text);
-      if (date) return date;
+    function extractExplicitDateFromText(text = "") {
+      const meses = {
+        janeiro: 0,
+        fevereiro: 1,
+        março: 2,
+        marco: 2,
+        abril: 3,
+        maio: 4,
+        junho: 5,
+        julho: 6,
+        agosto: 7,
+        setembro: 8,
+        outubro: 9,
+        novembro: 10,
+        dezembro: 11,
+      };
 
-      // 2️⃣ dia relativo simples (ontem, hoje…)
-      date = extractRelativeDateFromText(text);
-      if (date) return date;
+      const regex =
+        /dia\s+(\d{1,2})\s+de\s+(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)/i;
 
-      // 3️⃣ fallback → hoje
-      return new Date();
+      const match = text.toLowerCase().match(regex);
+      if (!match) return null;
+
+      const dia = Number(match[1]);
+      const mes = meses[match[2]];
+
+      const now = new Date();
+      let ano = now.getFullYear();
+
+      // se o mês já passou este ano, mantém
+      // se ainda não chegou, assume ano passado
+      if (mes > now.getMonth()) {
+        ano -= 1;
+      }
+
+      return new Date(ano, mes, dia, 12, 0, 0);
+    }
+
+    function normalizeCurrencyValue(value) {
+      if (typeof value === "number") return value;
+
+      if (!value || typeof value !== "string") return null;
+
+      // remove tudo que não número, vírgula ou ponto
+      let v = value
+        .replace(/[^\d,.-]/g, "")
+        .replace(/\.(?=\d{3})/g, "") // remove ponto de milhar
+        .replace(",", ".");
+
+      const n = Number(v);
+      return isNaN(n) ? null : n;
     }
 
     switch (intent) {
@@ -543,11 +590,17 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "❌ O valor informado não parece válido. Tente novamente.";
         }
 
+        const valorNormalizado = normalizeCurrencyValue(data.valor);
+
+        if (!valorNormalizado || valorNormalizado <= 0) {
+          return "🤔 Não consegui entender o valor da receita.";
+        }
+
         const receitaDate = resolveDateFromTextForReceita(text);
         const userId = userDocId; // 👈 resolve tudo
         await criarReceita({
           userId,
-          valor: data.valor,
+          valor: valorNormalizado,
           descricao: data.descricao,
           origem: data.origem,
           date: receitaDate,
