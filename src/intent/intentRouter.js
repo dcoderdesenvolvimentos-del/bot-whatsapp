@@ -544,7 +544,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         const receitaDate = resolveDateFromTextForReceita(text);
-
+        const userId = userDocId; // 👈 resolve tudo
         await criarReceita({
           userId,
           valor: data.valor,
