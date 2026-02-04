@@ -1341,7 +1341,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  await firestore.collection("receitas").add(receita);
+  await db.collection("users").doc(userId).collection("receitas").add(receita);
 
   console.log("✅ Receita salva com data correta:", receita);
 }
