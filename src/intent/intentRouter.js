@@ -13,6 +13,11 @@ import { normalizeText } from "../utils/normalizeSpeech.js";
 import { db } from "../config/firebase.js";
 
 import {
+  getRevenuesByPeriod,
+  getTotalRevenuesByPeriod,
+} from "../services/revenueService.js";
+
+import {
   createList,
   addItemsToList,
   addItemsToSpecificList,
@@ -487,6 +492,90 @@ export async function routeIntent(userDocId, text, media = {}) {
             currency: "BRL",
           })}\n` +
           `📌 Origem: ${data.origem || "não informada"}`
+        );
+      }
+
+      case "consultar_receitas_periodo": {
+        const { data_inicio, data_fim } = data;
+
+        let start, end;
+
+        if (data_inicio && data_fim) {
+          start = parseDateDMYorISO(data_inicio);
+          end = parseDateDMYorISO(data_fim);
+          end.setHours(23, 59, 59, 999);
+        } else {
+          ({ start, end } = getCurrentMonthRange());
+        }
+
+        const receitas = await getRevenuesByPeriod(userDocId, start, end);
+
+        if (!receitas.length) {
+          return "📭 Você não teve nenhuma receita nesse período.";
+        }
+
+        let total = 0;
+        let resposta = "💰 *Receitas do período*\n\n";
+
+        for (const r of receitas) {
+          total += Number(r.valor);
+
+          resposta +=
+            `• ${r.descricao || "Receita"}\n` +
+            `  📅 ${r.createdAt.toDate().toLocaleDateString("pt-BR")}\n` +
+            `  💵 ${Number(r.valor).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}\n\n`;
+        }
+
+        resposta += `💰 *Total recebido:* ${total.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}`;
+
+        return resposta.trim();
+      }
+
+      case "consultar_saldo": {
+        const { data_inicio, data_fim } = data;
+
+        let start, end;
+
+        if (data_inicio && data_fim) {
+          start = parseDateDMYorISO(data_inicio);
+          end = parseDateDMYorISO(data_fim);
+          end.setHours(23, 59, 59, 999);
+        } else {
+          ({ start, end } = getCurrentMonthRange());
+        }
+
+        const totalReceitas = await getTotalRevenuesByPeriod(
+          userDocId,
+          start,
+          end,
+        );
+
+        const totalGastos = await getExpensesByPeriod(userDocId, start, end);
+
+        const saldo = totalReceitas - totalGastos;
+
+        const emoji = saldo >= 0 ? "🟢" : "🔴";
+
+        return (
+          `${emoji} *Saldo do período*\n\n` +
+          `💰 Entradas: ${totalReceitas.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n` +
+          `💸 Saídas: ${totalGastos.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n\n` +
+          `📊 *Saldo atual:* ${saldo.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}`
         );
       }
 
@@ -1179,4 +1268,11 @@ async function criarReceita({ userId, valor, descricao, origem }) {
   console.log("✅ Receita salva com sucesso:", receita);
 
   return receita;
+}
+
+function getCurrentMonthRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  return { start, end };
 }
