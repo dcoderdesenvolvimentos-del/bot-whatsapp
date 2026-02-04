@@ -828,11 +828,16 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let rawValor = data.valor;
 
-        // 🔥 SE A IA DEVOLVEU NUMBER, tenta extrair do texto original
-        if (typeof rawValor === "number") {
-          const match = text.match(/r?\$?\s*(\d{1,5})/i);
+        // 🔒 fallback seguro: remove datas antes de buscar valor
+        if (!rawValor) {
+          const cleanText = removeDatePartsFromText(text);
+
+          const match = cleanText.match(
+            /(r\$|\$)?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/i,
+          );
+
           if (match) {
-            rawValor = match[1]; // string "3200"
+            rawValor = match[2];
           }
         }
 
