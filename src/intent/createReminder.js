@@ -67,6 +67,30 @@ function buildWhen(data) {
     return Timestamp.fromDate(local);
   }
 
+  // 7️⃣ DIA DO MÊS + HORA — "dia 24 às 9"
+  if (typeof data.dia === "number" && typeof data.hora === "number") {
+    const year = now.getFullYear();
+    let month = now.getMonth(); // 0 = janeiro
+
+    let date = new Date(
+      year,
+      month,
+      data.dia,
+      data.hora,
+      data.minuto ?? 0,
+      0,
+      0,
+    );
+
+    // se o dia já passou neste mês, joga para o próximo
+    if (date <= now) {
+      month += 1;
+      date = new Date(year, month, data.dia, data.hora, data.minuto ?? 0, 0, 0);
+    }
+
+    return Timestamp.fromDate(date);
+  }
+
   // 7️⃣ HORA SOLTA — "às 15"
   if (typeof data.hora === "number") {
     let hora = data.hora;
