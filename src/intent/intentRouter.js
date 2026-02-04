@@ -474,6 +474,48 @@ export async function routeIntent(userDocId, text, media = {}) {
       return d;
     }
 
+    function extractRelativeMonthFromText(text = "") {
+      const now = new Date();
+
+      // mês passado
+      if (/m[eê]s passado/i.test(text)) {
+        return new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          now.getDate(),
+          12,
+          0,
+          0,
+        );
+      }
+
+      // mês retrasado
+      if (/m[eê]s retrasado/i.test(text)) {
+        return new Date(
+          now.getFullYear(),
+          now.getMonth() - 2,
+          now.getDate(),
+          12,
+          0,
+          0,
+        );
+      }
+
+      // esse mês
+      if (/esse m[eê]s/i.test(text)) {
+        return new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          12,
+          0,
+          0,
+        );
+      }
+
+      return null;
+    }
+
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
@@ -824,12 +866,17 @@ export async function routeIntent(userDocId, text, media = {}) {
           date = buildDateFromText(data.data, data.hora);
         }
 
-        // 2️⃣ data relativa do texto (ontem, hoje…)
+        // 2️⃣ mês relativo (mês passado, mês retrasado…)
+        if (!date) {
+          date = extractRelativeMonthFromText(text);
+        }
+
+        // 3️⃣ dia relativo (ontem, hoje…)
         if (!date) {
           date = extractRelativeDateFromText(text);
         }
 
-        // 3️⃣ fallback absoluto
+        // 4 fallback absoluto
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         await createExpense(userDocId, {
