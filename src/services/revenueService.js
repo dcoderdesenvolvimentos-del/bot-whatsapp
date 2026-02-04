@@ -6,6 +6,8 @@ import { Timestamp } from "firebase-admin/firestore";
  */
 export async function getRevenuesByPeriod(userId, start, end) {
   const snap = await db
+    .collection("users")
+    .doc(userId)
     .collection("receitas")
     .where("userId", "==", userId)
     .where("createdAt", ">=", Timestamp.fromDate(start))
