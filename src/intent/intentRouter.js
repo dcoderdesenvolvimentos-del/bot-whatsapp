@@ -273,6 +273,96 @@ export async function routeIntent(userDocId, text, media = {}) {
     await new Promise((r) => setTimeout(r, 1500));
   }
 
+  // =========================
+  // NORMALIZAÇÃO NÍVEL 1 (HORAS)
+  // =========================
+
+  // "8 horas" → "8h"
+  let fixed = normalized.replace(/(\d{1,2})\s*horas?/g, "$1h");
+
+  // "8h da manhã" → "8h"
+  fixed = fixed.replace(/(\d{1,2})h\s*da\s*manhã/g, "$1h");
+
+  // "8h da noite" → "20h"
+  fixed = fixed.replace(
+    /(\d{1,2})h\s*da\s*noite/g,
+    (_, h) => `${Number(h) + 12}h`,
+  );
+
+  // "8h da tarde" → "20h"
+  fixed = fixed.replace(
+    /(\d{1,2})h\s*da\s*tarde/g,
+    (_, h) => `${Number(h) + 12}h`,
+  );
+
+  // usa o texto corrigido
+  const normalizedFixed = fixed;
+
+  // =========================
+  // AGRADECIMENTO
+  // =========================
+  if (
+    [
+      "muito obrigado",
+      "obrigado",
+      "vlw",
+      "valeu",
+      "tmj",
+      "tamo junto",
+      "obrigado mario",
+      "vlw mario",
+      "valeu mario",
+      "muito obrigado mario",
+      "vlw cara",
+    ].includes(text)
+  ) {
+    return "Por nada! 😊 qualquer coisa estou a disposição.";
+  }
+
+  // =========================
+  // SAUDAÇÃO
+  // =========================
+  if (
+    [
+      ".",
+      ",",
+      "/",
+      "oi",
+      "ola",
+      "olá",
+      "boa noite",
+      "bom dia",
+      "boa tarde",
+      "mario",
+      "oi mario",
+      "ola mario",
+      "opa",
+      "op",
+      "criar lembrete",
+      "oi mario tudo bem?",
+      "ola mario tudo bem?",
+      "ola mario tudo joia",
+      "ei",
+      "ei mario",
+      "oba",
+      "fala campeão",
+      "iae campeão",
+    ].includes(text)
+  ) {
+    return (
+      `Oi! 😊 Posso fazer muito por você.\n\n` +
+      "Exemplos:\n" +
+      "*• me lembra daqui 10 minutos*\n" +
+      "*• amanhã às 17h30 ir para a academia*\n" +
+      "*• listar lembretes*\n" +
+      "*• adicionar um gasto*\n" +
+      "*• listar gastos, do dia, mes ou ano.*\n" +
+      "*• Ex: Me lembre todo dia 5 de pagar internet*\n" +
+      "\n" +
+      "📋 É só digitar ou gravar um áudio que eu anoto tudo certinho para não esquecer!"
+    );
+  }
+
   /* =========================
      6️⃣ IA (SÓ USUÁRIO ATIVO)
   ========================= */
