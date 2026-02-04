@@ -477,17 +477,42 @@ export async function routeIntent(userDocId, text, media = {}) {
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
+        console.log("🧠 TEXTO ORIGINAL:", text);
+
+        let rawValor = data.valor;
+
+        // 🔁 FALLBACK: tenta extrair do texto original
+        if (rawValor == null) {
+          const match = text.match(/(\d+[.,]?\d*)/);
+          if (match) {
+            rawValor = match[1];
+          }
+        }
+
+        if (!rawValor) {
+          return (
+            "🤔 Não consegui identificar o valor da receita.\n\n" +
+            "👉 Quanto você recebeu? (ex: *recebi 1200 reais*)"
+          );
+        }
+
+        // ✅ CONVERSÃO PADRÃO BR
+        const valorNumerico = parseBRL(rawValor);
+
+        if (isNaN(valorNumerico) || valorNumerico <= 0) {
+          return "❌ O valor informado não parece válido. Tente novamente.";
+        }
 
         await criarReceita({
           userId: userDocId,
-          valor: data.valor,
-          descricao: data.descricao,
-          origem: data.origem,
+          valor: valorNumerico,
+          descricao: data.descricao || "Recebimento",
+          origem: data.origem || "não informado",
         });
 
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
-          `💵 Valor: ${Number(data.valor).toLocaleString("pt-BR", {
+          `💵 Valor: ${valorNumerico.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}\n` +
