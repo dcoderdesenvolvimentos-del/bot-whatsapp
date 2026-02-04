@@ -477,40 +477,23 @@ export async function routeIntent(userDocId, text, media = {}) {
     function extractRelativeMonthFromText(text = "") {
       const now = new Date();
 
+      // tenta capturar "dia 21"
+      const matchDia = text.match(/dia\s+(\d{1,2})/i);
+      const dia = matchDia ? Number(matchDia[1]) : now.getDate();
+
       // mês passado
       if (/m[eê]s passado/i.test(text)) {
-        return new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          now.getDate(),
-          12,
-          0,
-          0,
-        );
+        return new Date(now.getFullYear(), now.getMonth() - 1, dia, 12, 0, 0);
       }
 
       // mês retrasado
       if (/m[eê]s retrasado/i.test(text)) {
-        return new Date(
-          now.getFullYear(),
-          now.getMonth() - 2,
-          now.getDate(),
-          12,
-          0,
-          0,
-        );
+        return new Date(now.getFullYear(), now.getMonth() - 2, dia, 12, 0, 0);
       }
 
       // esse mês
       if (/esse m[eê]s/i.test(text)) {
-        return new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-          12,
-          0,
-          0,
-        );
+        return new Date(now.getFullYear(), now.getMonth(), dia, 12, 0, 0);
       }
 
       return null;
