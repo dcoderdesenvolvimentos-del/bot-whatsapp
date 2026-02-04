@@ -91,6 +91,38 @@ function buildWhen(data) {
     return Timestamp.fromDate(local);
   }
 
+  // 7️⃣ DIA DO MÊS ISOLADO — "dia 24"
+  if (typeof data.dia === "number") {
+    const year = now.getFullYear();
+    let month = now.getMonth(); // 0 = janeiro
+
+    let date = new Date(
+      year,
+      month,
+      data.dia,
+      data.hora ?? 9,
+      data.minuto ?? 0,
+      0,
+      0,
+    );
+
+    // se o dia já passou neste mês, joga para o próximo
+    if (date <= now) {
+      month += 1;
+      date = new Date(
+        year,
+        month,
+        data.dia,
+        data.hora ?? 9,
+        data.minuto ?? 0,
+        0,
+        0,
+      );
+    }
+
+    return Timestamp.fromDate(date);
+  }
+
   // 8️⃣ FALLBACK — 5 minutos
   return Timestamp.fromMillis(Date.now() + 5 * 60 * 1000);
 }
