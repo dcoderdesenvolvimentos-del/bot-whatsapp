@@ -16,6 +16,7 @@ import {
   getRevenuesByPeriod,
   getTotalRevenuesByPeriod,
 } from "../services/revenueService.js";
+import { normalizeMoney } from "../utils/money.js";
 
 import {
   createList,
@@ -546,21 +547,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       return new Date(ano, mes, dia, 12, 0, 0);
     }
 
-    function normalizeCurrencyValue(value) {
-      if (typeof value === "number") return value;
-
-      if (!value || typeof value !== "string") return null;
-
-      // remove tudo que não número, vírgula ou ponto
-      let v = value
-        .replace(/[^\d,.-]/g, "")
-        .replace(/\.(?=\d{3})/g, "") // remove ponto de milhar
-        .replace(",", ".");
-
-      const n = Number(v);
-      return isNaN(n) ? null : n;
-    }
-
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
@@ -590,14 +576,14 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "❌ O valor informado não parece válido. Tente novamente.";
         }
 
-        const valorNormalizado = normalizeCurrencyValue(data.valor);
-
-        if (!valorNormalizado || valorNormalizado <= 0) {
-          return "🤔 Não consegui entender o valor da receita.";
-        }
-
         const receitaDate = resolveDateFromTextForReceita(text);
         const userId = userDocId; // 👈 resolve tudo
+        const valorNormalizado = normalizeMoney(data.valor);
+
+        if (!valorNormalizado || valorNormalizado <= 0) {
+          return "🤔 Não consegui entender o valor da receita.\n\n👉 Exemplo: *recebi 50 reais*";
+        }
+
         await criarReceita({
           userId,
           valor: valorNormalizado,
