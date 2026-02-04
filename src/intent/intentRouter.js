@@ -499,6 +499,21 @@ export async function routeIntent(userDocId, text, media = {}) {
       return null;
     }
 
+    function resolveDateFromTextForReceita(text = "") {
+      let date = null;
+
+      // 1️⃣ mês relativo + dia explícito
+      date = extractRelativeMonthFromText(text);
+      if (date) return date;
+
+      // 2️⃣ dia relativo simples (ontem, hoje…)
+      date = extractRelativeDateFromText(text);
+      if (date) return date;
+
+      // 3️⃣ fallback → hoje
+      return new Date();
+    }
+
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
@@ -528,11 +543,14 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "❌ O valor informado não parece válido. Tente novamente.";
         }
 
+        const receitaDate = resolveDateFromTextForReceita(text);
+
         await criarReceita({
-          userId: userDocId,
-          valor: valorNumerico,
-          descricao: data.descricao || "Recebimento",
-          origem: data.origem || "não informado",
+          userId,
+          valor: data.valor,
+          descricao: data.descricao,
+          origem: data.origem,
+          date: receitaDate,
         });
 
         return (
@@ -1309,8 +1327,8 @@ function extractRelativeDateFromText(text = "") {
   return null;
 }
 
-async function criarReceita({ userId, valor, descricao, origem }) {
-  if (!valor || isNaN(valor) || Number(valor) <= 0) {
+async function criarReceita({ userId, valor, descricao, origem, date }) {
+  if (!valor || isNaN(valor) || valor <= 0) {
     throw new Error("Valor da receita inválido");
   }
 
@@ -1320,14 +1338,12 @@ async function criarReceita({ userId, valor, descricao, origem }) {
     descricao: descricao || "Receita",
     origem: origem || "não informado",
     tipo: "receita",
-    createdAt: new Date(),
+    createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  await db.collection("users").doc(userId).collection("receitas").add(receita);
+  await firestore.collection("receitas").add(receita);
 
-  console.log("✅ Receita salva com sucesso:", receita);
-
-  return receita;
+  console.log("✅ Receita salva com data correta:", receita);
 }
 
 function getCurrentMonthRange() {
