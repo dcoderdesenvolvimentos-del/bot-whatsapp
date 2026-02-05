@@ -580,80 +580,81 @@ export async function routeIntent(userDocId, text, media = {}) {
         console.log("💰 Registrando receita:", data);
         console.log("🧠 TEXTO ORIGINAL:", text);
 
+        /**
+         * =====================================================
+         * 💰 VALOR — REGRA DE OURO
+         * TEXTO > IA
+         * =====================================================
+         */
+
         let valor = null;
 
-        /**
-         * 1️⃣ PRIORIDADE TOTAL → IA
-         */
-        if (typeof data.valor === "number" && data.valor > 0) {
-          valor = data.valor;
-        }
-
-        /**
-         * 2️⃣ TEXTO → SOMENTE SE TIVER CONTEXTO MONETÁRIO
-         */
+        // 1️⃣ SEMPRE tenta extrair do texto primeiro (igual gasto)
         const valorTexto = extractMoneyFromText(text);
 
         if (valorTexto && valorTexto > 0) {
-          /**
-           * Se IA mandou algo absurdo (ex: 5000 quando usuário falou 50)
-           * confia no texto
-           */
-          if (!valor || valor >= valorTexto * 10) {
-            valor = valorTexto;
-          }
+          valor = valorTexto;
         }
 
-        /**
-         * 3️⃣ FALHA TOTAL
-         */
-        if (!valor || valor <= 0) {
+        // 2️⃣ Só usa IA se TEXTO NÃO trouxe valor
+        if (!valor && typeof data.valor === "number" && data.valor > 0) {
+          valor = data.valor;
+        }
+
+        // 3️⃣ Falha total
+        if (!valor || isNaN(valor) || valor <= 0) {
           return (
             "🤔 Não consegui identificar o valor da receita.\n\n" +
             "👉 Exemplo: *recebi 50 reais do cliente João*"
           );
         }
 
+        console.log("✅ VALOR FINAL USADO:", valor);
+
         /**
          * =====================================================
-         * 📅 DATA — IGUAL GASTO
+         * 📅 DATA — MESMA LÓGICA DO GASTO
          * =====================================================
          */
-        let createdAt = Timestamp.now();
 
-        if (data.dia || data.mes || data.ano) {
-          const now = new Date();
+        let date = null;
 
-          const dia = data.dia ?? now.getDate();
-          const mes =
-            typeof data.mes === "number" ? data.mes - 1 : now.getMonth();
-          const ano = data.ano ?? now.getFullYear();
+        // 1️⃣ Data explícita (ex: dia 20 de janeiro)
+        date = extractExplicitDateFromText(text);
 
-          const date = new Date(ano, mes, dia, 12, 0, 0);
-
-          if (!isNaN(date.getTime())) {
-            createdAt = Timestamp.fromDate(date);
-          }
+        // 2️⃣ Mês relativo (mês passado / retrasado)
+        if (!date) {
+          date = extractRelativeMonthFromText(text);
         }
 
+        // 3️⃣ Dia relativo (ontem / hoje)
+        if (!date) {
+          date = extractRelativeDateFromText(text);
+        }
+
+        // 4️⃣ Fallback → hoje
+        const createdAt = date ? Timestamp.fromDate(date) : Timestamp.now();
+
         /**
          * =====================================================
-         * 💾 SALVA
+         * 💾 SALVAR
          * =====================================================
          */
+
         await criarReceita({
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
           origem: data.origem || "não informado",
-          createdAt,
+          date: createdAt.toDate(),
         });
 
         /**
          * =====================================================
-         * 💬 RESPOSTA
+         * 💬 RESPOSTA AO USUÁRIO
          * =====================================================
          */
+
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
