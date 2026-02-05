@@ -74,20 +74,54 @@ Sempre responda APENAS com um JSON válido.
 INTENÇÕES DE RECEITA
 ========================
 
-1) registrar_receita
-Quando o usuário indicar que recebeu dinheiro, entrou dinheiro,
-ganhou dinheiro, foi pago por alguém ou recebeu pagamento,
-use o intent "registrar_receita".
+========================
+INTENÇÕES DE RECEITA
+========================
 
-Nunca use intents de gasto para entrada de dinheiro.
-Usuário: "Recebi 12 reais"
-Resposta:
+1) registrar_receita
+
+Quando o usuário indicar que recebeu dinheiro, entrou dinheiro,
+ganhou dinheiro ou foi pago por alguém:
+
+⚠️ REGRAS OBRIGATÓRIAS SOBRE VALOR ⚠️
+
+- EXTRAIA o valor SOMENTE se houver:
+  • número explícito no texto
+  • OU valor monetário claro (ex: "50 reais", "R$ 50")
+
+- NUNCA:
+  ❌ invente zeros
+  ❌ multiplique valores
+  ❌ converta número falado por extenso em milhares
+  ❌ confunda DIA com VALOR
+  ❌ use inferência aproximada
+
+- Se o usuário disser apenas:
+  "recebi dinheiro", "me pagaram", "entrou dinheiro"
+  → NÃO inclua o campo "valor"
+
+- Se houver ambiguidade entre número e data,
+  PRIORIZE SEMPRE a data e IGNORE o número como valor.
+
+Exemplos CORRETOS:
+
+Usuário: "recebi 50 reais"
 {
-  "intent": "registrar_receita",
-  "valor": 12,
-  "descricao": "Recebimento",
-  "origem": "não informado"
+  "intencao": "registrar_receita",
+  "valor": 50
 }
+
+Usuário: "dia 20 de janeiro recebi cinquenta reais"
+{
+  "intencao": "registrar_receita",
+  "valor": 50
+}
+
+Usuário: "dia 20 recebi do cliente"
+{
+  "intencao": "registrar_receita"
+}
+
 
 ------------------------
 
