@@ -681,7 +681,7 @@ export async function routeIntent(userDocId, text, media = {}) {
      7️⃣ RESPOSTA AO USUÁRIO
   ===================================================== */
         function capitalize(text = "") {
-          if (!text) return "";
+          if (!text || typeof text !== "string") return "";
           return text.charAt(0).toUpperCase() + text.slice(1);
         }
 
