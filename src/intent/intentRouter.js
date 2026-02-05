@@ -580,33 +580,73 @@ export async function routeIntent(userDocId, text, media = {}) {
       return valores[0];
     }
 
+    function sanitizeMoneyFromAudio(valor, text) {
+      if (!valor) return valor;
+
+      // só aplica se for áudio (texto falado)
+      if (!text) return valor;
+
+      const hasCents = String(valor).includes(".");
+      const mentionedThousands = /mil|milhares/i.test(text);
+
+      /**
+       * Heurística:
+       * - veio do áudio
+       * - valor >= 1000
+       * - não tem centavos
+       * - usuário NÃO falou "mil"
+       */
+      if (valor >= 1000 && !hasCents && !mentionedThousands) {
+        console.warn("⚠️ Possível erro de STT, ajustando valor:", valor);
+        return valor / 100;
+      }
+
+      return valor;
+    }
+
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
         console.log("🧠 TEXTO ORIGINAL:", text);
 
-        /**
-         * =====================================================
-         * 💰 VALOR — REGRA DE OURO
-         * TEXTO > IA
-         * =====================================================
-         */
-
         let valor = null;
 
-        // 1️⃣ SEMPRE tenta extrair do texto primeiro (igual gasto)
-        const valorTexto = extractMoneyFromText(text);
-
-        if (valorTexto && valorTexto > 0) {
-          valor = valorTexto;
-        }
-
-        // 2️⃣ Só usa IA se TEXTO NÃO trouxe valor
-        if (!valor && typeof data.valor === "number" && data.valor > 0) {
+        /* =====================================================
+     1️⃣ PRIORIDADE → VALOR DA IA
+  ===================================================== */
+        if (typeof data.valor === "number" && data.valor > 0) {
           valor = data.valor;
         }
 
-        // 3️⃣ Falha total
+        /* =====================================================
+     2️⃣ TEXTO / ÁUDIO → EXTRAÇÃO SEGURA
+     (IGNORA DIA 20, 21 etc)
+  ===================================================== */
+        const valorTexto = extractMoneyFromText(text);
+
+        if (valorTexto && valorTexto > 0) {
+          // Se a IA errar feio (ex: 5000 quando falou 50), confia no texto
+          if (!valor || valor >= valorTexto * 10) {
+            valor = valorTexto;
+          }
+        }
+
+        /* =====================================================
+     3️⃣ CORREÇÃO DE ERRO CLÁSSICO DE ÁUDIO (STT)
+     "cinquenta reais" → 5000 ❌
+  ===================================================== */
+        if (
+          valor >= 1000 &&
+          !/mil|milhares/i.test(text) &&
+          !String(valor).includes(".")
+        ) {
+          console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
+          valor = valor / 100;
+        }
+
+        /* =====================================================
+     4️⃣ VALIDAÇÃO FINAL
+  ===================================================== */
         if (!valor || isNaN(valor) || valor <= 0) {
           return (
             "🤔 Não consegui identificar o valor da receita.\n\n" +
@@ -614,38 +654,21 @@ export async function routeIntent(userDocId, text, media = {}) {
           );
         }
 
-        console.log("✅ VALOR FINAL USADO:", valor);
+        /* =====================================================
+     5️⃣ DATA — MESMA LÓGICA DO GASTO (SEM INVENTAR)
+  ===================================================== */
+        let createdAt = Timestamp.now();
 
-        /**
-         * =====================================================
-         * 📅 DATA — MESMA LÓGICA DO GASTO
-         * =====================================================
-         */
+        // data explícita: "dia 20 de janeiro"
+        const dataResolvida = resolveDateFromTextForReceita(text);
 
-        let date = null;
-
-        // 1️⃣ Data explícita (ex: dia 20 de janeiro)
-        date = extractExplicitDateFromText(text);
-
-        // 2️⃣ Mês relativo (mês passado / retrasado)
-        if (!date) {
-          date = extractRelativeMonthFromText(text);
+        if (dataResolvida && !isNaN(dataResolvida.getTime())) {
+          createdAt = Timestamp.fromDate(dataResolvida);
         }
 
-        // 3️⃣ Dia relativo (ontem / hoje)
-        if (!date) {
-          date = extractRelativeDateFromText(text);
-        }
-
-        // 4️⃣ Fallback → hoje
-        const createdAt = date ? Timestamp.fromDate(date) : Timestamp.now();
-
-        /**
-         * =====================================================
-         * 💾 SALVAR
-         * =====================================================
-         */
-
+        /* =====================================================
+     6️⃣ SALVA NO FIREBASE
+  ===================================================== */
         await criarReceita({
           userId: userDocId,
           valor,
@@ -654,12 +677,9 @@ export async function routeIntent(userDocId, text, media = {}) {
           date: createdAt.toDate(),
         });
 
-        /**
-         * =====================================================
-         * 💬 RESPOSTA AO USUÁRIO
-         * =====================================================
-         */
-
+        /* =====================================================
+     7️⃣ RESPOSTA AO USUÁRIO
+  ===================================================== */
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
