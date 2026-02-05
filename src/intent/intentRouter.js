@@ -566,59 +566,93 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     switch (intent) {
       case "registrar_receita": {
+        console.log("💰 Registrando receita:", data);
         console.log("🧨 TEXTO RECEBIDO:", text);
-        console.log("🧨 VALOR IA:", data.valor);
 
-        const valorExtraido = extractMoneyFromText(text);
+        // =========================
+        // 🔢 RESOLUÇÃO DE VALOR (ROBUSTA)
+        // =========================
 
-        console.log("🧨 VALOR EXTRAÍDO:", valorExtraido);
+        let valorIA = data.valor;
+        let valorTexto = extractMoneyFromText(text);
 
-        let rawValor = data.valor;
+        console.log("🧠 VALOR IA:", valorIA);
+        console.log("🧨 VALOR TEXTO:", valorTexto);
 
-        // 🔁 FALLBACK: tenta extrair do texto original
-        if (rawValor == null) {
-          const match = text.match(/(\d+[.,]?\d*)/);
-          if (match) {
-            rawValor = match[1];
-          }
-        }
-
-        if (!rawValor) {
-          return (
-            "🤔 Não consegui identificar o valor da receita.\n\n" +
-            "👉 Quanto você recebeu? (ex: *recebi 1200 reais*)"
+        // 🛡️ CASO CLÁSSICO DO ÁUDIO:
+        // "50 reais" → IA entende 5000
+        if (
+          typeof valorIA === "number" &&
+          typeof valorTexto === "number" &&
+          valorTexto > 0 &&
+          valorIA >= valorTexto * 10
+        ) {
+          console.warn(
+            "⚠️ IA provavelmente errou o valor, usando valor do texto",
           );
+          valorIA = valorTexto;
         }
 
-        // ✅ CONVERSÃO PADRÃO BR
-        const valorNumerico = parseBRL(rawValor);
+        // 🔒 FALLBACK: IA falhou totalmente
+        if (valorIA == null || isNaN(valorIA) || valorIA <= 0) {
+          if (!valorTexto || isNaN(valorTexto) || valorTexto <= 0) {
+            return (
+              "🤔 Não consegui identificar o valor da receita.\n\n" +
+              "👉 Quanto você recebeu? (ex: *recebi 1200 reais*)"
+            );
+          }
 
-        if (isNaN(valorNumerico) || valorNumerico <= 0) {
-          return "❌ O valor informado não parece válido. Tente novamente.";
+          valorIA = valorTexto;
         }
 
-        const receitaDate = resolveDateFromTextForReceita(text);
-        const userId = userDocId; // 👈 resolve tudo
+        const valorFinal = Number(valorIA);
 
-        if (!valorExtraido) {
-          return "🤔 Não consegui identificar o valor da receita.";
+        console.log("💰 VALOR FINAL USADO:", valorFinal);
+
+        // =========================
+        // 📅 DATA DA RECEITA
+        // =========================
+        // Usa a MESMA lógica madura que você já usa em gasto
+
+        let date = null;
+
+        // 1️⃣ data explícita da IA (ex: "20-01-2026")
+        if (data.data) {
+          date = buildDateFromText(data.data, data.hora);
         }
+
+        // 2️⃣ data relativa do texto ("mês passado", "dia 21", etc)
+        if (!date) {
+          date = extractRelativeDateFromText(text);
+        }
+
+        // 3️⃣ fallback: agora
+        const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
+
+        // =========================
+        // 💾 SALVA NO FIREBASE
+        // =========================
 
         await criarReceita({
           userId: userDocId,
-          valor: valorExtraido, // 🔥 FORÇADO
-          descricao: data.descricao,
-          origem: data.origem,
-          date: receitaDate,
+          valor: valorFinal,
+          descricao: data.descricao || "Recebimento",
+          origem: data.origem || "não informado",
+          createdAt: timestamp,
         });
+
+        // =========================
+        // 📤 RESPOSTA AO USUÁRIO
+        // =========================
 
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
-          `💵 Valor: ${valorNumerico.toLocaleString("pt-BR", {
+          `💵 Valor: ${valorFinal.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}\n` +
-          `📌 Origem: ${data.origem || "não informada"}`
+          `📌 Origem: ${data.origem || "não informada"}\n` +
+          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "hoje"}`
         );
       }
 
