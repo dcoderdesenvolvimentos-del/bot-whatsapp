@@ -547,7 +547,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       return new Date(ano, mes, dia, 12, 0, 0);
     }
 
-    function extractMoneyFromText(text) {
+    function extractMoneyFromText(text = "") {
       if (!text) return null;
 
       const normalized = text
@@ -555,24 +555,29 @@ export async function routeIntent(userDocId, text, media = {}) {
         .replace(/\./g, "")
         .replace(",", ".");
 
-      // ✅ SOMENTE números com contexto de dinheiro
-      const moneyRegex = /(r\$|\breais?\b|\breal\b)?\s*(\d{1,6}(?:\.\d{2})?)/g;
+      /**
+       * REGRA:
+       * - contexto monetário OBRIGATÓRIO
+       * - número vem DEPOIS do contexto
+       * - impede capturar "dia 20", "20 de janeiro"
+       */
+      const moneyRegex = /\b(?:r\$|reais?|real)\s*(\d{1,5}(?:\.\d{2})?)\b/g;
 
       let match;
-      let valores = [];
+      const valores = [];
 
       while ((match = moneyRegex.exec(normalized)) !== null) {
-        const contexto = match[1];
-        const numero = Number(match[2]);
-
-        if (!isNaN(numero) && numero > 0 && contexto) {
+        const numero = Number(match[1]);
+        if (!isNaN(numero) && numero > 0) {
           valores.push(numero);
         }
       }
 
-      // retorna o MAIOR valor encontrado
+      // nenhum valor válido
       if (!valores.length) return null;
-      return Math.max(...valores);
+
+      // se tiver mais de um, pega o PRIMEIRO (mais seguro que Math.max)
+      return valores[0];
     }
 
     switch (intent) {
