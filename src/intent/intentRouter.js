@@ -566,8 +566,12 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     switch (intent) {
       case "registrar_receita": {
-        console.log("💰 Registrando receita:", data);
-        console.log("🧠 TEXTO ORIGINAL:", text);
+        console.log("🧨 TEXTO RECEBIDO:", text);
+        console.log("🧨 VALOR IA:", data.valor);
+
+        const valorExtraido = extractMoneyFromText(text);
+
+        console.log("🧨 VALOR EXTRAÍDO:", valorExtraido);
 
         let rawValor = data.valor;
 
@@ -595,15 +599,14 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         const receitaDate = resolveDateFromTextForReceita(text);
         const userId = userDocId; // 👈 resolve tudo
-        const valorExtraido = extractMoneyFromText(text);
 
         if (!valorExtraido) {
           return "🤔 Não consegui identificar o valor da receita.";
         }
 
         await criarReceita({
-          userId,
-          valor: valorExtraido,
+          userId: userDocId,
+          valor: valorExtraido, // 🔥 FORÇADO
           descricao: data.descricao,
           origem: data.origem,
           date: receitaDate,
