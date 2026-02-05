@@ -80,11 +80,11 @@ ganhou dinheiro, foi pago por alguém ou recebeu pagamento,
 use o intent "registrar_receita".
 
 Nunca use intents de gasto para entrada de dinheiro.
-Usuário: "Recebi 1200 reais"
+Usuário: "Recebi 12 reais"
 Resposta:
 {
   "intent": "registrar_receita",
-  "valor": 1200,
+  "valor": 12,
   "descricao": "Recebimento",
   "origem": "não informado"
 }
