@@ -36,7 +36,7 @@ import {
   getExpensesForAnalysis,
 } from "../services/expenseService.js";
 
-import { slugify, capitalize, capitalizeText } from "../utils/textUtils.js";
+import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 import { parseBRL } from "../utils/moneyUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
@@ -673,7 +673,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
-          origem: data.origem || "Não informado",
+          origem: data.origem || "não informado",
           date: createdAt.toDate(),
         });
 
@@ -687,7 +687,8 @@ export async function routeIntent(userDocId, text, media = {}) {
             style: "currency",
             currency: "BRL",
           })}\n` +
-          `📌 Origem: ${capitalizeText(data.origem || "não informada")}\n``📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}`
+          `📌 Origem: ${data.origem || "não informada"}\n` +
+          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}`
         );
       }
 
