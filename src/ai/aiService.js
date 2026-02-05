@@ -116,6 +116,7 @@ Usuário: "dia 20 de janeiro recebi cinquenta reais"
 {
   "intencao": "registrar_receita",
   "valor": 50
+  "descricao": "Recebimento",
   "origem": "não informado"
 }
 

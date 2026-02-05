@@ -673,21 +673,25 @@ export async function routeIntent(userDocId, text, media = {}) {
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
-          origem: data.origem || "não informado",
+          origem: data.origem || "Não informado",
           date: createdAt.toDate(),
         });
 
         /* =====================================================
      7️⃣ RESPOSTA AO USUÁRIO
   ===================================================== */
+        function capitalize(text = "") {
+          if (!text) return "";
+          return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}\n` +
-          `📌 Origem: ${data.origem || "não informada"}\n` +
-          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}`
+          `📌 Origem: ${capitalize(data.origem || "não informada")}\n``📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}`
         );
       }
 
