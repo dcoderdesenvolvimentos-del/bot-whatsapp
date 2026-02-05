@@ -547,21 +547,32 @@ export async function routeIntent(userDocId, text, media = {}) {
       return new Date(ano, mes, dia, 12, 0, 0);
     }
 
-    function extractMoneyFromText(text = "") {
+    function extractMoneyFromText(text) {
+      if (!text) return null;
+
       const normalized = text
         .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .replace(/\./g, "")
+        .replace(",", ".");
 
-      // captura números tipo: 50, 50,00, 5.000, 5000
-      const match = normalized.match(/(\d{1,3}([.,]\d{3})*|\d+)([.,]\d{2})?/);
+      // ✅ SOMENTE números com contexto de dinheiro
+      const moneyRegex = /(r\$|\breais?\b|\breal\b)?\s*(\d{1,6}(?:\.\d{2})?)/g;
 
-      if (!match) return null;
+      let match;
+      let valores = [];
 
-      let value = match[0].replace(/\.(?=\d{3})/g, "").replace(",", ".");
+      while ((match = moneyRegex.exec(normalized)) !== null) {
+        const contexto = match[1];
+        const numero = Number(match[2]);
 
-      const n = Number(value);
-      return isNaN(n) ? null : n;
+        if (!isNaN(numero) && numero > 0 && contexto) {
+          valores.push(numero);
+        }
+      }
+
+      // retorna o MAIOR valor encontrado
+      if (!valores.length) return null;
+      return Math.max(...valores);
     }
 
     switch (intent) {
@@ -574,7 +585,6 @@ export async function routeIntent(userDocId, text, media = {}) {
         // =========================
 
         let valorIA = data.valor;
-        let valorTexto = extractMoneyFromText(text);
 
         console.log("🧠 VALOR IA:", valorIA);
         console.log("🧨 VALOR TEXTO:", valorTexto);
@@ -615,6 +625,29 @@ export async function routeIntent(userDocId, text, media = {}) {
         // Usa a MESMA lógica madura que você já usa em gasto
 
         let date = null;
+        let valor = null;
+
+        // 1️⃣ IA primeiro (quando confiável)
+        if (typeof data.valor === "number" && data.valor > 0) {
+          valor = data.valor;
+        }
+
+        // 2️⃣ TEXTO só se tiver contexto monetário
+        const valorTexto = extractMoneyFromText(text);
+
+        if (valorTexto && valorTexto > 0) {
+          // IA errou feio? Usa texto
+          if (!valor || valor >= valorTexto * 10) {
+            valor = valorTexto;
+          }
+        }
+
+        if (!valor || valor <= 0) {
+          return (
+            "🤔 Não consegui identificar o valor da receita.\n\n" +
+            "👉 Exemplo: *recebi 50 reais do cliente João*"
+          );
+        }
 
         // 1️⃣ data explícita da IA (ex: "20-01-2026")
         if (data.data) {
