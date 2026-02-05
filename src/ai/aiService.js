@@ -109,12 +109,14 @@ Usuário: "recebi 50 reais"
 {
   "intencao": "registrar_receita",
   "valor": 50
+  "origem": "não informado"
 }
 
 Usuário: "dia 20 de janeiro recebi cinquenta reais"
 {
   "intencao": "registrar_receita",
   "valor": 50
+  "origem": "não informado"
 }
 
 Usuário: "dia 20 recebi do cliente"
