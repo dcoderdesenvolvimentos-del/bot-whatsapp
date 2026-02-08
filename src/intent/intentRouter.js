@@ -580,30 +580,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       return valores[0];
     }
 
-    function sanitizeMoneyFromAudio(valor, text) {
-      if (!valor) return valor;
-
-      // só aplica se for áudio (texto falado)
-      if (!text) return valor;
-
-      const hasCents = String(valor).includes(".");
-      const mentionedThousands = /mil|milhares/i.test(text);
-
-      /**
-       * Heurística:
-       * - veio do áudio
-       * - valor >= 1000
-       * - não tem centavos
-       * - usuário NÃO falou "mil"
-       */
-      if (valor >= 1000 && !hasCents && !mentionedThousands) {
-        console.warn("⚠️ Possível erro de STT, ajustando valor:", valor);
-        return valor / 100;
-      }
-
-      return valor;
-    }
-
     switch (intent) {
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
@@ -862,7 +838,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         if (!phone) return;
 
         const link = dashboardSlug
-          ? `https://marioaii.netlify.app/m/${dashboardSlug}`
+          ? `https://app.marioai.com.br/m/${dashboardSlug}`
           : null;
 
         let resposta = "📋 *Suas listas de compras*\n\n";
@@ -1026,7 +1002,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         const { dashboardSlug } = userSnap.data() || {};
 
         const link = dashboardSlug
-          ? `https://marioaii.netlify.app/m/${dashboardSlug}`
+          ? `https://app.marioai.com.br/m/${dashboardSlug}`
           : null;
 
         return (

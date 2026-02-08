@@ -66,4 +66,28 @@ export async function getUserReminders() {
   return [];
 }
 export async function deleteUserReminder() {}
-export async function addRecurringReminder() {}
+export async function addRecurringReminder(uid, data) {
+  if (!uid) {
+    throw new Error("UID ausente ao criar lembrete recorrente");
+  }
+
+  if (!data?.mensagem || !data?.tipo_recorrencia) {
+    throw new Error("Dados inválidos para lembrete recorrente");
+  }
+
+  return db
+    .collection("users")
+    .doc(uid)
+    .collection("reminders")
+    .add({
+      text: data.mensagem,
+      recurring: {
+        tipo: data.tipo_recorrencia, // mensal, semanal, diario
+        valor: data.valor_recorrencia, // ex: 09
+      },
+      horario: data.horario || "00:00",
+      sent: false,
+      isRecurring: true,
+      createdAt: Timestamp.now(),
+    });
+}

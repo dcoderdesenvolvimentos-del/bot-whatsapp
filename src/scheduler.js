@@ -24,7 +24,7 @@ export function startScheduler() {
 
         const dateObj = r.when.toDate();
 
-        const link = `https://marioaii.netlify.app/m/${dashboardSlug}`;
+        const link = `https://app.marioai.com.br/m/${dashboardSlug}`;
 
         const msg = `⏰ *_LEMBRETE_*
 ━━━━━━━━━━━━━━
