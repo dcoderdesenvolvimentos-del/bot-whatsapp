@@ -44,7 +44,7 @@ ${link}
 💡 Estou passando pra te lembrar 😉`;
 
         await sendMessage(phone, msg);
-        await markAsSent(r.uid, r.id);
+        await markAsSent(uid, reminderId, reminder);
       }
     } catch (err) {
       console.error("❌ Erro no scheduler:", err);
