@@ -115,20 +115,40 @@ function calcularPrimeiroWhen(recurring, horario = "00:00") {
   const agora = new Date();
   const [h, m] = horario.split(":").map(Number);
 
-  let when;
+  let when = new Date(agora);
+  when.setHours(h, m, 0, 0);
 
-  if (recurring.tipo === "mensal") {
-    when = new Date(
-      agora.getFullYear(),
-      agora.getMonth(),
-      Number(recurring.valor),
-      h,
-      m,
-    );
+  switch (recurring.tipo) {
+    case "diario":
+      if (when <= agora) {
+        when.setDate(when.getDate() + 1);
+      }
+      break;
 
-    if (when <= agora) {
-      when.setMonth(when.getMonth() + 1);
-    }
+    case "semanal":
+      when.setDate(when.getDate() + 7);
+      break;
+
+    case "mensal":
+      when = new Date(
+        agora.getFullYear(),
+        agora.getMonth(),
+        Number(recurring.valor),
+        h,
+        m,
+      );
+
+      if (when <= agora) {
+        when.setMonth(when.getMonth() + 1);
+      }
+      break;
+
+    case "anual":
+      when.setFullYear(when.getFullYear() + 1);
+      break;
+
+    default:
+      throw new Error("Tipo de recorrência inválido");
   }
 
   return Timestamp.fromDate(when);
