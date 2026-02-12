@@ -83,8 +83,13 @@ export async function addRecurringReminder(uid, data) {
     throw new Error("UID ausente ao criar lembrete recorrente");
   }
 
-  if (!data?.mensagem || !data?.tipo_recorrencia || !data?.valor_recorrencia) {
+  if (!data?.mensagem || !data?.tipo_recorrencia) {
     throw new Error("Dados inválidos para lembrete recorrente");
+  }
+
+  // só exige valor se for mensal
+  if (data.tipo_recorrencia === "mensal" && !data.valor_recorrencia) {
+    throw new Error("Dia do mês não informado para recorrência mensal");
   }
 
   const recurring = {
