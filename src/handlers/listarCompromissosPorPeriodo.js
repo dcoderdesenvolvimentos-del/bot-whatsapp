@@ -1,25 +1,4 @@
 import { db } from "../firebase.js";
-import { Timestamp } from "firebase-admin/firestore";
-
-function startOfTodayBR() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-function startOfDayFromTimestampBR(timestamp) {
-  const d = new Date(timestamp);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-function startOfDay(dateStr) {
-  return new Date(dateStr + "T00:00:00").getTime();
-}
-
-function endOfDay(dateStr) {
-  return new Date(dateStr + "T23:59:59").getTime();
-}
 
 export async function listarCompromissosPorPeriodo({
   userId,
@@ -30,11 +9,9 @@ export async function listarCompromissosPorPeriodo({
     return "⚠️ Não consegui identificar o período dos compromissos.";
   }
 
-  const startDate = new Date(periodo.data_inicio + "T00:00:00");
-  const endDate = new Date(periodo.data_fim + "T23:59:59");
-
-  const start = Timestamp.fromDate(startDate);
-  const end = Timestamp.fromDate(endDate);
+  // 🔒 Fuso Brasil fixo
+  const startDate = new Date(periodo.data_inicio + "T00:00:00-03:00");
+  const endDate = new Date(periodo.data_fim + "T23:59:59-03:00");
 
   const snapshot = await db
     .collection("users")
@@ -46,6 +23,8 @@ export async function listarCompromissosPorPeriodo({
 
   snapshot.forEach((doc) => {
     const l = doc.data();
+
+    if (!l.when) return;
 
     const when = l.when.toDate();
 
@@ -63,47 +42,32 @@ export async function listarCompromissosPorPeriodo({
     const ocorrencias = gerarOcorrenciasBackend(base);
 
     ocorrencias.forEach((o) => {
-      if (o.data >= startDate && o.data <= endDate) {
+      if (
+        o.data.getTime() >= startDate.getTime() &&
+        o.data.getTime() <= endDate.getTime()
+      ) {
         lista.push(o);
       }
     });
   });
 
-  if (snapshot.empty) {
+  // ✅ AGORA verifica a lista filtrada
+  if (lista.length === 0) {
     return "📭 Você não tem compromissos nesse período.";
   }
+
+  // 🔥 Ordena por data
+  lista.sort((a, b) => a.data - b.data);
 
   const nome = userName ? ` ${userName}` : "";
   const periodoLabel = getPeriodoLabel(periodo);
 
   let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
-  // 👇 COLOQUE ISSO AQUI
-  const hojeInicioBR = startOfTodayBR();
-  const agora = Date.now();
-  const LIMITE_MS = 6 * 60 * 60 * 1000; // 6h
-
   let lastDate = null;
 
-  snapshot.forEach((doc) => {
-    const r = doc.data();
-
-    const whenDate = r.when.toDate();
-    const inicioDiaCompromissoBR = startOfDayFromTimestampBR(
-      whenDate.getTime(),
-    );
-
-    // ❌ REGRA 1 — mês/semana: não mostrar dias anteriores a hoje
-    if (inicioDiaCompromissoBR < hojeInicioBR) {
-      return;
-    }
-
-    // ❌ REGRA 2 — HOJE: respeita limite de 6h
-    if (inicioDiaCompromissoBR === hojeInicioBR && r.when < agora - LIMITE_MS) {
-      return;
-    }
-
-    const dataObj = r.when.toDate();
+  lista.forEach((item) => {
+    const dataObj = item.data;
 
     const data = dataObj.toLocaleDateString("pt-BR", {
       day: "2-digit",
@@ -119,7 +83,6 @@ export async function listarCompromissosPorPeriodo({
       minute: "2-digit",
     });
 
-    // Cabeçalho do dia
     if (data !== lastDate) {
       resposta += `🗓️ *${
         diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
@@ -127,11 +90,13 @@ export async function listarCompromissosPorPeriodo({
       lastDate = data;
     }
 
-    resposta += `• ${r.text} — ${horario}\n\n`;
+    resposta += `• ${item.text} — ${horario}\n\n`;
   });
 
   return resposta;
 }
+
+/* ================== LABEL PERÍODO ================== */
 
 function getPeriodoLabel(periodo) {
   const hoje = new Date().toISOString().slice(0, 10);
@@ -165,6 +130,8 @@ function getPeriodoLabel(periodo) {
   return "";
 }
 
+/* ================== RECORRÊNCIA ================== */
+
 function gerarOcorrenciasBackend(base) {
   if (!base.isRecurring) {
     return [{ ...base, data: base.when }];
@@ -174,6 +141,8 @@ function gerarOcorrenciasBackend(base) {
   const ocorrencias = [];
 
   let atual = new Date(base.when);
+
+  // gera até 90 dias futuros
   const limite = new Date();
   limite.setDate(limite.getDate() + 90);
 
