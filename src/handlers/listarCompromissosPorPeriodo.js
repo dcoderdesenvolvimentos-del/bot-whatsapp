@@ -33,8 +33,9 @@ export async function listarCompromissosPorPeriodo({
   const end = endOfDay(periodo.data_fim);
 
   const snapshot = await db
+    .collection("users")
+    .doc(userId)
     .collection("reminders")
-    .where("phone", "==", userId)
     .where("when", ">=", start)
     .where("when", "<=", end)
     .orderBy("when", "asc")
