@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import admin from "firebase-admin";
 
 export async function listarCompromissosPorPeriodo({
   userId,
@@ -17,6 +18,10 @@ export async function listarCompromissosPorPeriodo({
   function capitalize(texto = "") {
     return texto.trim().charAt(0).toUpperCase() + texto.trim().slice(1);
   }
+
+  const token = await admin.auth().createCustomToken(userId);
+
+  const linkMagico = `https://app.marioai.com.br/m/${token}`;
 
   const snapshot = await db
     .collection("users")
@@ -80,7 +85,7 @@ export async function listarCompromissosPorPeriodo({
   const nome = userName ? ` ${userName}` : "";
   const periodoLabel = getPeriodoLabel(periodo);
 
-  let resposta = `*Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
+  let resposta = `👋 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
   let lastDate = null;
 
@@ -108,7 +113,8 @@ export async function listarCompromissosPorPeriodo({
       lastDate = data;
     }
 
-    resposta += `• ${capitalize(item.text)} — ${horario}\n`;
+    resposta += `• ${capitalize(item.text)} — ${horario}\n\n`;
+    resposta += `\n✨ *Gerencie todos os seus compromissos no painel:*\n🔗 ${linkMagico}`;
   });
 
   return resposta;
