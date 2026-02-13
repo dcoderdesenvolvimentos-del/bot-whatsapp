@@ -14,6 +14,10 @@ export async function listarCompromissosPorPeriodo({
   const endDate = new Date(periodo.data_fim + "T23:59:59-03:00");
   const agora = new Date();
 
+  function capitalize(texto = "") {
+    return texto.trim().charAt(0).toUpperCase() + texto.trim().slice(1);
+  }
+
   const snapshot = await db
     .collection("users")
     .doc(userId)
@@ -76,7 +80,7 @@ export async function listarCompromissosPorPeriodo({
   const nome = userName ? ` ${userName}` : "";
   const periodoLabel = getPeriodoLabel(periodo);
 
-  let resposta = `📅 *Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
+  let resposta = `*Olá${nome}, aqui estão seus compromissos ${periodoLabel}:*\n\n`;
 
   let lastDate = null;
 
@@ -104,7 +108,7 @@ export async function listarCompromissosPorPeriodo({
       lastDate = data;
     }
 
-    resposta += `• ${item.text} — ${horario}\n\n`;
+    resposta += `• ${capitalize(item.text)} — ${horario}\n`;
   });
 
   return resposta;
