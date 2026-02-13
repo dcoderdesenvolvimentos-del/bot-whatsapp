@@ -12,6 +12,7 @@ export async function listarCompromissosPorPeriodo({
   // 🔒 Fuso Brasil fixo
   const startDate = new Date(periodo.data_inicio + "T00:00:00-03:00");
   const endDate = new Date(periodo.data_fim + "T23:59:59-03:00");
+  const agora = new Date();
 
   const snapshot = await db
     .collection("users")
@@ -23,7 +24,6 @@ export async function listarCompromissosPorPeriodo({
 
   snapshot.forEach((doc) => {
     const l = doc.data();
-
     if (!l.when) return;
 
     const when = l.when.toDate();
@@ -42,21 +42,35 @@ export async function listarCompromissosPorPeriodo({
     const ocorrencias = gerarOcorrenciasBackend(base);
 
     ocorrencias.forEach((o) => {
-      if (
+      const dentroDoPeriodo =
         o.data.getTime() >= startDate.getTime() &&
-        o.data.getTime() <= endDate.getTime()
-      ) {
+        o.data.getTime() <= endDate.getTime();
+
+      const ehHoje =
+        startDate.toDateString() === agora.toDateString() &&
+        endDate.toDateString() === agora.toDateString();
+
+      const naoPassou = o.data.getTime() >= agora.getTime();
+
+      if (dentroDoPeriodo && (!ehHoje || naoPassou)) {
         lista.push(o);
       }
     });
   });
 
-  // ✅ AGORA verifica a lista filtrada
+  // 🔥 Caso especial: consulta de hoje e tudo já passou
+  const ehConsultaHoje =
+    startDate.toDateString() === agora.toDateString() &&
+    endDate.toDateString() === agora.toDateString();
+
   if (lista.length === 0) {
+    if (ehConsultaHoje) {
+      return "🎉 Todos os compromissos de hoje já foram concluídos.";
+    }
     return "📭 Você não tem compromissos nesse período.";
   }
 
-  // 🔥 Ordena por data
+  // Ordena
   lista.sort((a, b) => a.data - b.data);
 
   const nome = userName ? ` ${userName}` : "";
@@ -96,7 +110,7 @@ export async function listarCompromissosPorPeriodo({
   return resposta;
 }
 
-/* ================== LABEL PERÍODO ================== */
+/* ================= LABEL PERÍODO ================= */
 
 function getPeriodoLabel(periodo) {
   const hoje = new Date().toISOString().slice(0, 10);
@@ -130,7 +144,7 @@ function getPeriodoLabel(periodo) {
   return "";
 }
 
-/* ================== RECORRÊNCIA ================== */
+/* ================= RECORRÊNCIA ================= */
 
 function gerarOcorrenciasBackend(base) {
   if (!base.isRecurring) {
@@ -142,7 +156,6 @@ function gerarOcorrenciasBackend(base) {
 
   let atual = new Date(base.when);
 
-  // gera até 90 dias futuros
   const limite = new Date();
   limite.setDate(limite.getDate() + 90);
 
