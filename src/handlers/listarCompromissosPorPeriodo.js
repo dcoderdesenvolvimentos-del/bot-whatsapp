@@ -20,8 +20,12 @@ export async function listarCompromissosPorPeriodo({
   }
 
   // 🔐 Gera token mágico
-  const token = await admin.auth().createCustomToken(userId);
-  const linkMagico = `https://app.marioai.com.br/m/${token}`;
+  const userSnap = await db.collection("users").doc(userId).get();
+  if (!userSnap.exists) return "Erro ao gerar link.";
+
+  const { dashboardSlug } = userSnap.data();
+
+  const linkMagico = `https://app.marioai.com.br/m/${dashboardSlug}`;
 
   const snapshot = await db
     .collection("users")
