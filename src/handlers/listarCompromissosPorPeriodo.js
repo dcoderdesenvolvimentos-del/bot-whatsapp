@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import { Timestamp } from "firebase-admin/firestore";
 
 function startOfTodayBR() {
   const d = new Date();
@@ -29,8 +30,11 @@ export async function listarCompromissosPorPeriodo({
     return "⚠️ Não consegui identificar o período dos compromissos.";
   }
 
-  const start = startOfDay(periodo.data_inicio);
-  const end = endOfDay(periodo.data_fim);
+  const startDate = new Date(periodo.data_inicio + "T00:00:00");
+  const endDate = new Date(periodo.data_fim + "T23:59:59");
+
+  const start = Timestamp.fromDate(startDate);
+  const end = Timestamp.fromDate(endDate);
 
   const snapshot = await db
     .collection("users")
@@ -60,7 +64,10 @@ export async function listarCompromissosPorPeriodo({
   snapshot.forEach((doc) => {
     const r = doc.data();
 
-    const inicioDiaCompromissoBR = startOfDayFromTimestampBR(r.when);
+    const whenDate = r.when.toDate();
+    const inicioDiaCompromissoBR = startOfDayFromTimestampBR(
+      whenDate.getTime(),
+    );
 
     // ❌ REGRA 1 — mês/semana: não mostrar dias anteriores a hoje
     if (inicioDiaCompromissoBR < hojeInicioBR) {
@@ -72,7 +79,7 @@ export async function listarCompromissosPorPeriodo({
       return;
     }
 
-    const dataObj = new Date(r.when);
+    const dataObj = r.when.toDate();
 
     const data = dataObj.toLocaleDateString("pt-BR", {
       day: "2-digit",
