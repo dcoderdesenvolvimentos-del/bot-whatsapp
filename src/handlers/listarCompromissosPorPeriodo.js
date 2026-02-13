@@ -19,8 +19,8 @@ export async function listarCompromissosPorPeriodo({
     return texto.trim().charAt(0).toUpperCase() + texto.trim().slice(1);
   }
 
+  // 🔐 Gera token mágico
   const token = await admin.auth().createCustomToken(userId);
-
   const linkMagico = `https://app.marioai.com.br/m/${token}`;
 
   const snapshot = await db
@@ -67,7 +67,6 @@ export async function listarCompromissosPorPeriodo({
     });
   });
 
-  // 🔥 Caso especial: consulta de hoje e tudo já passou
   const ehConsultaHoje =
     startDate.toDateString() === agora.toDateString() &&
     endDate.toDateString() === agora.toDateString();
@@ -114,8 +113,12 @@ export async function listarCompromissosPorPeriodo({
     }
 
     resposta += `• ${capitalize(item.text)} — ${horario}\n\n`;
-    resposta += `\n✨ *Gerencie todos os seus compromissos no painel:*\n🔗 ${linkMagico}`;
   });
+
+  // 🔥 LINK ADICIONADO UMA ÚNICA VEZ (fora do loop)
+  resposta += `──────────────\n`;
+  resposta += `✨ *Gerencie todos os seus compromissos no painel:*\n`;
+  resposta += `🔗 ${linkMagico}`;
 
   return resposta;
 }
