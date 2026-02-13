@@ -40,10 +40,34 @@ export async function listarCompromissosPorPeriodo({
     .collection("users")
     .doc(userId)
     .collection("reminders")
-    .where("when", ">=", start)
-    .where("when", "<=", end)
-    .orderBy("when", "asc")
     .get();
+
+  let lista = [];
+
+  snapshot.forEach((doc) => {
+    const l = doc.data();
+
+    const when = l.when.toDate();
+
+    const isRecurring =
+      typeof l.recurring === "object" && typeof l.recurring?.tipo === "string";
+
+    const base = {
+      id: doc.id,
+      text: l.text,
+      when,
+      isRecurring,
+      recurrence: isRecurring ? l.recurring : null,
+    };
+
+    const ocorrencias = gerarOcorrenciasBackend(base);
+
+    ocorrencias.forEach((o) => {
+      if (o.data >= startDate && o.data <= endDate) {
+        lista.push(o);
+      }
+    });
+  });
 
   if (snapshot.empty) {
     return "📭 Você não tem compromissos nesse período.";
@@ -139,4 +163,31 @@ function getPeriodoLabel(periodo) {
   }
 
   return "";
+}
+
+function gerarOcorrenciasBackend(base) {
+  if (!base.isRecurring) {
+    return [{ ...base, data: base.when }];
+  }
+
+  const { tipo } = base.recurrence;
+  const ocorrencias = [];
+
+  let atual = new Date(base.when);
+  const limite = new Date();
+  limite.setDate(limite.getDate() + 90);
+
+  while (atual <= limite) {
+    ocorrencias.push({
+      ...base,
+      data: new Date(atual),
+    });
+
+    if (tipo === "diario") atual.setDate(atual.getDate() + 1);
+    if (tipo === "semanal") atual.setDate(atual.getDate() + 7);
+    if (tipo === "mensal") atual.setMonth(atual.getMonth() + 1);
+    if (tipo === "anual") atual.setFullYear(atual.getFullYear() + 1);
+  }
+
+  return ocorrencias;
 }
