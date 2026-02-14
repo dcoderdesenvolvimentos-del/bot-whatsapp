@@ -951,7 +951,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let rawValor = data.valor;
 
-        // 🔒 fallback seguro: remove datas antes de buscar valor
         if (!rawValor) {
           const cleanText = removeDatePartsFromText(text);
 
@@ -964,34 +963,46 @@ export async function routeIntent(userDocId, text, media = {}) {
           }
         }
 
-        const { local, categoria } = data;
-
         if (!rawValor) {
           return "🤔 Não consegui identificar o valor do gasto.";
         }
 
+        // 🔥 NORMALIZAÇÃO PROFISSIONAL
+        let valorNormalizado = String(rawValor)
+          .replace(/\./g, "") // remove milhar
+          .replace(",", "."); // vírgula decimal
+
+        valorNormalizado = parseFloat(valorNormalizado);
+
+        if (isNaN(valorNormalizado)) {
+          return "❌ Valor inválido.";
+        }
+
+        // 🔒 Proteção contra bug 30 → 3000
+        if (valorNormalizado >= 1000 && text.match(/\b\d{1,2}\b/)) {
+          valorNormalizado = valorNormalizado / 100;
+        }
+
+        const { local, categoria } = data;
+
         let date = null;
 
-        // 1️⃣ data explícita da IA
         if (data.data) {
           date = buildDateFromText(data.data, data.hora);
         }
 
-        // 2️⃣ mês relativo (mês passado, mês retrasado…)
         if (!date) {
           date = extractRelativeMonthFromText(text);
         }
 
-        // 3️⃣ dia relativo (ontem, hoje…)
         if (!date) {
           date = extractRelativeDateFromText(text);
         }
 
-        // 4 fallback absoluto
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         await createExpense(userDocId, {
-          valor: rawValor,
+          valor: valorNormalizado,
           local,
           categoria: categoria || "outros",
           timestamp,
@@ -1007,7 +1018,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         return (
           "💾 *Gasto salvo com sucesso!*\n\n" +
-          `💰 Valor:  ${Number(data.valor).toLocaleString("pt-BR", {
+          `💰 Valor:  ${valorNormalizado.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}\n` +

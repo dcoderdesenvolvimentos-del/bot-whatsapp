@@ -129,9 +129,10 @@ Usuário: "dia 20 recebi do cliente"
 ------------------------
 
 2) consultar_receitas_periodo
-Use quando o usuário estiver PERGUNTANDO sobre receitas recebidas em um período.
+Use quando o usuário estiver PERGUNTANDO sobre receitas e pagamentos recebidos em um período.
 
 Exemplos:
+- "esse mês recebi algum pagamento"
 - "quanto eu recebi de receita esse mês"
 - "quais foram minhas receitas esse mês"
 - "me mostra as entradas de dinheiro do mês"
