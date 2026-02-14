@@ -951,6 +951,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let rawValor = data.valor;
 
+        // 🔒 Fallback regex (caso IA não retorne valor)
         if (!rawValor) {
           const cleanText = removeDatePartsFromText(text);
 
@@ -967,10 +968,10 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "🤔 Não consegui identificar o valor do gasto.";
         }
 
-        // 🔥 NORMALIZAÇÃO PROFISSIONAL
+        // 🔥 NORMALIZAÇÃO DEFINITIVA
         let valorNormalizado = String(rawValor)
-          .replace(/\./g, "") // remove milhar
-          .replace(",", "."); // vírgula decimal
+          .replace(/\./g, "") // remove separador de milhar
+          .replace(",", "."); // vírgula vira ponto decimal
 
         valorNormalizado = parseFloat(valorNormalizado);
 
@@ -978,37 +979,38 @@ export async function routeIntent(userDocId, text, media = {}) {
           return "❌ Valor inválido.";
         }
 
-        // 🔒 Proteção contra bug 30 → 3000
-        if (valorNormalizado >= 1000 && text.match(/\b\d{1,2}\b/)) {
-          valorNormalizado = valorNormalizado / 100;
-        }
-
         const { local, categoria } = data;
 
+        // 📅 TRATAMENTO DE DATA
         let date = null;
 
+        // 1️⃣ Data explícita da IA
         if (data.data) {
           date = buildDateFromText(data.data, data.hora);
         }
 
+        // 2️⃣ Mês relativo (mês passado, etc)
         if (!date) {
           date = extractRelativeMonthFromText(text);
         }
 
+        // 3️⃣ Dia relativo (ontem, hoje, etc)
         if (!date) {
           date = extractRelativeDateFromText(text);
         }
 
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
+        // 💾 SALVA
         await createExpense(userDocId, {
-          valor: valorNormalizado,
-          local,
+          valor: valorNormalizado, // salva como número real
+          local: local || "não informado",
           categoria: categoria || "outros",
           timestamp,
           createdAt: Timestamp.now(),
         });
 
+        // 🔗 DASHBOARD LINK
         const userSnap = await db.collection("users").doc(userDocId).get();
         const { dashboardSlug } = userSnap.data() || {};
 
@@ -1022,7 +1024,7 @@ export async function routeIntent(userDocId, text, media = {}) {
             style: "currency",
             currency: "BRL",
           })}\n` +
-          `📍 Local: ${capitalize(local)}\n` +
+          `📍 Local: ${capitalize(local || "não informado")}\n` +
           `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
           (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
