@@ -4,6 +4,7 @@ import { normalizeSpeech } from "./utils/normalizeSpeech.js";
 import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
+import { temAcesso } from "./utils/access.js";
 
 const processedMessages = new Set();
 
@@ -96,6 +97,20 @@ export async function handleWebhook(payload, sendMessage) {
     async function hasProcessedMessage(messageId) {
       const doc = await db.collection("processedMessages").doc(messageId).get();
       return doc.exists;
+    }
+
+    // 🔒 VERIFICA ACESSO (trial ou premium)
+    const userSnap = await db.collection("users").doc(uid).get();
+    const user = userSnap.data();
+
+    if (!temAcesso(user)) {
+      await sendMessage(
+        phone,
+        "🔒 Seu período gratuito terminou.\n\n" +
+          "Para continuar usando o Mário, ative o Premium:\n" +
+          "https://pay.hotmart.com/SEULINK",
+      );
+      return;
     }
 
     // 6️⃣ chama o router

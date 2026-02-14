@@ -67,11 +67,24 @@ export async function getOrCreateUserByPhone(rawPhone) {
   const slug = gerarSlug();
   const userRef = db.collection("users").doc();
 
+  // 🎁 CRIA TRIAL DE 2 DIAS
+  const agora = new Date();
+  const trial = new Date();
+  trial.setDate(agora.getDate() + 2);
+
   await userRef.set({
     phone,
-    dashboardSlug: slug, // 🔥 JÁ CRIA COM SLUG
+    dashboardSlug: slug,
     stage: "ghost",
     active: true,
+
+    // 🔥 SISTEMA DE ACESSO
+    premium: false,
+    trialEndsAt: Timestamp.fromDate(trial),
+    expiresAt: null,
+    trialWarningSent: false,
+    trialExpiredNotified: false,
+
     createdAt: Timestamp.now(),
   });
 

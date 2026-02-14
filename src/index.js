@@ -4,6 +4,7 @@ import { handleWebhook } from "./webhook.js";
 import { startScheduler } from "./scheduler.js";
 import { sendMessage } from "./zapi.js";
 import { handleMpWebhook } from "./mpWebhook.js";
+import { handleHotmartWebhook } from "./hotmartWebhook.js";
 import admin from "firebase-admin";
 import { db } from "./firebase.js";
 
@@ -88,6 +89,32 @@ const server = http.createServer(async (req, res) => {
         res.end("erro");
       }
     });
+    return;
+  }
+
+  // ─────────────────────────────────────
+  // 💰 WEBHOOK HOTMART
+  // ─────────────────────────────────────
+  if (req.method === "POST" && req.url === "/hotmart/webhook") {
+    let body = "";
+
+    req.on("data", (chunk) => (body += chunk));
+
+    req.on("end", async () => {
+      try {
+        const payload = JSON.parse(body);
+
+        await handleHotmartWebhook(payload, req.headers);
+
+        res.writeHead(200);
+        res.end("ok");
+      } catch (err) {
+        console.error("Erro no webhook Hotmart:", err);
+        res.writeHead(500);
+        res.end("erro");
+      }
+    });
+
     return;
   }
 
