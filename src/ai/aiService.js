@@ -203,6 +203,11 @@ Importante!:
      Exemplo: Gastei 10 reais dia 14 na maquina de cafe, portanto vc vai salvar esse gasto para o ultimo dia 14.
      Observação: se o dia 14 for dia atual em que o usario esta gravando gasto pode salva-lo para o dia 14 atual do usuario.
 
+O valor deve ser exatamente o valor mencionado pelo usuário.
+Nunca multiplicar.
+Nunca converter para centavos.
+Se o usuário disser "trinta reais", retorne 30.
+Se disser "3 mil", retorne 3000.
 
 
 Categorias possíveis:
