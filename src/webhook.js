@@ -43,7 +43,10 @@ export async function handleWebhook(payload, sendMessage) {
     }
 
     // 4️⃣ resolve usuário (AQUI é o lugar certo)
-    const { uid } = await getOrCreateUserByPhone(phone);
+    const userData = await getOrCreateUserByPhone(phone);
+    if (!userData) return;
+
+    const { uid } = userData;
 
     console.log("👤 Phone:", phone);
     console.log("🆔 UID:", uid);
