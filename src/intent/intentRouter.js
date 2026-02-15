@@ -253,7 +253,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         `A partir de agora eu cuido dos seus:\n` +
         `💰 Gastos\n` +
         `💵 Receitas\n` +
-        `📆 COMPROMISSOS/Lembretes\n` +
+        `📆 Compromissos/Lembretes\n` +
         `🛒 Listas de compras\n` +
         `📈 Resumos e análises financeiras\n\n` +
         `━━━━━━━━━━━━━━\n` +
@@ -336,6 +336,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   if (
     [
       "muito obrigado",
+      "top",
       "obrigado",
       "vlw",
       "valeu",
@@ -382,16 +383,39 @@ export async function routeIntent(userDocId, text, media = {}) {
     ].includes(text)
   ) {
     return (
-      `Oi! 😊 Posso fazer muito por você.\n\n` +
-      "Exemplos:\n" +
-      "*• me lembra daqui 10 minutos*\n" +
-      "*• amanhã às 17h30 ir para a academia*\n" +
-      "*• listar lembretes*\n" +
-      "*• adicionar um gasto*\n" +
-      "*• listar gastos, do dia, mes ou ano.*\n" +
-      "*• Ex: Me lembre todo dia 5 de pagar internet*\n" +
-      "\n" +
-      "📋 É só digitar ou gravar um áudio que eu anoto tudo certinho para não esquecer!"
+      `✨ *Olá, ${userData.tempName}!* 😊\n\n` +
+      `POSSO TE AJUDAR COM:\n` +
+      `💰 Gastos\n` +
+      `💵 Receitas\n` +
+      `📆 Compromissos/Lembretes\n` +
+      `🛒 Listas de compras\n` +
+      `📈 Resumos e análises financeiras\n\n` +
+      `━━━━━━━━━━━━━━\n` +
+      `📌 *Você pode me pedir coisas como:*\n\n` +
+      `🔔 COMPROMISSOS/LEMBRETES\n` +
+      `• me lembra daqui 10 minutos\n` +
+      `• amanhã às 17h ir para a academia\n` +
+      `• listar meus lembretes\n` +
+      `• excluir lembrete\n\n` +
+      `💰 GASTOS\n` +
+      `• gastei 50 reais na padaria\n` +
+      `• quanto gastei hoje?\n` +
+      `• resumo dos meus gastos do mês\n` +
+      `• em qual categoria eu mais gastei?\n\n` +
+      `💵 RECEITAS\n` +
+      `• recebi 1500 do cliente\n` +
+      `• quanto eu recebi esse mês?\n` +
+      `• qual meu saldo?\n\n` +
+      `🛒 LISTAS DE COMPRAS\n` +
+      `• criar lista de supermercado\n` +
+      `• adicionar arroz na lista\n` +
+      `• me mostra minhas listas\n\n` +
+      `📊 *Dashboard Online*\n` +
+      `Você também pode acompanhar tudo pelo seu painel:\n` +
+      `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n` +
+      `Lá você vê gráficos, histórico completo e controle total das suas finanças 📈\n\n` +
+      `🎤 Pode falar comigo por áudio ou texto.\n` +
+      `Bora organizar sua vida? 🚀`
     );
   }
 
@@ -774,7 +798,12 @@ export async function routeIntent(userDocId, text, media = {}) {
           `📊 *Saldo atual:* ${saldo.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
-          })}`
+          })}\n` +
+          "━━━━━━━━━━━━━━\n" +
+          `📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n` +
+          `Lá você vê gráficos, histórico completo e controle total das suas finanças 📈\n\n`
         );
       }
 
@@ -817,7 +846,11 @@ export async function routeIntent(userDocId, text, media = {}) {
           "🗑️ *Excluir lista*\n" +
           "Ex: _“excluir lista compras do mês”_\n\n" +
           "📄 *Ver itens da lista*\n" +
-          "Ex: _“ver lista compras do mês”_"
+          "Ex: _“ver lista compras do mês”_\n" +
+          "━━━━━━━━━━━━━━\n" +
+          `📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
         );
       }
 
@@ -883,7 +916,11 @@ export async function routeIntent(userDocId, text, media = {}) {
           "🗑️ *Excluir lista*\n" +
           "Ex: _“excluir lista compras do mês”_\n\n" +
           "📄 *Ver itens da lista*\n" +
-          "Ex: _“ver lista compras do mês”_";
+          "Ex: _“ver lista compras do mês”_\n";
+        "━━━━━━━━━━━━━━\n" +
+          +`📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`;
 
         if (link) {
           resposta += `\n\n📊 *Ver tudo no dashboard:*\n${link}`;
@@ -1096,7 +1133,11 @@ export async function routeIntent(userDocId, text, media = {}) {
           `💰 Total gasto: *${Number(total).toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
-          })}*`
+          })}*\n` +
+          "━━━━━━━━━━━━━━\n" +
+          `📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
         );
       }
 
@@ -1130,7 +1171,11 @@ export async function routeIntent(userDocId, text, media = {}) {
             `👉 *${cat}* — ${total.toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
-            })}`
+            })}\n` +
+            "━━━━━━━━━━━━━━\n" +
+            `📊 *Dashboard Online*\n` +
+            `Você também pode acompanhar tudo pelo seu painel:\n` +
+            `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
           );
         }
 
@@ -1141,7 +1186,11 @@ export async function routeIntent(userDocId, text, media = {}) {
             `👉 Dia *${dia}* — ${total.toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
-            })}`
+            })}\n` +
+            "━━━━━━━━━━━━━━\n" +
+            `📊 *Dashboard Online*\n` +
+            `Você também pode acompanhar tudo pelo seu painel:\n` +
+            `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
           );
         }
 
@@ -1192,7 +1241,11 @@ export async function routeIntent(userDocId, text, media = {}) {
         resposta += `💰 *Total:* ${total.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
-        })}`;
+        })}\n`;
+        "━━━━━━━━━━━━━━\n" +
+          +`📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`;
 
         return resposta.trim();
       }
@@ -1294,19 +1347,56 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "saudacao":
         response =
           `👋 Olá, ${userData.tempName}!\n\n` +
-          "Posso te ajudar com:\n" +
-          "• criar lembretes\n" +
-          "• listar lembretes\n" +
-          "• excluir lembretes\n\n" +
-          "Exemplo: *me lembra de comprar pão amanhã às 10h*";
+          "Eu sou o *Mário*, seu assistente pessoal de finanças e compromissos 📊⏰\n\n" +
+          "Posso te ajudar com:\n\n" +
+          "🔔 *Lembretes*\n" +
+          "• me lembra de comprar pão amanhã às 10h\n" +
+          "• daqui 20 minutos me lembrar de ligar para o cliente\n\n" +
+          "💰 *Controle de gastos*\n" +
+          "• gastei 50 reais na padaria\n" +
+          "• quanto gastei hoje?\n\n" +
+          "💵 *Receitas e saldo*\n" +
+          "• recebi 1500 do cliente\n" +
+          "• qual meu saldo?\n\n" +
+          "🛒 *Listas de compras*\n" +
+          "• criar lista de supermercado\n" +
+          "• adicionar arroz na lista\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "📊 Você também pode acompanhar tudo pelo seu dashboard:\n" +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n` +
+          "🎤 Pode falar comigo por áudio ou texto 😉";
         break;
 
       case "ajuda":
         response =
-          "🤖 *Como usar?:*\n\n" +
-          "• criar: me lembra de beber água daqui 10 minutos\n" +
-          "• listar: listar lembretes\n" +
-          "• excluir: apagar lembrete 1";
+          "🤖 *Como usar o Mário?*\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "🔔 *COMPROMISSOS/LEMBRETES*\n" +
+          "• me lembra de beber água daqui 10 minutos\n" +
+          "• amanhã às 18h ir para a academia\n" +
+          "• listar meus lembretes\n" +
+          "• excluir lembrete 1\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "💰 *GASTOS*\n" +
+          "• gastei 50 reais na padaria\n" +
+          "• quanto gastei hoje?\n" +
+          "• resumo dos meus gastos do mês\n" +
+          "• em qual categoria eu mais gastei?\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "💵 *RECEITAS*\n" +
+          "• recebi 1500 do cliente\n" +
+          "• quanto recebi esse mês?\n" +
+          "• qual meu saldo?\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "🛒 *LISTAS DE COMPRAS*\n" +
+          "• criar lista de supermercado\n" +
+          "• adicionar arroz na lista\n" +
+          "• me mostra minhas listas\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "📊 *Dashboard Online*\n" +
+          "Acompanhe tudo por aqui:\n" +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n` +
+          "🎤 Você pode falar comigo por áudio ou texto 😉";
         break;
 
       case "despedida":
@@ -1315,14 +1405,24 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       default:
         response =
-          "🤔 Ops! Não entendi muito bem o que você quis dizer.\n\n" +
-          "💡 Você pode tentar, por exemplo:\n\n" +
-          "• me lembra de tomar agua amanhã às 14h\n" +
-          "• criar uma lista de compras\n" +
+          "🤔 Hmm... não consegui entender muito bem o que você quis dizer.\n\n" +
+          "Mas calma 😄 eu posso te ajudar com:\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "🔔 *LEMBRETES*\n" +
+          "• me lembra de tomar água amanhã às 14h\n" +
+          "• daqui 30 minutos me lembrar de ligar para o cliente\n" +
+          "• listar meus lembretes\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "💰 *GASTOS*\n" +
+          "• gastei 50 reais na padaria\n" +
+          "• quanto gastei hoje?\n" +
+          "• resumo dos meus gastos do mês\n\n" +
+          "━━━━━━━━━━━━━━\n" +
+          "🛒 *LISTAS DE COMPRAS*\n" +
+          "• criar lista de supermercado\n" +
           "• adicionar arroz na lista\n" +
-          "• criar lembretes\n" +
-          "• excluir lembretes\n" +
-          "• listar lembretes";
+          "• me mostra minhas listas\n\n" +
+          "Se quiser, digite *ajuda* para ver tudo o que posso fazer 😉";
     }
 
     return response;
@@ -1487,7 +1587,14 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
 
   await db.collection("users").doc(userId).collection("receitas").add(receita);
 
-  console.log("✅ Receita salva com data correta:", receita);
+  console.log(
+    "✅ Receita salva com data correta:\n" +
+      "━━━━━━━━━━━━━━\n" +
+      "📊 *Dashboard Online*\n" +
+      "Acompanhe tudo por aqui:\n" +
+      `👉 https://app.marioai.com.br/m/${user.dashboardSlug}\n\n`,
+    receita,
+  );
 }
 
 function getCurrentMonthRange() {
