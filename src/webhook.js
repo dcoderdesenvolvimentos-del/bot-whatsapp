@@ -43,7 +43,15 @@ export async function handleWebhook(payload, sendMessage) {
     }
 
     // 4️⃣ resolve usuário (AQUI é o lugar certo)
-    const { uid } = await getOrCreateUserByPhone(phone);
+    const userData = await getOrCreateUserByPhone(phone);
+
+    if (!userData) {
+      console.log("🚫 Usuário não resolvido:", phone);
+      return;
+    }
+
+    const { uid } = userData;
+
     console.log("USER RESOLVER:", userData);
 
     if (!userData) {
@@ -119,9 +127,10 @@ export async function handleWebhook(payload, sendMessage) {
       return;
     }
 
+    console.log("PASSOU DA VERIFICAÇÃO");
     // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
-
+    console.log("ROUTER RESPONSE:", response);
     if (!response) return;
 
     // 7️⃣ envia resposta
