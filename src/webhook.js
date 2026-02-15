@@ -41,6 +41,9 @@ export async function handleWebhook(payload, sendMessage) {
       console.log("🚫 Evento ignorado (não é mensagem do usuário)");
       return;
     }
+    if (payload.type !== "ReceivedCallback") {
+      return;
+    }
 
     // 4️⃣ resolve usuário (AQUI é o lugar certo)
     const userData = await getOrCreateUserByPhone(phone);

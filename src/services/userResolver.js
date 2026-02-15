@@ -13,11 +13,7 @@ export async function getOrCreateUserByPhone(rawPhone) {
   }
 
   // 2️⃣ ignora eventos que NÃO são usuários
-  if (
-    rawPhone === "status@broadcast" ||
-    rawPhone.endsWith("@broadcast") ||
-    rawPhone.endsWith("@lid")
-  ) {
+  if (rawPhone === "status@broadcast" || rawPhone.endsWith("@broadcast")) {
     return null;
   }
 
