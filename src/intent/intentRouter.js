@@ -249,13 +249,39 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       return (
         `✨ *Bem-vindo(a), ${userData.tempName}!* 😊\n\n` +
-        `Agora eu cuido dos seus lembretes para que você possa focar no que importa ⏰✨\n\n` +
+        `Eu sou o *Mário*, seu assistente pessoal de finanças e compromissos 📊⏰\n\n` +
+        `A partir de agora eu cuido dos seus:\n` +
+        `💰 Gastos\n` +
+        `💵 Receitas\n` +
+        `📆 COMPROMISSOS/Lembretes\n` +
+        `🛒 Listas de compras\n` +
+        `📈 Resumos e análises financeiras\n\n` +
+        `━━━━━━━━━━━━━━\n` +
         `📌 *Você pode me pedir coisas como:*\n\n` +
+        `🔔 COMPROMISSOS/LEMBRETES\n` +
         `• me lembra daqui 10 minutos\n` +
-        `• amanhã às 17h30 ir para a academia\n` +
-        `• listar lembretes\n` +
-        `• excluir lembretes\n\n` +
-        `🎤 Pode falar comigo por áudio ou texto 😉`
+        `• amanhã às 17h ir para a academia\n` +
+        `• listar meus lembretes\n` +
+        `• excluir lembrete\n\n` +
+        `💰 GASTOS\n` +
+        `• gastei 50 reais na padaria\n` +
+        `• quanto gastei hoje?\n` +
+        `• resumo dos meus gastos do mês\n` +
+        `• em qual categoria eu mais gastei?\n\n` +
+        `💵 RECEITAS\n` +
+        `• recebi 1500 do cliente\n` +
+        `• quanto eu recebi esse mês?\n` +
+        `• qual meu saldo?\n\n` +
+        `🛒 LISTAS DE COMPRAS\n` +
+        `• criar lista de supermercado\n` +
+        `• adicionar arroz na lista\n` +
+        `• me mostra minhas listas\n\n` +
+        `📊 *Dashboard Online*\n` +
+        `Você também pode acompanhar tudo pelo seu painel:\n` +
+        `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n` +
+        `Lá você vê gráficos, histórico completo e controle total das suas finanças 📈\n\n` +
+        `🎤 Pode falar comigo por áudio ou texto.\n` +
+        `Bora organizar sua vida? 🚀`
       );
     }
 
