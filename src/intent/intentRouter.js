@@ -383,7 +383,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     ].includes(text)
   ) {
     return (
-      `✨ *Olá, ${userData.tempName}!* 😊\n\n` +
+      `✨ *Olá, ${userData.name}!* 😊\n\n` +
       `POSSO TE AJUDAR COM:\n` +
       `💰 Gastos\n` +
       `💵 Receitas\n` +
@@ -1346,7 +1346,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       case "saudacao":
         response =
-          `👋 Olá, ${userData.tempName}!\n\n` +
+          `👋 Olá, ${userData.name}!\n\n` +
           "Eu sou o *Mário*, seu assistente pessoal de finanças e compromissos 📊⏰\n\n" +
           "Posso te ajudar com:\n\n" +
           "🔔 *Lembretes*\n" +
@@ -1400,7 +1400,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         break;
 
       case "despedida":
-        response = `👋 Até mais, ${userData.tempName}! Estou aqui quando precisar 😊`;
+        response = `👋 Até mais, ${userData.name}! Estou aqui quando precisar 😊`;
         break;
 
       default:
