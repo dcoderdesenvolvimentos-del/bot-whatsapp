@@ -77,12 +77,22 @@ async function verificarTrials() {
     // 1️⃣ AVISO 24H ANTES
     // ─────────────────────────────
     if (!user.trialWarningSent && trialDate <= em24h && trialDate > agora) {
-      await sendMessage(
+      const linkPlano = "https://pay.hotmart.com/SEULINK";
+
+      await sendButtonList(
         user.phone,
-        "⚠️ Seu período gratuito termina em menos de 24h!\n\n" +
-          "Não perca seus lembretes e controle financeiro.\n\n" +
-          "Ative o Mário Premium agora:\n" +
-          "https://pay.hotmart.com/SEULINK",
+        "⚠️ *Seu período gratuito termina em menos de 24h!*\n\n" +
+          "Você já organizou seus gastos e lembretes com o Mário.\n\n" +
+          "Não perca acesso agora 😉\n\n" +
+          "💎 Ative o Premium aqui:\n" +
+          linkPlano +
+          "\n\nOu clique no botão abaixo 👇",
+        [
+          {
+            id: "contratar_premium",
+            text: "💎 Contratar Premium",
+          },
+        ],
       );
 
       await db.collection("users").doc(doc.id).update({

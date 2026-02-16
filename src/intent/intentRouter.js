@@ -631,6 +631,9 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     switch (intent) {
+      case "contratar_premium":
+        return "💎 Ative o Mário Premium agora:\n\nhttps://pay.hotmart.com/SEULINK";
+
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
         console.log("🧠 TEXTO ORIGINAL:", text);
@@ -1596,10 +1599,6 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     : null;
 
   console.log("✅ Receita salva com data correta:\n", receita);
-  function capitalize(text) {
-    if (!text || typeof text !== "string") return text;
-    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-  }
 
   return (
     "💰 *Receita registrada com sucesso!*\n\n" +
@@ -1607,7 +1606,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
       style: "currency",
       currency: "BRL",
     })}\n` +
-    `🏷 Origem: ${capitalize(origem) || "Não informado"}` +
+    `🏷 Origem: ${origem || "Não informado"}` +
     (link ? `\n\n📊 Ver no dashboard:\n${link}` : "")
   );
 }
