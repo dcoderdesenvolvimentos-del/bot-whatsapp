@@ -1596,6 +1596,10 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     : null;
 
   console.log("✅ Receita salva com data correta:\n", receita);
+  function capitalize(text) {
+    if (!text || typeof text !== "string") return text;
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
 
   return (
     "💰 *Receita registrada com sucesso!*\n\n" +
