@@ -1592,7 +1592,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
       "━━━━━━━━━━━━━━\n" +
       "📊 *Dashboard Online*\n" +
       "Acompanhe tudo por aqui:\n" +
-      `👉 https://app.marioai.com.br/m/${user.dashboardSlug}\n\n`,
+      `👉 https://app.marioai.com.br/m/${userId.dashboardSlug}\n\n`,
     receita,
   );
 }
