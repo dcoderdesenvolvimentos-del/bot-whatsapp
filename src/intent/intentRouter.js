@@ -632,7 +632,10 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     switch (intent) {
       case "contratar_premium":
-        return "💎 Ative o Mário Premium agora:\n\nhttps://pay.hotmart.com/SEULINK";
+        return (
+          "💎 Ative o Mário Premium agora:\n\n" +
+          "https://pay.hotmart.com/SEULINK"
+        );
 
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);

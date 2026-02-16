@@ -101,16 +101,27 @@ async function verificarTrials() {
 
       console.log("📣 Aviso de fim de trial enviado:", user.phone);
     }
-
     // ─────────────────────────────
     // 2️⃣ TRIAL EXPIRADO
     // ─────────────────────────────
     if (!user.trialExpiredNotified && trialDate <= agora) {
-      await sendMessage(
+      const linkPlano = "https://pay.hotmart.com/SEULINK";
+
+      await sendButtonList(
         user.phone,
-        "🔒 Seu período gratuito do Mário terminou.\n\n" +
-          "Para continuar usando todos os recursos, ative o Premium:\n" +
-          "https://pay.hotmart.com/SEULINK",
+        "🔒 *Seu período gratuito do Mário terminou.*\n\n" +
+          "Mas calma! Seus dados continuam salvos com segurança ✅\n\n" +
+          "Para continuar usando lembretes, controle financeiro e relatórios completos,\n" +
+          "ative o Mário Premium agora 👇\n\n" +
+          "💎 Assine aqui:\n" +
+          linkPlano +
+          "\n\nOu clique no botão abaixo.",
+        [
+          {
+            id: "contratar_premium",
+            text: "💎 Ativar Premium",
+          },
+        ],
       );
 
       await db.collection("users").doc(doc.id).update({
