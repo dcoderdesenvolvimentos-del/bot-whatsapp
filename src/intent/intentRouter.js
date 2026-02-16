@@ -1603,7 +1603,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
       style: "currency",
       currency: "BRL",
     })}\n` +
-    `🏷 Origem: ${origem || "Não informado"}` +
+    `🏷 Origem: ${capitalize(origem) || "Não informado"}` +
     (link ? `\n\n📊 Ver no dashboard:\n${link}` : "")
   );
 }
