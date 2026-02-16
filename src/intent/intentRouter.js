@@ -1587,13 +1587,24 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
 
   await db.collection("users").doc(userId).collection("receitas").add(receita);
 
-  console.log(
-    "✅ Receita salva com data correta:\n" +
-      "━━━━━━━━━━━━━━\n" +
-      "📊 *Dashboard Online*\n" +
-      "Acompanhe tudo por aqui:\n" +
-      `👉 https://app.marioai.com.br/m/${userId.dashboardSlug}\n\n`,
-    receita,
+  // 🔥 BUSCA O USUÁRIO CORRETAMENTE
+  const userSnap = await db.collection("users").doc(userId).get();
+  const user = userSnap.data();
+
+  const link = user?.dashboardSlug
+    ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
+    : null;
+
+  console.log("✅ Receita salva com data correta:\n", receita);
+
+  return (
+    "💰 *Receita registrada com sucesso!*\n\n" +
+    `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    })}\n` +
+    `🏷 Origem: ${origem || "Não informado"}` +
+    (link ? `\n\n📊 Ver no dashboard:\n${link}` : "")
   );
 }
 
