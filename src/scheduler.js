@@ -77,22 +77,13 @@ async function verificarTrials() {
     // 1️⃣ AVISO 24H ANTES
     // ─────────────────────────────
     if (!user.trialWarningSent && trialDate <= em24h && trialDate > agora) {
-      const linkPlano = "https://pay.hotmart.com/SEULINK";
-
-      await sendButtonList(
+      await sendMessage(
         user.phone,
-        "⚠️ *Seu período gratuito termina em menos de 24h!*\n\n" +
-          "Você já organizou seus gastos e lembretes com o Mário.\n\n" +
-          "Não perca acesso agora 😉\n\n" +
-          "💎 Ative o Premium aqui:\n" +
-          linkPlano +
-          "\n\nOu clique no botão abaixo 👇",
-        [
-          {
-            id: "contratar_premium",
-            text: "💎 Contratar Premium",
-          },
-        ],
+        "⚠️ *Falta menos de 24h para seu acesso gratuito terminar.*\n\n" +
+          "Você já começou a organizar sua vida com o Mário.\n\n" +
+          "Não perca seus lembretes e controle financeiro.\n\n" +
+          "Garanta seu acesso contínuo aqui:\n\n" +
+          "https://pay.hotmart.com/SEULINK",
       );
 
       await db.collection("users").doc(doc.id).update({
@@ -105,23 +96,16 @@ async function verificarTrials() {
     // 2️⃣ TRIAL EXPIRADO
     // ─────────────────────────────
     if (!user.trialExpiredNotified && trialDate <= agora) {
-      const linkPlano = "https://pay.hotmart.com/SEULINK";
-
-      await sendButtonList(
+      await sendMessage(
         user.phone,
-        "🔒 *Seu período gratuito do Mário terminou.*\n\n" +
-          "Mas calma! Seus dados continuam salvos com segurança ✅\n\n" +
-          "Para continuar usando lembretes, controle financeiro e relatórios completos,\n" +
-          "ative o Mário Premium agora 👇\n\n" +
-          "💎 Assine aqui:\n" +
-          linkPlano +
-          "\n\nOu clique no botão abaixo.",
-        [
-          {
-            id: "contratar_premium",
-            text: "💎 Ativar Premium",
-          },
-        ],
+        "🔒 *Seu acesso ao Mário foi pausado.*\n\n" +
+          "Mas olha só… manter sua vida organizada custa menos que um café por dia ☕\n\n" +
+          "Por poucos reais por mês você continua:\n" +
+          "✔ Controlando seus gastos\n" +
+          "✔ Recebendo lembretes\n" +
+          "✔ Acompanhando tudo pelo dashboard\n\n" +
+          "💎 Reative agora e continue no controle:\n\n" +
+          "https://pay.hotmart.com/SEULINK",
       );
 
       await db.collection("users").doc(doc.id).update({
