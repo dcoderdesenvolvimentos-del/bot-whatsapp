@@ -728,11 +728,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     switch (intent) {
       case "contratar_premium":
-        return (
-          "💎 Ative o Mário Premium agora:\n\n" +
-          "https://pay.hotmart.com/SEULINK"
-        );
-
       case "planos_premium":
         return {
           type: "buttons",
@@ -757,7 +752,6 @@ export async function routeIntent(userDocId, text, media = {}) {
             },
           ],
         };
-
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
         console.log("🧠 TEXTO ORIGINAL:", text);
