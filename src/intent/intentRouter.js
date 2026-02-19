@@ -127,7 +127,7 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
-  function gerarLinkPlano(uid, planoId) {
+  function gerarLinkPlano(userDocId, planoId) {
     const produtoHotmart = "W6993414"; // ⚠️ SEU CÓDIGO DO PRODUTO
 
     const ofertas = {
@@ -152,7 +152,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     const plano = ofertas[planoId];
     if (!plano) return "❌ Plano inválido.";
 
-    const link = `https://pay.hotmart.com/${produtoHotmart}?off=${plano.offer}&sck=${uid}`;
+    const link = `https://pay.hotmart.com/${produtoHotmart}?off=${plano.offer}&sck=${userDocId}`;
 
     return (
       `🚀 *Plano ${plano.nome} selecionado!*\n\n` +
@@ -193,7 +193,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     text === "PLANO_SEMESTRAL" ||
     text === "PLANO_ANUAL"
   ) {
-    return gerarLinkPlano(uid, text);
+    return gerarLinkPlano(userDocId, text);
   }
 
   // Transforma a data do OCR em Timestamp real antes de salvar
@@ -778,12 +778,6 @@ export async function routeIntent(userDocId, text, media = {}) {
             },
           ],
         };
-
-      case "PLANO_MENSAL":
-      case "PLANO_TRIMESTRAL":
-      case "PLANO_SEMESTRAL":
-      case "PLANO_ANUAL":
-        return gerarLinkPlano(uid, data.intencao);
 
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);
