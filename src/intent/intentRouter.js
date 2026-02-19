@@ -127,6 +127,41 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  function gerarLinkPlano(uid, planoId) {
+    const produtoHotmart = "W6993414"; // ⚠️ SEU CÓDIGO DO PRODUTO
+
+    const ofertas = {
+      PLANO_MENSAL: {
+        nome: "Mensal",
+        offer: "duvis1r2",
+      },
+      PLANO_TRIMESTRAL: {
+        nome: "Trimestral",
+        offer: "niiuxczq",
+      },
+      PLANO_SEMESTRAL: {
+        nome: "Semestral",
+        offer: "a32e6pq7",
+      },
+      PLANO_ANUAL: {
+        nome: "Anual",
+        offer: "ue2sn1ve",
+      },
+    };
+
+    const plano = ofertas[planoId];
+    if (!plano) return "❌ Plano inválido.";
+
+    const link = `https://pay.hotmart.com/${produtoHotmart}?off=${plano.offer}&sck=${uid}`;
+
+    return (
+      `🚀 *Plano ${plano.nome} selecionado!*\n\n` +
+      "Clique no link abaixo para ativar seu acesso:\n\n" +
+      link +
+      "\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente ✅"
+    );
+  }
+
   // 🔥 INTERCEPTA PEDIDO DE PLANOS (ANTES DA IA)
   if (
     text.includes("plano") ||
