@@ -77,6 +77,38 @@ function formatDateDMY(date) {
   return `${day}-${month}-${year}`;
 }
 
+function extractNameFromText(text = "") {
+  if (!text) return null;
+
+  const cleaned = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+  // Remove frases comuns
+  const name = cleaned
+    .replace(/meu nome e/g, "")
+    .replace(/me chamo/g, "")
+    .replace(/eu sou/g, "")
+    .replace(/sou o/g, "")
+    .replace(/sou a/g, "")
+    .replace(/nome e/g, "")
+    .trim();
+
+  if (!name) return null;
+
+  // pega apenas a primeira palavra
+  const firstName = name
+    .split(" ")
+    .filter((w) => w.length > 1)
+    .slice(0, 2) // até 2 nomes
+    .join(" ");
+
+  // capitaliza
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1);
+}
+
 /* =========================
    ROUTER PRINCIPAL
 =========================  */
@@ -220,8 +252,13 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   // 👉 Usuário respondeu o nome
   if (userData.stage === "awaiting_name") {
-    const displayName =
-      normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    const extractedName = extractNameFromText(text);
+
+    if (!extractedName) {
+      return "Não consegui entender seu nome 🤔 Pode me dizer novamente?";
+    }
+
+    const displayName = extractedName;
 
     await updateUser(userDocId, {
       stage: "confirming_name",
