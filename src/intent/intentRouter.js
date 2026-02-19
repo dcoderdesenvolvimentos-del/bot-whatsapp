@@ -125,6 +125,15 @@ function extractNameFromText(text = "") {
 =========================  */
 
 export async function routeIntent(userDocId, text, media = {}) {
+  // 🔥 INTERCEPTAÇÃO DE CLIQUE DE BOTÃO (ANTES DA IA)
+  if (
+    text === "PLANO_MENSAL" ||
+    text === "PLANO_TRIMESTRAL" ||
+    text === "PLANO_SEMESTRAL" ||
+    text === "PLANO_ANUAL"
+  ) {
+    return gerarLinkPlano(userDocId, text);
+  }
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
   function gerarLinkPlano(userDocId, planoId) {
@@ -160,15 +169,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       link +
       "\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente ✅"
     );
-  }
-
-  if (
-    text === "PLANO_MENSAL" ||
-    text === "PLANO_TRIMESTRAL" ||
-    text === "PLANO_SEMESTRAL" ||
-    text === "PLANO_ANUAL"
-  ) {
-    return gerarLinkPlano(userDocId, text);
   }
 
   // Transforma a data do OCR em Timestamp real antes de salvar
