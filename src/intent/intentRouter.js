@@ -747,41 +747,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       return valores[0];
     }
 
-    function gerarLinkPlano(uid, planoId) {
-      const produtoHotmart = "W6993414"; // ⚠️ SEU CÓDIGO DO PRODUTO
-
-      const ofertas = {
-        PLANO_MENSAL: {
-          nome: "Mensal",
-          offer: "duvis1r2",
-        },
-        PLANO_TRIMESTRAL: {
-          nome: "Trimestral",
-          offer: "niiuxczq",
-        },
-        PLANO_SEMESTRAL: {
-          nome: "Semestral",
-          offer: "a32e6pq7",
-        },
-        PLANO_ANUAL: {
-          nome: "Anual",
-          offer: "ue2sn1ve",
-        },
-      };
-
-      const plano = ofertas[planoId];
-      if (!plano) return "❌ Plano inválido.";
-
-      const link = `https://pay.hotmart.com/${produtoHotmart}?off=${plano.offer}&sck=${uid}`;
-
-      return (
-        `🚀 *Plano ${plano.nome} selecionado!*\n\n` +
-        "Clique no link abaixo para ativar seu acesso:\n\n" +
-        link +
-        "\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente ✅"
-      );
-    }
-
     switch (intent) {
       case "contratar_premium":
         return (
@@ -789,23 +754,28 @@ export async function routeIntent(userDocId, text, media = {}) {
           "https://pay.hotmart.com/SEULINK"
         );
 
-      case "planos":
-      case "assinar":
-      case "ver planos":
+      case "planos_premium":
         return {
           type: "buttons",
           text:
             "💎 *Mário Premium*\n\n" +
-            "Escolha seu plano abaixo:\n\n" +
-            "🔥 Lembretes ilimitados\n" +
-            "📊 Controle financeiro completo\n" +
-            "📈 Dashboard online\n\n" +
-            "Selecione uma opção 👇",
+            "Desbloqueie todos os recursos:\n\n" +
+            "✅ Lembretes ilimitados\n" +
+            "✅ Controle financeiro completo\n" +
+            "✅ Dashboard online 24h\n" +
+            "✅ Organização automática\n\n" +
+            "Escolha seu plano abaixo 👇",
           buttons: [
             { id: "PLANO_MENSAL", label: "Mensal — R$ 17,99" },
             { id: "PLANO_TRIMESTRAL", label: "Trimestral — R$ 47,90" },
-            { id: "PLANO_SEMESTRAL", label: "Semestral — R$ 87,90 🔥" },
-            { id: "PLANO_ANUAL", label: "Anual — R$ 167,90 💰" },
+            {
+              id: "PLANO_SEMESTRAL",
+              label: "Semestral — R$ 87,90 🔥 Mais vantajoso",
+            },
+            {
+              id: "PLANO_ANUAL",
+              label: "Anual — R$ 167,90 💰 Melhor custo-benefício",
+            },
           ],
         };
 
@@ -813,7 +783,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "PLANO_TRIMESTRAL":
       case "PLANO_SEMESTRAL":
       case "PLANO_ANUAL":
-        return gerarLinkPlano(uid, text);
+        return gerarLinkPlano(uid, data.intencao);
 
       case "registrar_receita": {
         console.log("💰 Registrando receita:", data);

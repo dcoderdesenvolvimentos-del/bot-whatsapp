@@ -735,6 +735,25 @@ Retorne:
 }
 
 
+Se o usuário demonstrar qualquer intenção relacionada a:
+- pagar
+- assinar
+- renovar
+- valores
+- planos
+- premium
+- contratar
+- desbloquear
+- continuar acesso
+
+Retorne:
+
+{
+  "intencao": "planos_premium"
+}
+
+
+
 ============================
 MENSAGEM DO USUÁRIO
 ============================
