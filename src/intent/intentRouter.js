@@ -127,6 +127,40 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  // 🔥 INTERCEPTA PEDIDO DE PLANOS (ANTES DA IA)
+  if (
+    text.includes("plano") ||
+    text.includes("planos") ||
+    text.includes("premium") ||
+    text.includes("assinar")
+  ) {
+    return {
+      type: "buttons",
+      text:
+        "💎 *Mário Premium*\n\n" +
+        "Escolha seu plano abaixo:\n\n" +
+        "🔥 Lembretes ilimitados\n" +
+        "📊 Controle financeiro completo\n" +
+        "📈 Dashboard online\n\n" +
+        "Selecione uma opção 👇",
+      buttons: [
+        { id: "PLANO_MENSAL", label: "Mensal — R$ 17,99" },
+        { id: "PLANO_TRIMESTRAL", label: "Trimestral — R$ 47,90" },
+        { id: "PLANO_SEMESTRAL", label: "Semestral — R$ 87,90 🔥" },
+        { id: "PLANO_ANUAL", label: "Anual — R$ 167,90 💰" },
+      ],
+    };
+  }
+
+  if (
+    text === "PLANO_MENSAL" ||
+    text === "PLANO_TRIMESTRAL" ||
+    text === "PLANO_SEMESTRAL" ||
+    text === "PLANO_ANUAL"
+  ) {
+    return gerarLinkPlano(uid, text);
+  }
+
   // Transforma a data do OCR em Timestamp real antes de salvar
   function buildDateFromReceipt(dataStr, horaStr) {
     if (!dataStr || typeof dataStr !== "string") {
