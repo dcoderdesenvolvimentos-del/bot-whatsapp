@@ -1,85 +1,67 @@
 import { db } from "./firebase.js";
-import { sendMessage } from "./zapi.js";
+import { Timestamp } from "firebase-admin/firestore";
 
-function calcularExpiracao(dias) {
-  const agora = new Date();
-  agora.setDate(agora.getDate() + dias);
-  return agora;
-}
+export async function handleHotmartWebhook(data) {
+  console.log("🔥 WEBHOOK HOTMART:", JSON.stringify(data, null, 2));
 
-function obterPlano(productId) {
-  switch (productId) {
-    case "ID_MENSAL":
-      return { nome: "mensal", dias: 30 };
-
-    case "ID_TRIMESTRAL":
-      return { nome: "trimestral", dias: 90 };
-
-    case "ID_SEMESTRAL":
-      return { nome: "semestral", dias: 180 };
-
-    case "ID_ANUAL":
-      return { nome: "anual", dias: 365 };
-
-    default:
-      return null;
-  }
-}
-
-export async function handleHotmartWebhook(payload, headers) {
-  const tipo = payload.event;
-  const email = payload.data?.buyer?.email;
-  const productId = payload.data?.product?.id;
+  const status = data.status;
+  const email = data.buyer?.email;
+  const offerCode = data.offer?.code;
+  const uid = payload.custom?.sck;
 
   if (!email) return;
 
-  const planoInfo = obterPlano(productId);
-  if (!planoInfo) return;
-
+  // 🔎 Buscar usuário pelo email
   const snap = await db
     .collection("users")
     .where("email", "==", email)
     .limit(1)
     .get();
 
-  if (snap.empty) return;
+  if (snap.empty) {
+    console.log("Usuário não encontrado para email:", email);
+    return;
+  }
 
-  const userId = snap.docs[0].id;
+  const userDoc = snap.docs[0];
+  const userRef = userDoc.ref;
 
-  // ✅ Compra aprovada
-  if (tipo === "PURCHASE_APPROVED") {
-    const expiracao = calcularExpiracao(planoInfo.dias);
+  if (status === "APPROVED") {
+    let meses = 1;
 
-    await db.collection("users").doc(userId).update({
-      plano: planoInfo.nome,
+    switch (offerCode) {
+      case "duvis1r2":
+        meses = 1;
+        break;
+
+      case "niiuxczq":
+        meses = 3;
+        break;
+
+      case "a32e6pq7":
+        meses = 6;
+        break;
+
+      case "ue2sn1ve":
+        meses = 12;
+        break;
+    }
+
+    const expires = new Date();
+    expires.setMonth(expires.getMonth() + meses);
+
+    await userRef.update({
       premium: true,
-      statusPagamento: "ativo",
-      expiresAt: expiracao,
-      updatedAt: new Date(),
+      expiresAt: Timestamp.fromDate(expires),
     });
 
-    console.log("✅ Plano ativado:", planoInfo.nome, email);
+    console.log("✅ Premium ativado:", email);
   }
-
-  await sendMessage(
-    snap.docs[0].data().phone,
-    `🔥 Seu plano ${planoInfo.nome.toUpperCase()} foi ativado com sucesso!\n\n` +
-      `📅 Válido até: ${expiracao.toLocaleDateString("pt-BR")}\n\n` +
-      `Obrigado por apoiar o Mário 🚀`,
-  );
-
-  // ❌ Cancelamento
-  if (
-    tipo === "PURCHASE_CANCELED" ||
-    tipo === "PURCHASE_REFUNDED" ||
-    tipo === "SUBSCRIPTION_CANCELED"
-  ) {
-    await db.collection("users").doc(userId).update({
-      premium: false,
-      statusPagamento: "cancelado",
-      updatedAt: new Date(),
+  await db
+    .collection("users")
+    .doc(uid)
+    .update({
+      premium: true,
+      expiresAt: Timestamp.fromDate(novaData),
     });
-
-    console.log("❌ Plano cancelado:", email);
-  }
 }
