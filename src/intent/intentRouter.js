@@ -125,16 +125,20 @@ function extractNameFromText(text = "") {
 =========================  */
 
 export async function routeIntent(userDocId, text, media = {}) {
-  // 🔥 INTERCEPTAÇÃO DE CLIQUE DE BOTÃO (ANTES DA IA)
-  if (
-    text === "PLANO_MENSAL" ||
-    text === "PLANO_TRIMESTRAL" ||
-    text === "PLANO_SEMESTRAL" ||
-    text === "PLANO_ANUAL"
-  ) {
-    return gerarLinkPlano(userDocId, text);
-  }
   console.log("🔥 routeIntent - userDocId:", userDocId);
+
+  // 🔥 INTERCEPTAÇÃO ABSOLUTA
+  const buttonText = String(text).trim().toUpperCase();
+
+  if (
+    buttonText === "PLANO_MENSAL" ||
+    buttonText === "PLANO_TRIMESTRAL" ||
+    buttonText === "PLANO_SEMESTRAL" ||
+    buttonText === "PLANO_ANUAL"
+  ) {
+    console.log("✅ BOTÃO INTERCEPTADO:", buttonText);
+    return gerarLinkPlano(userDocId, buttonText);
+  }
 
   function gerarLinkPlano(userDocId, planoId) {
     const produtoHotmart = "W6993414"; // ⚠️ SEU CÓDIGO DO PRODUTO
