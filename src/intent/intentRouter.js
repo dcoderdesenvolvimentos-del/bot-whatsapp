@@ -78,16 +78,17 @@ function formatDateDMY(date) {
 }
 
 function extractNameFromText(text = "") {
-  if (!text) return null;
+  if (!text || typeof text !== "string") return null;
 
-  const cleaned = text
+  // 🔹 Normaliza texto
+  let cleaned = text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
     .trim();
 
-  // Remove frases comuns
-  const name = cleaned
+  // 🔹 Remove frases comuns
+  cleaned = cleaned
     .replace(/meu nome e/g, "")
     .replace(/me chamo/g, "")
     .replace(/eu sou/g, "")
@@ -96,17 +97,27 @@ function extractNameFromText(text = "") {
     .replace(/nome e/g, "")
     .trim();
 
-  if (!name) return null;
+  // 🔹 Remove tudo que não for letra ou espaço
+  cleaned = cleaned.replace(/[^a-zA-Z\s]/g, "").trim();
 
-  // pega apenas a primeira palavra
-  const firstName = name
-    .split(" ")
-    .filter((w) => w.length > 1)
-    .slice(0, 2) // até 2 nomes
+  if (!cleaned) return null;
+
+  const words = cleaned.split(" ").filter((w) => w.length >= 2); // impede "a", "b"
+
+  if (!words.length) return null;
+
+  // 🔹 Impede risadas tipo kkk
+  if (words.join("").match(/^(k)+$/)) return null;
+
+  // 🔹 Limita a até 3 nomes
+  const limited = words.slice(0, 3);
+
+  // 🔹 Capitaliza corretamente
+  const formatted = limited
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 
-  // capitaliza
-  return firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  return formatted;
 }
 
 /* =========================
