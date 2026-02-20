@@ -1039,7 +1039,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           "📄 *Ver itens da lista*\n" +
           "Ex: _“ver lista compras do mês”_\n";
         "━━━━━━━━━━━━━━\n" +
-          +`📊 *Dashboard Online*\n` +
+          `📊 *Dashboard Online*\n` +
           `Você também pode acompanhar tudo pelo seu painel:\n` +
           `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`;
 
@@ -1364,7 +1364,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           currency: "BRL",
         })}\n`;
         "━━━━━━━━━━━━━━\n" +
-          +`📊 *Dashboard Online*\n` +
+          `📊 *Dashboard Online*\n` +
           `Você também pode acompanhar tudo pelo seu painel:\n` +
           `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`;
 

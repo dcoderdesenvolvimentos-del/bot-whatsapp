@@ -121,12 +121,31 @@ export async function handleWebhook(payload, sendMessage) {
     const user = userSnap.data();
 
     if (!temAcesso(user)) {
-      await sendMessage(
-        phone,
-        "🔒 Seu período gratuito terminou.\n\n" +
-          "Para continuar usando o Mário, ative o Premium:\n" +
-          "https://pay.hotmart.com/SEULINK",
-      );
+      const premiumMessage = {
+        type: "buttons",
+        text:
+          "🔒 *Seu acesso gratuito terminou.*\n\n" +
+          "Você já começou a organizar sua vida com o Mário.\n\n" +
+          "Não perca seus:\n" +
+          "✅ Lembretes\n" +
+          "✅ Controle financeiro\n" +
+          "✅ Dashboard online\n\n" +
+          "Escolha um plano para continuar 👇",
+        buttons: [
+          { id: "PLANO_MENSAL", label: "Mensal — R$ 17,99" },
+          { id: "PLANO_TRIMESTRAL", label: "Trimestral — R$ 47,90" },
+          {
+            id: "PLANO_SEMESTRAL",
+            label: "Semestral — R$ 87,90 🔥 Mais vantajoso",
+          },
+          {
+            id: "PLANO_ANUAL",
+            label: "Anual — R$ 167,90 💰 Melhor custo-benefício",
+          },
+        ],
+      };
+
+      await sendButtonList(phone, premiumMessage.text, premiumMessage.buttons);
       return;
     }
 
