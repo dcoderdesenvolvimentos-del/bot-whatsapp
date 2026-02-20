@@ -77,13 +77,23 @@ async function verificarTrials() {
     // 1️⃣ AVISO 24H ANTES
     // ─────────────────────────────
     if (!user.trialWarningSent && trialDate <= em24h && trialDate > agora) {
-      await sendMessage(
+      await sendButtonList(
         user.phone,
         "⚠️ *Falta menos de 24h para seu acesso gratuito terminar.*\n\n" +
           "Você já começou a organizar sua vida com o Mário.\n\n" +
-          "Não perca seus lembretes e controle financeiro.\n\n" +
-          "Garanta seu acesso contínuo aqui:\n\n" +
-          "https://pay.hotmart.com/SEULINK",
+          "Não perca seus:\n" +
+          "✔ Lembretes automáticos\n" +
+          "✔ Controle financeiro completo\n" +
+          "✔ Dashboard online 24h\n\n" +
+          "Escolha como continuar 👇\n\n" +
+          "🔥 *Melhor opção:* Plano Anual sai muito mais barato.",
+        [
+          { id: "PLANO_MENSAL", label: "Mensal — R$ 17,99" },
+          {
+            id: "PLANO_ANUAL",
+            label: "Anual — 12x de R$ 15,72",
+          },
+        ],
       );
 
       await db.collection("users").doc(doc.id).update({
@@ -96,7 +106,7 @@ async function verificarTrials() {
     // 2️⃣ TRIAL EXPIRADO
     // ─────────────────────────────
     if (!user.trialExpiredNotified && trialDate <= agora) {
-      await sendMessage(
+      await sendButtonList(
         user.phone,
         "🔒 *Seu acesso ao Mário foi pausado.*\n\n" +
           "Mas olha só… manter sua vida organizada custa menos que um café por dia ☕\n\n" +
@@ -104,8 +114,19 @@ async function verificarTrials() {
           "✔ Controlando seus gastos\n" +
           "✔ Recebendo lembretes\n" +
           "✔ Acompanhando tudo pelo dashboard\n\n" +
-          "💎 Reative agora e continue no controle:\n\n" +
-          "https://pay.hotmart.com/SEULINK",
+          "Escolha um plano e reative agora 👇",
+        [
+          { id: "PLANO_MENSAL", label: "Mensal — R$ 17,99" },
+          { id: "PLANO_TRIMESTRAL", label: "Trimestral — R$ 47,90" },
+          {
+            id: "PLANO_SEMESTRAL",
+            label: "Semestral — R$ 87,99 🔥 Mais vantajoso",
+          },
+          {
+            id: "PLANO_ANUAL",
+            label: "Anual — R$ 151,99 💰 Melhor custo-benefício",
+          },
+        ],
       );
 
       await db.collection("users").doc(doc.id).update({
