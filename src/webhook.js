@@ -120,7 +120,15 @@ export async function handleWebhook(payload, sendMessage) {
     const userSnap = await db.collection("users").doc(uid).get();
     const user = userSnap.data();
 
-    if (!temAcesso(user)) {
+    const buttonText = String(text).trim().toUpperCase();
+
+    const clicouEmPlano =
+      buttonText === "PLANO_MENSAL" ||
+      buttonText === "PLANO_TRIMESTRAL" ||
+      buttonText === "PLANO_SEMESTRAL" ||
+      buttonText === "PLANO_ANUAL";
+
+    if (!temAcesso(user) && !clicouEmPlano) {
       const premiumMessage = {
         type: "buttons",
         text:
