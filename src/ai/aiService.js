@@ -737,16 +737,33 @@ Retorne:
 
 Se o usuário demonstrar qualquer intenção relacionada a:
 - pagar
+- pagamento
+- preço
+- valor
+- valores
+- custo
+- custa
+- mensal
+- anual
+- plano
+- planos
+- assinatura
 - assinar
 - renovar
-- valores
-- planos
 - premium
 - contratar
 - desbloquear
+- upgrade
 - continuar acesso
-
-Retorne:
+- versão paga
+- como funciona o plano
+- tem teste
+- é grátis
+- é gratuito
+- quanto é
+- quanto custa
+- como faço para pagar
+- Retorne:
 
 {
   "intencao": "planos_premium"

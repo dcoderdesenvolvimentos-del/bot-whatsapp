@@ -120,11 +120,11 @@ async function verificarTrials() {
           { id: "PLANO_TRIMESTRAL", label: "Trimestral — R$ 47,90" },
           {
             id: "PLANO_SEMESTRAL",
-            label: "Semestral — R$ 87,99 🔥 Mais vantajoso",
+            label: "Semestral — R$ 87,99 🔥",
           },
           {
             id: "PLANO_ANUAL",
-            label: "Anual — R$ 151,99 💰 Melhor custo-benefício",
+            label: "Anual — R$ 151,99 💰",
           },
         ],
       );
