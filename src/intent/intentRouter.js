@@ -807,6 +807,9 @@ export async function routeIntent(userDocId, text, media = {}) {
         let createdAt = Timestamp.now();
 
         const dataResolvida = resolveDateFromTextForReceita(text);
+        const link = user?.dashboardSlug
+          ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
+          : null;
 
         if (dataResolvida && !isNaN(dataResolvida.getTime())) {
           createdAt = Timestamp.fromDate(dataResolvida);
@@ -826,9 +829,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   7️⃣ RESPOSTA
   ===================================================== */
-        const link = user?.dashboardSlug
-          ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
-          : null;
+
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
