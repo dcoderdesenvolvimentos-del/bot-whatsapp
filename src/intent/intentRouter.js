@@ -833,7 +833,8 @@ export async function routeIntent(userDocId, text, media = {}) {
             currency: "BRL",
           })}\n` +
           `📌 Origem: ${data.origem || "não informada"}\n` +
-          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}`
+          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}` +
+          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
         );
       }
 
