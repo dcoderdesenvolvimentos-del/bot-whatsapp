@@ -735,7 +735,7 @@ Retorne:
 }
 
 
-Se o usuário demonstrar qualquer intenção relacionada a:
+Se o usuário demonstrar qualquer intenção relacionada a querer saber sobre valor e custo, segue abaixo algumas palavras q o usuario pode dizer:
 - pagar
 - pagamento
 - preço
