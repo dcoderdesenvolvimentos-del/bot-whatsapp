@@ -127,6 +127,47 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  const texto = message
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/[^\w\s]/gi, ""); // remove pontuação
+
+  const palavrasPremium = [
+    "pagar",
+    "pagamento",
+    "preco",
+    "valor",
+    "valores",
+    "custo",
+    "custa",
+    "mensal",
+    "anual",
+    "plano",
+    "planos",
+    "assinatura",
+    "assinar",
+    "renovar",
+    "premium",
+    "contratar",
+    "desbloquear",
+    "upgrade",
+    "continuar acesso",
+    "versao paga",
+    "como funciona o plano",
+    "teste gratis",
+    "gratis",
+    "gratuito",
+    "quanto e",
+    "quanto custa",
+  ];
+
+  if (palavrasPremium.some((p) => texto.includes(p))) {
+    return {
+      intencao: "planos_premium",
+    };
+  }
+
   // 🔥 INTERCEPTAÇÃO ABSOLUTA
   const buttonText = String(text).trim().toUpperCase();
 
@@ -446,47 +487,6 @@ export async function routeIntent(userDocId, text, media = {}) {
     ].includes(text)
   ) {
     return "Por nada! 😊 qualquer coisa estou a disposição.";
-  }
-
-  const texto = message
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove acentos
-    .replace(/[^\w\s]/gi, ""); // remove pontuação
-
-  const palavrasPremium = [
-    "pagar",
-    "pagamento",
-    "preco",
-    "valor",
-    "valores",
-    "custo",
-    "custa",
-    "mensal",
-    "anual",
-    "plano",
-    "planos",
-    "assinatura",
-    "assinar",
-    "renovar",
-    "premium",
-    "contratar",
-    "desbloquear",
-    "upgrade",
-    "continuar acesso",
-    "versao paga",
-    "como funciona o plano",
-    "teste gratis",
-    "gratis",
-    "gratuito",
-    "quanto e",
-    "quanto custa",
-  ];
-
-  if (palavrasPremium.some((p) => texto.includes(p))) {
-    return {
-      intencao: "planos_premium",
-    };
   }
 
   // =========================
