@@ -806,6 +806,8 @@ export async function routeIntent(userDocId, text, media = {}) {
   ===================================================== */
         let createdAt = Timestamp.now();
 
+        const dataResolvida = resolveDateFromTextForReceita(text);
+
         if (dataResolvida && !isNaN(dataResolvida.getTime())) {
           createdAt = Timestamp.fromDate(dataResolvida);
         }
