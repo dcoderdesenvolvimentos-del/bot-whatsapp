@@ -448,6 +448,47 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "Por nada! 😊 qualquer coisa estou a disposição.";
   }
 
+  const texto = message
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/[^\w\s]/gi, ""); // remove pontuação
+
+  const palavrasPremium = [
+    "pagar",
+    "pagamento",
+    "preco",
+    "valor",
+    "valores",
+    "custo",
+    "custa",
+    "mensal",
+    "anual",
+    "plano",
+    "planos",
+    "assinatura",
+    "assinar",
+    "renovar",
+    "premium",
+    "contratar",
+    "desbloquear",
+    "upgrade",
+    "continuar acesso",
+    "versao paga",
+    "como funciona o plano",
+    "teste gratis",
+    "gratis",
+    "gratuito",
+    "quanto e",
+    "quanto custa",
+  ];
+
+  if (palavrasPremium.some((p) => texto.includes(p))) {
+    return {
+      intencao: "planos_premium",
+    };
+  }
+
   // =========================
   // SAUDAÇÃO
   // =========================
