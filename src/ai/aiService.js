@@ -74,10 +74,6 @@ Sempre responda APENAS com um JSON válido.
 INTENÇÕES DE RECEITA
 ========================
 
-========================
-INTENÇÕES DE RECEITA
-========================
-
 1) registrar_receita
 
 Quando o usuário indicar que recebeu dinheiro, entrou dinheiro,

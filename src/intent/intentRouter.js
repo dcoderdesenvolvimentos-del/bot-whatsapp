@@ -758,12 +758,11 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let valor = null;
 
+        const isAudioMessage = messageType === "audio";
+
         /* =====================================================
-     1️⃣ PRIORIDADE → VALOR DA IA
+  1️⃣ EXTRAÇÃO DIRETA DO TEXTO (PRIORIDADE MÁXIMA)
   ===================================================== */
-        if (typeof data.valor === "number" && data.valor > 0) {
-          valor = data.valor;
-        }
 
         const valorTexto = extractMoneyFromText(text);
 
@@ -772,27 +771,23 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-     2️⃣ TEXTO / ÁUDIO → EXTRAÇÃO SEGURA
-     (IGNORA DIA 20, 21 etc)
+  2️⃣ SE NÃO ACHOU NO TEXTO → USA VALOR DA IA
   ===================================================== */
 
-        if (valorTexto && valorTexto > 0) {
-          // Se a IA errar feio (ex: 5000 quando falou 50), confia no texto
-          if (!valor || valor >= valorTexto * 10) {
-            valor = valorTexto;
-          }
+        if (!valor && typeof data.valor === "number" && data.valor > 0) {
+          valor = data.valor;
         }
 
         /* =====================================================
-3️⃣ CORREÇÃO DE ERRO REAL DE STT (mais segura)
-===================================================== */
-
-        const isAudioMessage = messageType === "audio";
+  3️⃣ CORREÇÃO REAL DE STT (APENAS PARA ÁUDIO)
+     Só corrige se for erro típico: 5000 → 50
+  ===================================================== */
 
         const isLikelySTTError =
           isAudioMessage &&
+          valor &&
           valor >= 1000 &&
-          valor % 100 === 0 && // ex: 5000, 3000
+          valor % 100 === 0 && // número redondo
           !/mil|milhares/i.test(text);
 
         if (isLikelySTTError) {
@@ -801,8 +796,9 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-     4️⃣ VALIDAÇÃO FINAL
+  4️⃣ VALIDAÇÃO FINAL
   ===================================================== */
+
         if (!valor || isNaN(valor) || valor <= 0) {
           return (
             "🤔 Não consegui identificar o valor da receita.\n\n" +
@@ -811,11 +807,11 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-     5️⃣ DATA — MESMA LÓGICA DO GASTO (SEM INVENTAR)
+  5️⃣ DATA (SEM INVENTAR)
   ===================================================== */
+
         let createdAt = Timestamp.now();
 
-        // data explícita: "dia 20 de janeiro"
         const dataResolvida = resolveDateFromTextForReceita(text);
 
         if (dataResolvida && !isNaN(dataResolvida.getTime())) {
@@ -823,8 +819,9 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-     6️⃣ SALVA NO FIREBASE
+  6️⃣ SALVA NO FIREBASE
   ===================================================== */
+
         await criarReceita({
           userId: userDocId,
           valor,
@@ -834,7 +831,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         });
 
         /* =====================================================
-     7️⃣ RESPOSTA AO USUÁRIO
+  7️⃣ RESPOSTA AO USUÁRIO
   ===================================================== */
 
         return (
