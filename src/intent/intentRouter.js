@@ -765,11 +765,16 @@ export async function routeIntent(userDocId, text, media = {}) {
           valor = data.valor;
         }
 
+        const valorTexto = extractMoneyFromText(text);
+
+        if (valorTexto && valorTexto > 0) {
+          valor = valorTexto;
+        }
+
         /* =====================================================
      2️⃣ TEXTO / ÁUDIO → EXTRAÇÃO SEGURA
      (IGNORA DIA 20, 21 etc)
   ===================================================== */
-        const valorTexto = extractMoneyFromText(text);
 
         if (valorTexto && valorTexto > 0) {
           // Se a IA errar feio (ex: 5000 quando falou 50), confia no texto
@@ -779,14 +784,18 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-     3️⃣ CORREÇÃO DE ERRO CLÁSSICO DE ÁUDIO (STT)
-     "cinquenta reais" → 5000 ❌
-  ===================================================== */
-        if (
+3️⃣ CORREÇÃO DE ERRO REAL DE STT (mais segura)
+===================================================== */
+
+        const isAudioMessage = messageType === "audio";
+
+        const isLikelySTTError =
+          isAudioMessage &&
           valor >= 1000 &&
-          !/mil|milhares/i.test(text) &&
-          !String(valor).includes(".")
-        ) {
+          valor % 100 === 0 && // ex: 5000, 3000
+          !/mil|milhares/i.test(text);
+
+        if (isLikelySTTError) {
           console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
           valor = valor / 100;
         }
