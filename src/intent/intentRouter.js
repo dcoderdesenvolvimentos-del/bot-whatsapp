@@ -834,10 +834,11 @@ export async function routeIntent(userDocId, text, media = {}) {
             currency: "BRL",
           })}\n` +
           `📌 Origem: ${data.origem || "não informada"}\n` +
-          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}` +
+          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
+          `━━━━━━━━━━━━━━━━━\n` +
           `📊 *Dashboard Online*\n` +
           `Você também pode acompanhar tudo pelo seu painel:\n` +
-          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`
         );
       }
 
