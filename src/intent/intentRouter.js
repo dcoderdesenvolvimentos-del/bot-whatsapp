@@ -806,6 +806,8 @@ export async function routeIntent(userDocId, text, media = {}) {
   ===================================================== */
         let createdAt = Timestamp.now();
 
+        // 🔥 BUSCA O USUÁRIO CORRETAMENTE
+        const userSnap = await db.collection("users").doc(userId).get();
         const user = userSnap.data();
         const dataResolvida = resolveDateFromTextForReceita(text);
         const link = user?.dashboardSlug
