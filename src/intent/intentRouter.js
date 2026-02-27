@@ -758,12 +758,9 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let valor = null;
 
-        const isAudioMessage = messageType === "audio";
-
         /* =====================================================
   1️⃣ EXTRAÇÃO DIRETA DO TEXTO (PRIORIDADE MÁXIMA)
   ===================================================== */
-
         const valorTexto = extractMoneyFromText(text);
 
         if (valorTexto && valorTexto > 0) {
@@ -773,22 +770,21 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   2️⃣ SE NÃO ACHOU NO TEXTO → USA VALOR DA IA
   ===================================================== */
-
         if (!valor && typeof data.valor === "number" && data.valor > 0) {
           valor = data.valor;
         }
 
         /* =====================================================
-  3️⃣ CORREÇÃO REAL DE STT (APENAS PARA ÁUDIO)
-     Só corrige se for erro típico: 5000 → 50
+  3️⃣ CORREÇÃO SEGURA DE POSSÍVEL ERRO DE STT
+     Só corrige se for número redondo típico (5000, 3000)
   ===================================================== */
-
         const isLikelySTTError =
-          isAudioMessage &&
           valor &&
           valor >= 1000 &&
           valor % 100 === 0 && // número redondo
-          !/mil|milhares/i.test(text);
+          !/mil|milhares/i.test(text) &&
+          !text.includes(",") && // se usuário digitou decimal, não mexe
+          !text.includes("."); // se digitou milhar, não mexe
 
         if (isLikelySTTError) {
           console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
@@ -798,7 +794,6 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   4️⃣ VALIDAÇÃO FINAL
   ===================================================== */
-
         if (!valor || isNaN(valor) || valor <= 0) {
           return (
             "🤔 Não consegui identificar o valor da receita.\n\n" +
@@ -807,9 +802,8 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-  5️⃣ DATA (SEM INVENTAR)
+  5️⃣ DATA
   ===================================================== */
-
         let createdAt = Timestamp.now();
 
         const dataResolvida = resolveDateFromTextForReceita(text);
@@ -819,9 +813,8 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-  6️⃣ SALVA NO FIREBASE
+  6️⃣ SALVA
   ===================================================== */
-
         await criarReceita({
           userId: userDocId,
           valor,
@@ -831,9 +824,8 @@ export async function routeIntent(userDocId, text, media = {}) {
         });
 
         /* =====================================================
-  7️⃣ RESPOSTA AO USUÁRIO
+  7️⃣ RESPOSTA
   ===================================================== */
-
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
