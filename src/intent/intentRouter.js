@@ -826,6 +826,9 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   7️⃣ RESPOSTA
   ===================================================== */
+        const link = user?.dashboardSlug
+          ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
+          : null;
         return (
           "💰 *Receita registrada com sucesso!*\n\n" +
           `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
