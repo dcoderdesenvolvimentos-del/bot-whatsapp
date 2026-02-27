@@ -806,6 +806,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   ===================================================== */
         let createdAt = Timestamp.now();
 
+        const user = userSnap.data();
         const dataResolvida = resolveDateFromTextForReceita(text);
         const link = user?.dashboardSlug
           ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
