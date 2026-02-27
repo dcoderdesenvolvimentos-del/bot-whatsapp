@@ -806,14 +806,6 @@ export async function routeIntent(userDocId, text, media = {}) {
   ===================================================== */
         let createdAt = Timestamp.now();
 
-        // 🔥 BUSCA O USUÁRIO CORRETAMENTE
-        const userSnap = await db.collection("users").doc(userId).get();
-        const user = userSnap.data();
-        const dataResolvida = resolveDateFromTextForReceita(text);
-        const link = user?.dashboardSlug
-          ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
-          : null;
-
         if (dataResolvida && !isNaN(dataResolvida.getTime())) {
           createdAt = Timestamp.fromDate(dataResolvida);
         }
@@ -841,7 +833,9 @@ export async function routeIntent(userDocId, text, media = {}) {
           })}\n` +
           `📌 Origem: ${data.origem || "não informada"}\n` +
           `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}` +
-          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
+          `📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n\n`
         );
       }
 
