@@ -867,205 +867,149 @@ export async function routeIntent(userDocId, text, media = {}) {
       return valores[0];
     }
 
+    async function processarListaFinanceira(userDocId, itens, userData) {
+      const batch = db.batch();
+
+      let gastos = [];
+      let receitas = [];
+      let investimentos = [];
+
+      let totalGastos = 0;
+      let totalReceitas = 0;
+      let totalInvestimentos = 0;
+
+      for (const item of itens) {
+        const valor = Number(item.valor);
+        if (!valor || isNaN(valor)) continue;
+
+        let date = buildDateFromList(item.data);
+        const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
+
+        const dataFormatada = date
+          ? date.toLocaleDateString("pt-BR")
+          : new Date().toLocaleDateString("pt-BR");
+
+        if (item.tipo === "gasto") {
+          const categoria = item.categoria || detectCategory(item.descricao);
+
+          const ref = db
+            .collection("users")
+            .doc(userDocId)
+            .collection("gastos")
+            .doc();
+
+          batch.set(ref, {
+            valor,
+            local: item.descricao || "não informado",
+            categoria,
+            timestamp,
+            createdAt: Timestamp.now(),
+          });
+
+          totalGastos += valor;
+
+          gastos.push(
+            `• ${item.descricao} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
+          );
+        }
+
+        if (item.tipo === "receita") {
+          const ref = db
+            .collection("users")
+            .doc(userDocId)
+            .collection("receitas")
+            .doc();
+
+          batch.set(ref, {
+            valor,
+            descricao: item.descricao || "Receita",
+            origem: "lista",
+            createdAt: timestamp,
+          });
+
+          totalReceitas += valor;
+
+          receitas.push(
+            `• ${item.descricao} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
+          );
+        }
+
+        if (item.tipo === "investimento") {
+          const ref = db
+            .collection("users")
+            .doc(userDocId)
+            .collection("investimentos")
+            .doc();
+
+          batch.set(ref, {
+            valor,
+            descricao: item.descricao || "Investimento",
+            createdAt: timestamp,
+          });
+
+          totalInvestimentos += valor;
+
+          investimentos.push(
+            `• ${item.descricao} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
+          );
+        }
+      }
+
+      await batch.commit();
+
+      let resposta = "✅ *Registrei os seguintes lançamentos:*\n\n";
+
+      if (gastos.length) {
+        resposta += "💸 *Gastos*\n" + gastos.join("\n");
+        resposta += `\n\n💰 Total gastos: ${totalGastos.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n\n`;
+      }
+
+      if (receitas.length) {
+        resposta += "💰 *Receitas*\n" + receitas.join("\n");
+        resposta += `\n\n💵 Total receitas: ${totalReceitas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n\n`;
+      }
+
+      if (investimentos.length) {
+        resposta += "📈 *Investimentos*\n" + investimentos.join("\n");
+        resposta += `\n\n📊 Total investido: ${totalInvestimentos.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n\n`;
+      }
+
+      resposta +=
+        "━━━━━━━━━━━━━━\n" +
+        `📊 *Dashboard Online*\n` +
+        `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}`;
+
+      const userSnap = await db.collection("users").doc(userDocId).get();
+      const { phone } = userSnap.data();
+
+      await sendMessage(phone, resposta);
+    }
+
     switch (intent) {
       case "registrar_lista_financeira": {
-        console.log("📋 Lista financeira recebida:", data);
-
         const itens = data.itens || [];
 
-        if (!Array.isArray(itens) || itens.length === 0) {
-          return "⚠️ Não consegui identificar os lançamentos da lista.";
+        if (!Array.isArray(itens) || !itens.length) {
+          return "⚠️ Não consegui identificar os lançamentos.";
         }
 
         const userSnap = await db.collection("users").doc(userDocId).get();
         const { phone } = userSnap.data() || {};
 
-        /* =========================
-     MENSAGEM IMEDIATA
-  ========================= */
-
         if (phone) {
           sendMessage(
             phone,
-            "🧠 Aguarde um instante...\nEstou analisando e registrando todos os seus lançamentos.",
+            "🧠 Aguarde um instante...\nEstou analisando e registrando seus lançamentos.",
           );
         }
 
-        const batch = db.batch();
+        /* roda processamento em background */
 
-        let gastos = [];
-        let receitas = [];
-        let investimentos = [];
+        processarListaFinanceira(userDocId, itens, userData).catch((err) =>
+          console.error("Erro lista:", err),
+        );
 
-        let totalGastos = 0;
-        let totalReceitas = 0;
-        let totalInvestimentos = 0;
-
-        for (const item of itens) {
-          const valor = Number(item.valor);
-          if (!valor || isNaN(valor) || valor <= 0) continue;
-
-          /* =========================
-       DATA DO USUÁRIO
-    ========================= */
-
-          let date = null;
-
-          if (item.data) {
-            date = buildDateFromList(item.data);
-          }
-
-          const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
-
-          const dataFormatada = date
-            ? date.toLocaleDateString("pt-BR")
-            : new Date().toLocaleDateString("pt-BR");
-
-          /* ======================
-       GASTOS
-    ====================== */
-
-          if (item.tipo === "gasto") {
-            const ref = db
-              .collection("users")
-              .doc(userDocId)
-              .collection("gastos")
-              .doc();
-
-            batch.set(ref, {
-              valor,
-              local: item.descricao || "não informado",
-              categoria: item.categoria || detectCategory(item.descricao),
-              timestamp,
-              createdAt: Timestamp.now(),
-            });
-
-            totalGastos += valor;
-
-            gastos.push(
-              `• ${item.descricao || "Gasto"} — ${valor.toLocaleString(
-                "pt-BR",
-                {
-                  style: "currency",
-                  currency: "BRL",
-                },
-              )} 📅 ${dataFormatada}`,
-            );
-          }
-
-          /* ======================
-       RECEITAS
-    ====================== */
-
-          if (item.tipo === "receita") {
-            const ref = db
-              .collection("users")
-              .doc(userDocId)
-              .collection("receitas")
-              .doc();
-
-            batch.set(ref, {
-              valor,
-              descricao: item.descricao || "Receita",
-              origem: "lista",
-              tipo: "receita",
-              createdAt: timestamp,
-            });
-
-            totalReceitas += valor;
-
-            receitas.push(
-              `• ${item.descricao || "Receita"} — ${valor.toLocaleString(
-                "pt-BR",
-                {
-                  style: "currency",
-                  currency: "BRL",
-                },
-              )} 📅 ${dataFormatada}`,
-            );
-          }
-
-          /* ======================
-       INVESTIMENTOS
-    ====================== */
-
-          if (item.tipo === "investimento") {
-            const ref = db
-              .collection("users")
-              .doc(userDocId)
-              .collection("investimentos")
-              .doc();
-
-            batch.set(ref, {
-              valor,
-              descricao: item.descricao || "Investimento",
-              createdAt: timestamp,
-            });
-
-            totalInvestimentos += valor;
-
-            investimentos.push(
-              `• ${item.descricao || "Investimento"} — ${valor.toLocaleString(
-                "pt-BR",
-                {
-                  style: "currency",
-                  currency: "BRL",
-                },
-              )}`,
-            );
-          }
-        }
-
-        await batch.commit();
-
-        /* ======================
-     RESPOSTA FINAL
-  ====================== */
-
-        let resposta = "✅ *Registrei os seguintes lançamentos:*\n\n";
-
-        if (gastos.length) {
-          resposta += "💸 *Gastos*\n";
-          resposta += gastos.join("\n");
-          resposta += `\n\n💰 Total gastos: ${totalGastos.toLocaleString(
-            "pt-BR",
-            {
-              style: "currency",
-              currency: "BRL",
-            },
-          )}\n\n`;
-        }
-
-        if (receitas.length) {
-          resposta += "💰 *Receitas*\n";
-          resposta += receitas.join("\n");
-          resposta += `\n\n💵 Total receitas: ${totalReceitas.toLocaleString(
-            "pt-BR",
-            {
-              style: "currency",
-              currency: "BRL",
-            },
-          )}\n\n`;
-        }
-
-        if (investimentos.length) {
-          resposta += "📈 *Investimentos*\n";
-          resposta += investimentos.join("\n");
-          resposta += `\n\n📊 Total investido: ${totalInvestimentos.toLocaleString(
-            "pt-BR",
-            {
-              style: "currency",
-              currency: "BRL",
-            },
-          )}\n\n`;
-        }
-
-        resposta +=
-          "━━━━━━━━━━━━━━\n" +
-          `📊 *Dashboard Online*\n` +
-          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}`;
-
-        return resposta;
+        return null;
       }
 
       case "contratar_premium":
