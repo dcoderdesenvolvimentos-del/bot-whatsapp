@@ -943,7 +943,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           totalReceitas += valor;
 
           receitas.push(
-            `• ${item.descricao} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
+            `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
           );
         }
 
@@ -973,7 +973,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       let resposta = "✅ *Registrei os seguintes lançamentos:*\n\n";
 
       if (gastos.length) {
-        resposta += "💸 *Gastos*\n" + gastos.join("\n");
+        resposta += "💸 *Despesas*\n" + gastos.join("\n");
         resposta += `\n\n💰 Total gastos: ${totalGastos.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n\n`;
       }
 
