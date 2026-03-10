@@ -899,8 +899,14 @@ export async function routeIntent(userDocId, text, media = {}) {
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         const dataFormatada = date
-          ? date.toLocaleDateString("pt-BR")
-          : new Date().toLocaleDateString("pt-BR");
+          ? date.toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+            })
+          : new Date().toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+            });
 
         if (item.tipo === "gasto") {
           const categoria = item.categoria || detectCategory(item.descricao);
@@ -922,7 +928,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           totalGastos += valor;
 
           gastos.push(
-            `• ${(item.descricao || "").replace(/\b\w/g, (l) => l.toUpperCase())} | ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} | ${dataFormatada}`,
+            `• ${(item.descricao || "").replace(/\b\w/g, (l) => l.toUpperCase())} - ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
           );
         }
 
@@ -943,7 +949,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           totalReceitas += valor;
 
           receitas.push(
-            `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} | ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} | ${dataFormatada}`,
+            `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} - ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
           );
         }
 
