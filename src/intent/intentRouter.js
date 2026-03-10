@@ -592,17 +592,17 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
   }
 
-  const numeros = text.match(/\d+[,.]?\d*/g);
-
-  if (numeros && numeros.length >= 3) {
-    const data = await analisarListaFinanceira(text);
-
-    if (data.intencao === "registrar_lista_financeira") {
-      intent = "registrar_lista_financeira";
-    }
-  }
-
   try {
+    const numeros = text.match(/\d+[,.]?\d*/g);
+
+    if (numeros && numeros.length >= 3) {
+      const data = await analisarListaFinanceira(text);
+
+      if (data.intencao === "registrar_lista_financeira") {
+        intent = "registrar_lista_financeira";
+      }
+    }
+
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
 
