@@ -584,7 +584,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     if (phone) {
       sendMessage(
         phone,
-        "🧠 Recebi sua lista. Estou analisando os lançamentos e já te envio...",
+        "🧠 Aguarde um instante...\n Recebi sua lista! Estou analisando e registrando os seus lançamentos...",
       );
     }
   }
@@ -1008,14 +1008,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         const userSnap = await db.collection("users").doc(userDocId).get();
         const { phone } = userSnap.data() || {};
-
-        // envia mensagem de espera
-        if (phone) {
-          await sendMessage(
-            phone,
-            "🧠 Aguarde um instante...\nEstou analisando e registrando seus lançamentos.",
-          );
-        }
 
         // pequeno respiro para o envio sair
         await new Promise((resolve) => setTimeout(resolve, 800));
