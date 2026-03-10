@@ -656,6 +656,124 @@ export async function routeIntent(userDocId, text, media = {}) {
       );
     }
 
+    function detectCategory(text = "") {
+      if (!text) return "Outros";
+
+      const t = text.toLowerCase();
+
+      /* TRANSPORTE */
+
+      if (
+        t.includes("uber") ||
+        t.includes("taxi") ||
+        t.includes("mototaxi") ||
+        t.includes("99") ||
+        t.includes("gasolina") ||
+        t.includes("combustivel") ||
+        t.includes("onibus") ||
+        t.includes("metro")
+      )
+        return "Transporte";
+
+      /* ALIMENTAÇÃO */
+
+      if (
+        t.includes("ifood") ||
+        t.includes("lanche") ||
+        t.includes("restaurante") ||
+        t.includes("almoco") ||
+        t.includes("almoço") ||
+        t.includes("jantar") ||
+        t.includes("pizza") ||
+        t.includes("hamburguer") ||
+        t.includes("burger")
+      )
+        return "Alimentacao";
+
+      /* MERCADO */
+
+      if (
+        t.includes("mercado") ||
+        t.includes("supermercado") ||
+        t.includes("padaria") ||
+        t.includes("hortifruti") ||
+        t.includes("atacadao") ||
+        t.includes("carrefour")
+      )
+        return "Mercado";
+
+      /* SAÚDE */
+
+      if (
+        t.includes("farmacia") ||
+        t.includes("farmácia") ||
+        t.includes("terapia") ||
+        t.includes("medico") ||
+        t.includes("médico") ||
+        t.includes("consulta") ||
+        t.includes("hospital")
+      )
+        return "Saude";
+
+      /* EDUCAÇÃO */
+
+      if (
+        t.includes("curso") ||
+        t.includes("faculdade") ||
+        t.includes("escola") ||
+        t.includes("livro")
+      )
+        return "Educacao";
+
+      /* MORADIA */
+
+      if (
+        t.includes("aluguel") ||
+        t.includes("condominio") ||
+        t.includes("condomínio") ||
+        t.includes("luz") ||
+        t.includes("energia") ||
+        t.includes("agua") ||
+        t.includes("água") ||
+        t.includes("internet")
+      )
+        return "Moradia";
+
+      /* ASSINATURAS */
+
+      if (
+        t.includes("netflix") ||
+        t.includes("spotify") ||
+        t.includes("prime") ||
+        t.includes("disney") ||
+        t.includes("youtube premium")
+      )
+        return "Assinaturas";
+
+      /* SHOPPING */
+
+      if (
+        t.includes("amazon") ||
+        t.includes("shopee") ||
+        t.includes("mercado livre") ||
+        t.includes("shein")
+      )
+        return "Shopping";
+
+      /* LAZER */
+
+      if (
+        t.includes("cinema") ||
+        t.includes("bar") ||
+        t.includes("show") ||
+        t.includes("churrasco") ||
+        t.includes("viagem")
+      )
+        return "Lazer";
+
+      return "Outros";
+    }
+
     function extractExplicitDateFromText(text = "") {
       const meses = {
         janeiro: 0,
@@ -817,7 +935,7 @@ export async function routeIntent(userDocId, text, media = {}) {
             batch.set(ref, {
               valor,
               local: item.descricao || "não informado",
-              categoria: item.categoria || "outros",
+              categoria: item.categoria || detectCategory(item.descricao),
               timestamp,
               createdAt: Timestamp.now(),
             });
