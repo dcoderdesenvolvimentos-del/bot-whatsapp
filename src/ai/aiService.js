@@ -411,7 +411,35 @@ Regras:
 5. Caso contrário, classificar como gasto.
 6. Se houver data como "dia 02/03" ou "02/03", usar no campo data.
 7. Se não houver data, deixar o campo data vazio.
+8. Para cada gasto, identifique também a categoria.
 
+Categorias possíveis:
+
+Transporte
+Alimentacao
+Moradia
+Lazer
+Shopping
+Saude
+Educacao
+Mercado
+Assinaturas
+Outros
+
+Exemplo de resposta:
+
+{
+ "intencao": "registrar_lista_financeira",
+ "itens": [
+   {
+     "tipo": "gasto",
+     "descricao": "mototaxi",
+     "valor": 8.90,
+     "data": "02/03",
+     "categoria": "transporte"
+   }
+ ]
+}
 
 
 
