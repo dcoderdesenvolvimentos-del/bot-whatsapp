@@ -587,22 +587,12 @@ export async function routeIntent(userDocId, text, media = {}) {
     if (phone) {
       sendMessage(
         phone,
-        "🧠 Recebi sua lista. Estou analisando os lançamentos...",
+        "🧠 Recebi sua lista. Estou analisando os lançamentos e já te envio...",
       );
     }
   }
 
   try {
-    const numeros = text.match(/\d+[,.]?\d*/g);
-
-    if (numeros && numeros.length >= 3) {
-      const data = await analisarListaFinanceira(text);
-
-      if (data.intencao === "registrar_lista_financeira") {
-        intent = "registrar_lista_financeira";
-      }
-    }
-
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
 
