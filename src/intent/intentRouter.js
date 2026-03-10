@@ -989,31 +989,23 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "registrar_lista_financeira": {
         const itens = data.itens || [];
 
-        if (!Array.isArray(itens) || itens.length === 0) {
+        if (!Array.isArray(itens) || !itens.length) {
           return "⚠️ Não consegui identificar os lançamentos.";
         }
 
-        const userSnap = await db.collection("users").doc(userDocId).get();
-        const { phone } = userSnap.data() || {};
+        /* PROCESSAMENTO EM SEGUNDO PLANO */
 
-        // envia mensagem de espera imediatamente
-        if (phone) {
-          sendMessage(
-            phone,
-            "🧠 Aguarde um instante...\nEstou analisando e registrando seus lançamentos.",
-          );
-        }
-
-        // inicia processamento após pequeno delay
         setTimeout(async () => {
           try {
             await processarListaFinanceira(userDocId, itens, userData);
           } catch (err) {
             console.error("Erro ao processar lista:", err);
           }
-        }, 100);
+        }, 10);
 
-        return null;
+        /* RESPOSTA IMEDIATA */
+
+        return "🧠 Aguarde um instante...\nEstou analisando e registrando seus lançamentos.";
       }
 
       case "contratar_premium":
