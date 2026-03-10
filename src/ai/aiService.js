@@ -383,65 +383,6 @@ Inclua:
 
 
 
-Se o usuário enviar uma lista contendo múltiplos valores financeiros
-(gastos, receitas ou investimentos), retorne a intenção:
-
-registrar_lista_financeira
-
-Formato da resposta:
-
-{
- "intencao": "registrar_lista_financeira",
- "itens": [
-   {
-     "tipo": "gasto | receita | investimento",
-     "descricao": "texto curto",
-     "valor": número,
-     "data": "DD/MM"
-   }
- ]
-}
-
-Regras:
-
-1. Cada valor é um item separado.
-2. Se houver vários valores na mesma frase (ex: 8,90 e 8,70), dividir em itens.
-3. Se tiver a palavra "recebi", classificar como receita.
-4. Se tiver "investi" ou "investimento", classificar como investimento.
-5. Caso contrário, classificar como gasto.
-6. Se houver data como "dia 02/03" ou "02/03", usar no campo data.
-7. Se não houver data, deixar o campo data vazio.
-8. Para cada gasto, identifique também a categoria.
-
-Categorias possíveis:
-
-Transporte
-Alimentacao
-Moradia
-Lazer
-Shopping
-Saude
-Educacao
-Mercado
-Assinaturas
-Outros
-
-Exemplo de resposta:
-
-{
- "intencao": "registrar_lista_financeira",
- "itens": [
-   {
-     "tipo": "gasto",
-     "descricao": "mototaxi",
-     "valor": 8.90,
-     "data": "02/03",
-     "categoria": "transporte"
-   }
- ]
-}
-
-
 
 
 

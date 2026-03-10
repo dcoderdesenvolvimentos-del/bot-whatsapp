@@ -18,6 +18,7 @@ import {
   getTotalRevenuesByPeriod,
 } from "../services/revenueService.js";
 import { normalizeMoney } from "../utils/money.js";
+import { analisarListaFinanceira } from "../ai/aiListaFinanceira.js";
 
 import {
   createList,
@@ -590,6 +591,17 @@ export async function routeIntent(userDocId, text, media = {}) {
       );
     }
   }
+
+  const numeros = text.match(/\d+[,.]?\d*/g);
+
+  if (numeros && numeros.length >= 3) {
+    const data = await analisarListaFinanceira(text);
+
+    if (data.intencao === "registrar_lista_financeira") {
+      intent = "registrar_lista_financeira";
+    }
+  }
+
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
