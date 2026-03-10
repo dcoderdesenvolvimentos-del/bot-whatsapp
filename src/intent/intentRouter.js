@@ -730,6 +730,16 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "registrar_lista_financeira": {
         console.log("📋 Lista financeira recebida:", data);
 
+        const userSnap = await db.collection("users").doc(userDocId).get();
+        const { phone } = userSnap.data() || {};
+
+        if (phone) {
+          await sendMessage(
+            phone,
+            "⏳ Aguarde um instante...\nEstou registrando todos os seus lançamentos.",
+          );
+        }
+
         const itens = data.itens || [];
 
         if (!Array.isArray(itens) || itens.length === 0) {
