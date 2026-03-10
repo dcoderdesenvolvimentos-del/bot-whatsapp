@@ -11,6 +11,7 @@ import { parseReceiptText } from "../utils/receiptParser.js";
 import { sendMessage } from "../zapi.js";
 import { normalizeText } from "../utils/normalizeSpeech.js";
 import { db } from "../config/firebase.js";
+import admin from "firebase-admin";
 
 import {
   getRevenuesByPeriod,
@@ -730,114 +731,190 @@ export async function routeIntent(userDocId, text, media = {}) {
       case "registrar_lista_financeira": {
         console.log("📋 Lista financeira recebida:", data);
 
-        const userSnap = await db.collection("users").doc(userDocId).get();
-        const { phone } = userSnap.data() || {};
-
-        if (phone) {
-          await sendMessage(
-            phone,
-            "⏳ Aguarde um instante...\nEstou registrando todos os seus lançamentos.",
-          );
-        }
-
         const itens = data.itens || [];
 
         if (!Array.isArray(itens) || itens.length === 0) {
           return "⚠️ Não consegui identificar os lançamentos da lista.";
         }
 
-        let gastos = 0;
-        let receitas = 0;
-        let investimentos = 0;
+        const userSnap = await db.collection("users").doc(userDocId).get();
+        const { phone } = userSnap.data() || {};
+
+        if (phone) {
+          await sendMessage(
+            phone,
+            "🧠 Aguarde um instante...\nEstou analisando e registrando todos os seus lançamentos.",
+          );
+        }
+
+        const batch = db.batch();
+
+        let gastos = [];
+        let receitas = [];
+        let investimentos = [];
+
+        let totalGastos = 0;
+        let totalReceitas = 0;
+        let totalInvestimentos = 0;
 
         for (const item of itens) {
-          try {
-            const valor = Number(item.valor);
+          const valor = Number(item.valor);
 
-            if (!valor || isNaN(valor) || valor <= 0) {
-              console.log("⚠️ Valor inválido ignorado:", item);
-              continue;
-            }
+          if (!valor || isNaN(valor) || valor <= 0) continue;
 
-            /* =========================
-         DATA
-      ========================= */
+          let date = null;
 
-            let date = null;
+          if (item.data) {
+            date = buildDateFromText(item.data);
+          }
 
-            if (item.data) {
-              date = buildDateFromText(item.data);
-            }
+          const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
-            const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
+          const dataFormatada = date
+            ? date.toLocaleDateString("pt-BR")
+            : new Date().toLocaleDateString("pt-BR");
 
-            /* =========================
-         GASTO
-      ========================= */
+          /* ======================
+       GASTOS
+    ====================== */
 
-            if (item.tipo === "gasto") {
-              await createExpense(userDocId, {
-                valor,
-                local: item.descricao || "não informado",
-                categoria: item.categoria || "outros",
-                timestamp,
-                createdAt: Timestamp.now(),
-              });
+          if (item.tipo === "gasto") {
+            const ref = db
+              .collection("users")
+              .doc(userDocId)
+              .collection("gastos")
+              .doc();
 
-              gastos++;
-            }
+            batch.set(ref, {
+              valor,
+              local: item.descricao || "não informado",
+              categoria: item.categoria || "outros",
+              timestamp,
+              createdAt: Timestamp.now(),
+            });
 
-            /* =========================
-         RECEITA
-      ========================= */
+            totalGastos += valor;
 
-            if (item.tipo === "receita") {
-              await criarReceita({
-                userId: userDocId,
-                valor,
-                descricao: item.descricao || "Receita",
-                origem: "lista",
-                date: timestamp.toDate(),
-              });
+            gastos.push(
+              `• ${item.descricao || "Gasto"} — ${valor.toLocaleString(
+                "pt-BR",
+                {
+                  style: "currency",
+                  currency: "BRL",
+                },
+              )} (${dataFormatada})`,
+            );
+          }
 
-              receitas++;
-            }
+          /* ======================
+       RECEITAS
+    ====================== */
 
-            /* =========================
-         INVESTIMENTO
-      ========================= */
+          if (item.tipo === "receita") {
+            const ref = db
+              .collection("users")
+              .doc(userDocId)
+              .collection("receitas")
+              .doc();
 
-            if (item.tipo === "investimento") {
-              await db
-                .collection("users")
-                .doc(userDocId)
-                .collection("investimentos")
-                .add({
-                  valor,
-                  descricao: item.descricao || "Investimento",
-                  createdAt: timestamp,
-                });
+            batch.set(ref, {
+              valor,
+              descricao: item.descricao || "Receita",
+              origem: "lista",
+              tipo: "receita",
+              createdAt: timestamp,
+            });
 
-              investimentos++;
-            }
-          } catch (err) {
-            console.error("❌ Erro ao registrar item:", item, err);
+            totalReceitas += valor;
+
+            receitas.push(
+              `• ${item.descricao || "Receita"} — ${valor.toLocaleString(
+                "pt-BR",
+                {
+                  style: "currency",
+                  currency: "BRL",
+                },
+              )} (${dataFormatada})`,
+            );
+          }
+
+          /* ======================
+       INVESTIMENTOS
+    ====================== */
+
+          if (item.tipo === "investimento") {
+            const ref = db
+              .collection("users")
+              .doc(userDocId)
+              .collection("investimentos")
+              .doc();
+
+            batch.set(ref, {
+              valor,
+              descricao: item.descricao || "Investimento",
+              createdAt: timestamp,
+            });
+
+            totalInvestimentos += valor;
+
+            investimentos.push(
+              `• ${item.descricao || "Investimento"} — ${valor.toLocaleString(
+                "pt-BR",
+                {
+                  style: "currency",
+                  currency: "BRL",
+                },
+              )}`,
+            );
           }
         }
 
-        /* =========================
+        await batch.commit();
+
+        /* ======================
      RESPOSTA
-  ========================= */
+  ====================== */
 
-        let resposta = "✅ *Registrei os lançamentos da sua lista!*\n\n";
+        let resposta = "✅ *Registrei os seguintes lançamentos:*\n\n";
 
-        if (gastos > 0) resposta += `💸 Gastos: ${gastos}\n`;
-        if (receitas > 0) resposta += `💰 Receitas: ${receitas}\n`;
-        if (investimentos > 0)
-          resposta += `📈 Investimentos: ${investimentos}\n`;
+        if (gastos.length) {
+          resposta += "💸 *Gastos*\n";
+          resposta += gastos.join("\n");
+          resposta += `\n\n💰 Total gastos: ${totalGastos.toLocaleString(
+            "pt-BR",
+            {
+              style: "currency",
+              currency: "BRL",
+            },
+          )}\n\n`;
+        }
+
+        if (receitas.length) {
+          resposta += "💰 *Receitas*\n";
+          resposta += receitas.join("\n");
+          resposta += `\n\n💵 Total receitas: ${totalReceitas.toLocaleString(
+            "pt-BR",
+            {
+              style: "currency",
+              currency: "BRL",
+            },
+          )}\n\n`;
+        }
+
+        if (investimentos.length) {
+          resposta += "📈 *Investimentos*\n";
+          resposta += investimentos.join("\n");
+          resposta += `\n\n📊 Total investido: ${totalInvestimentos.toLocaleString(
+            "pt-BR",
+            {
+              style: "currency",
+              currency: "BRL",
+            },
+          )}\n\n`;
+        }
 
         resposta +=
-          "\n━━━━━━━━━━━━━━\n" +
+          "━━━━━━━━━━━━━━\n" +
           `📊 *Dashboard Online*\n` +
           `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}`;
 
