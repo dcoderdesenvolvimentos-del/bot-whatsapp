@@ -694,6 +694,28 @@ export async function routeIntent(userDocId, text, media = {}) {
       return new Date(ano, mes, dia, 12, 0, 0);
     }
 
+    function buildDateFromList(dataStr) {
+      if (!dataStr) return null;
+
+      const now = new Date();
+
+      // formato 02/03
+      if (/^\d{1,2}\/\d{1,2}$/.test(dataStr)) {
+        const [day, month] = dataStr.split("/").map(Number);
+
+        return new Date(now.getFullYear(), month - 1, day, 12, 0);
+      }
+
+      // formato 02/03/2026
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dataStr)) {
+        const [day, month, year] = dataStr.split("/").map(Number);
+
+        return new Date(year, month - 1, day, 12, 0);
+      }
+
+      return null;
+    }
+
     function extractMoneyFromText(text = "") {
       if (!text) return null;
 
@@ -740,8 +762,12 @@ export async function routeIntent(userDocId, text, media = {}) {
         const userSnap = await db.collection("users").doc(userDocId).get();
         const { phone } = userSnap.data() || {};
 
+        /* =========================
+     MENSAGEM IMEDIATA
+  ========================= */
+
         if (phone) {
-          await sendMessage(
+          sendMessage(
             phone,
             "🧠 Aguarde um instante...\nEstou analisando e registrando todos os seus lançamentos.",
           );
@@ -759,13 +785,16 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         for (const item of itens) {
           const valor = Number(item.valor);
-
           if (!valor || isNaN(valor) || valor <= 0) continue;
+
+          /* =========================
+       DATA DO USUÁRIO
+    ========================= */
 
           let date = null;
 
           if (item.data) {
-            date = buildDateFromText(item.data);
+            date = buildDateFromList(item.data);
           }
 
           const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
@@ -802,7 +831,7 @@ export async function routeIntent(userDocId, text, media = {}) {
                   style: "currency",
                   currency: "BRL",
                 },
-              )} (${dataFormatada})`,
+              )} 📅 ${dataFormatada}`,
             );
           }
 
@@ -834,7 +863,7 @@ export async function routeIntent(userDocId, text, media = {}) {
                   style: "currency",
                   currency: "BRL",
                 },
-              )} (${dataFormatada})`,
+              )} 📅 ${dataFormatada}`,
             );
           }
 
@@ -872,7 +901,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         await batch.commit();
 
         /* ======================
-     RESPOSTA
+     RESPOSTA FINAL
   ====================== */
 
         let resposta = "✅ *Registrei os seguintes lançamentos:*\n\n";
