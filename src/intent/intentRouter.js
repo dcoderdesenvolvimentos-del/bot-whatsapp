@@ -727,6 +727,113 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     switch (intent) {
+      case "registrar_lista_financeira": {
+        console.log("📋 Lista financeira recebida:", data);
+
+        const itens = data.itens || [];
+
+        if (!Array.isArray(itens) || itens.length === 0) {
+          return "⚠️ Não consegui identificar os lançamentos da lista.";
+        }
+
+        let gastos = 0;
+        let receitas = 0;
+        let investimentos = 0;
+
+        for (const item of itens) {
+          try {
+            const valor = Number(item.valor);
+
+            if (!valor || isNaN(valor) || valor <= 0) {
+              console.log("⚠️ Valor inválido ignorado:", item);
+              continue;
+            }
+
+            /* =========================
+         DATA
+      ========================= */
+
+            let date = null;
+
+            if (item.data) {
+              date = buildDateFromText(item.data);
+            }
+
+            const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
+
+            /* =========================
+         GASTO
+      ========================= */
+
+            if (item.tipo === "gasto") {
+              await createExpense(userDocId, {
+                valor,
+                local: item.descricao || "não informado",
+                categoria: item.categoria || "outros",
+                timestamp,
+                createdAt: Timestamp.now(),
+              });
+
+              gastos++;
+            }
+
+            /* =========================
+         RECEITA
+      ========================= */
+
+            if (item.tipo === "receita") {
+              await criarReceita({
+                userId: userDocId,
+                valor,
+                descricao: item.descricao || "Receita",
+                origem: "lista",
+                date: timestamp.toDate(),
+              });
+
+              receitas++;
+            }
+
+            /* =========================
+         INVESTIMENTO
+      ========================= */
+
+            if (item.tipo === "investimento") {
+              await db
+                .collection("users")
+                .doc(userDocId)
+                .collection("investimentos")
+                .add({
+                  valor,
+                  descricao: item.descricao || "Investimento",
+                  createdAt: timestamp,
+                });
+
+              investimentos++;
+            }
+          } catch (err) {
+            console.error("❌ Erro ao registrar item:", item, err);
+          }
+        }
+
+        /* =========================
+     RESPOSTA
+  ========================= */
+
+        let resposta = "✅ *Registrei os lançamentos da sua lista!*\n\n";
+
+        if (gastos > 0) resposta += `💸 Gastos: ${gastos}\n`;
+        if (receitas > 0) resposta += `💰 Receitas: ${receitas}\n`;
+        if (investimentos > 0)
+          resposta += `📈 Investimentos: ${investimentos}\n`;
+
+        resposta +=
+          "\n━━━━━━━━━━━━━━\n" +
+          `📊 *Dashboard Online*\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}`;
+
+        return resposta;
+      }
+
       case "contratar_premium":
       case "planos_premium":
         return {
