@@ -576,6 +576,20 @@ export async function routeIntent(userDocId, text, media = {}) {
     );
   }
 
+  // Detecta lista grande antes da IA
+  const temMuitosNumeros = (text.match(/\d+[.,]?\d*/g) || []).length >= 5;
+
+  if (temMuitosNumeros) {
+    const userSnap = await db.collection("users").doc(userDocId).get();
+    const { phone } = userSnap.data() || {};
+
+    if (phone) {
+      sendMessage(
+        phone,
+        "🧠 Recebi sua lista. Estou analisando os lançamentos...",
+      );
+    }
+  }
   try {
     const data = await analyzeIntent(normalizedFixed);
     let intent = data.intencao; // ✅ DECLARADO
