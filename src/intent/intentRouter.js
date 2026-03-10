@@ -922,7 +922,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           totalGastos += valor;
 
           gastos.push(
-            `• ${(item.descricao || "").replace(/\b\w/g, (l) => l.toUpperCase())} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} \n📅 ${dataFormatada}`,
+            `• ${(item.descricao || "").replace(/\b\w/g, (l) => l.toUpperCase())} | ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} | ${dataFormatada}`,
           );
         }
 
@@ -943,7 +943,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           totalReceitas += valor;
 
           receitas.push(
-            `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} — ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} \n📅 ${dataFormatada}`,
+            `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} | ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} | ${dataFormatada}`,
           );
         }
 
