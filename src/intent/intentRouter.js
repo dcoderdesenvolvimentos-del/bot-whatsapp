@@ -1,7 +1,7 @@
 import { analyzeIntent } from "../ai/aiService.js";
 import { createReminder } from "./createReminder.js";
 import { deleteReminder } from "./deleteReminder.js";
-import { createPixPayment } from "./mercadoPago.js";
+
 import { getUser, updateUser } from "../services/userService.js";
 import { showHelpMessage } from "../responses/helpResponse.js";
 import { addRecurringReminder } from "../services/reminderService.js";
@@ -11,14 +11,11 @@ import { parseReceiptText } from "../utils/receiptParser.js";
 import { sendMessage } from "../zapi.js";
 import { normalizeText } from "../utils/normalizeSpeech.js";
 import { db } from "../config/firebase.js";
-import admin from "firebase-admin";
 
 import {
   getRevenuesByPeriod,
   getTotalRevenuesByPeriod,
 } from "../services/revenueService.js";
-import { normalizeMoney } from "../utils/money.js";
-import { analisarListaFinanceira } from "../ai/aiListaFinanceira.js";
 
 import {
   createList,
