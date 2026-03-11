@@ -893,10 +893,20 @@ export async function routeIntent(userDocId, text, media = {}) {
       let totalInvestimentos = 0;
 
       for (const item of itens) {
-        let valor = Number(item.valor);
-        if (!valor || isNaN(valor)) continue;
+        let valor = null;
 
-        // 🔥 correção de erro comum da IA/STT (50 → 5000)
+        /* =====================================================
+1️⃣ TENTA USAR VALOR DA IA
+===================================================== */
+
+        if (typeof item.valor === "number" && item.valor > 0) {
+          valor = item.valor;
+        }
+
+        /* =====================================================
+2️⃣ CORREÇÃO DE POSSÍVEL ERRO DE STT
+===================================================== */
+
         const isLikelySTTError =
           valor &&
           valor >= 1000 &&
@@ -906,6 +916,14 @@ export async function routeIntent(userDocId, text, media = {}) {
         if (isLikelySTTError) {
           console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
           valor = valor / 100;
+        }
+
+        /* =====================================================
+3️⃣ VALIDAÇÃO FINAL
+===================================================== */
+
+        if (!valor || isNaN(valor) || valor <= 0) {
+          continue;
         }
 
         let date = buildDateFromList(item.data);
