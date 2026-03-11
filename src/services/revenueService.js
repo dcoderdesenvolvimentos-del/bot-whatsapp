@@ -9,7 +9,6 @@ export async function getRevenuesByPeriod(userId, start, end) {
     .collection("users")
     .doc(userId)
     .collection("receitas")
-    .where("userId", "==", userId)
     .where("createdAt", ">=", Timestamp.fromDate(start))
     .where("createdAt", "<=", Timestamp.fromDate(end))
     .orderBy("createdAt", "desc")
