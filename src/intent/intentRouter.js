@@ -39,6 +39,7 @@ import { slugify, capitalize } from "../utils/textUtils.js";
 import vision from "@google-cloud/vision";
 import { parseBRL } from "../utils/moneyUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { marioFallbackAI } from "../ai/marioFallbackAI.js";
 
 const visionClient = new vision.ImageAnnotatorClient({
   credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
@@ -1827,26 +1828,11 @@ export async function routeIntent(userDocId, text, media = {}) {
         response = `👋 Até mais, ${userData.name}! Estou aqui quando precisar 😊`;
         break;
 
-      default:
-        response =
-          "🤔 Hmm... não consegui entender muito bem o que você quis dizer.\n\n" +
-          "Mas calma 😄 eu posso te ajudar com:\n\n" +
-          "━━━━━━━━━━━━━━\n" +
-          "🔔 *LEMBRETES*\n" +
-          "• me lembra de tomar água amanhã às 14h\n" +
-          "• daqui 30 minutos me lembrar de ligar para o cliente\n" +
-          "• listar meus lembretes\n\n" +
-          "━━━━━━━━━━━━━━\n" +
-          "💰 *GASTOS*\n" +
-          "• gastei 50 reais na padaria\n" +
-          "• quanto gastei hoje?\n" +
-          "• resumo dos meus gastos do mês\n\n" +
-          "━━━━━━━━━━━━━━\n" +
-          "🛒 *LISTAS DE COMPRAS*\n" +
-          "• criar lista de supermercado\n" +
-          "• adicionar arroz na lista\n" +
-          "• me mostra minhas listas\n\n" +
-          "Se quiser, digite *ajuda* para ver tudo o que posso fazer 😉";
+      default: {
+        const resposta = await marioFallbackAI(userData.name, text);
+
+        return resposta;
+      }
     }
 
     return response;
