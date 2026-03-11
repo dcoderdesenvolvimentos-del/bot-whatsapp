@@ -893,8 +893,20 @@ export async function routeIntent(userDocId, text, media = {}) {
       let totalInvestimentos = 0;
 
       for (const item of itens) {
-        const valor = Number(item.valor);
+        let valor = Number(item.valor);
         if (!valor || isNaN(valor)) continue;
+
+        // 🔥 correção de erro comum da IA/STT (50 → 5000)
+        const isLikelySTTError =
+          valor &&
+          valor >= 1000 &&
+          valor % 100 === 0 &&
+          !/mil|milhares/i.test(item.descricao || "");
+
+        if (isLikelySTTError) {
+          console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
+          valor = valor / 100;
+        }
 
         let date = buildDateFromList(item.data);
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();

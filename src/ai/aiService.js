@@ -411,75 +411,7 @@ Regras:
 5. Caso contrário, classificar como gasto.
 6. Se houver data como "dia 02/03" ou "02/03", usar no campo data.
 7. Se não houver data, deixar o campo data vazio.
-8. REGRAS CRÍTICAS SOBRE VALORES FINANCEIROS
-
-Quando o usuário mencionar um valor de dinheiro, você DEVE seguir estas regras obrigatórias.
-
-1) O valor retornado deve ser exatamente o valor mencionado pelo usuário.
-
-2) Se o valor estiver por extenso, converta para número.
-
-Exemplos obrigatórios:
-
-trinta → 30
-quarenta → 40
-cinquenta → 50
-sessenta → 60
-setenta → 70
-oitenta → 80
-noventa → 90
-cem → 100
-cento e vinte → 120
-
-3) NUNCA adicionar zeros extras.
-
-PROIBIDO:
-30 → 300
-30 → 3000
-50 → 500
-50 → 5000
-
-4) NUNCA multiplicar valores.
-
-5) NUNCA inventar valores.
-
-6) Se o usuário disser "cinquenta reais", o valor retornado deve ser exatamente:
-
-50
-
-e NUNCA:
-
-5000
-
-7) Antes de retornar a resposta, verifique mentalmente:
-
-"O número retornado corresponde exatamente ao valor que o usuário falou?"
-
-Se não corresponder, corrija antes de responder.
-
-EXEMPLOS CORRETOS:
-
-Usuário:
-"fiz uma corrida de cinquenta reais"
-
-Resposta correta:
-{
- "tipo": "receita",
- "descricao": "corrida",
- "valor": 50
-}
-
-Usuário:
-"gastei trinta reais de gasolina"
-
-Resposta correta:
-{
- "tipo": "gasto",
- "descricao": "gasolina",
- "valor": 30
-}
- 
-9. Para cada gasto, identifique também a categoria.
+8. Para cada gasto, identifique também a categoria.
 
 
 Categorias possíveis:
