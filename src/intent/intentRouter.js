@@ -911,7 +911,12 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let valor = normalizarValor(item.valor);
 
-        if (valor >= 1000 && valor % 100 === 0 && !text.includes("mil")) {
+        if (
+          valor >= 1000 &&
+          valor % 100 === 0 &&
+          !text.includes("mil") &&
+          !/\d{1,3}\.\d{3}/.test(text) // detecta 1.000
+        ) {
           console.log("⚠️ STT corrigido:", valor, "→", valor / 100);
           valor = valor / 100;
         }
