@@ -411,8 +411,96 @@ Regras:
 5. Caso contrário, classificar como gasto.
 6. Se houver data como "dia 02/03" ou "02/03", usar no campo data.
 7. Se não houver data, deixar o campo data vazio.
-8. Para cada gasto, identifique também a categoria.
+8. ⚠️ REGRAS OBRIGATÓRIAS SOBRE VALORES NA LISTA ⚠️
 
+Para cada item da lista financeira:
+
+- EXTRAIA o valor SOMENTE se houver:
+  • número explícito no texto
+  • OU valor monetário claro (ex: "50 reais", "R$ 50")
+
+- NUNCA:
+  ❌ invente zeros
+  ❌ multiplicar valores
+  ❌ transformar números pequenos em milhares
+  ❌ converter número falado por extenso em milhares
+  ❌ confundir DIA com VALOR
+  ❌ usar inferência aproximada
+
+- Se o usuário disser um número por extenso, converta apenas para o valor correto.
+
+Exemplos obrigatórios:
+
+cinquenta → 50  
+trinta → 30  
+vinte → 20  
+dez → 10  
+cem → 100  
+mil → 1000  
+
+⚠️ IMPORTANTE:
+- "cinquenta" NUNCA pode virar 5000
+- "trinta" NUNCA pode virar 3000
+- "vinte" NUNCA pode virar 2000
+
+- Se houver ambiguidade entre número e data,
+  PRIORIZE SEMPRE a data e IGNORE o número como valor.
+
+Exemplo:
+
+Usuário:
+"8,90 e 8,70 mototáxi dia 02/03"
+
+Resposta correta:
+
+{
+ "intencao": "registrar_lista_financeira",
+ "itens": [
+   {
+     "tipo": "gasto",
+     "descricao": "mototaxi",
+     "valor": 8.90,
+     "data": "02/03",
+     "categoria": "transporte"
+   },
+   {
+     "tipo": "gasto",
+     "descricao": "mototaxi",
+     "valor": 8.70,
+     "data": "02/03",
+     "categoria": "transporte"
+   }
+ ]
+}
+
+Outro exemplo:
+
+Usuário:
+"gastei cinquenta na padaria e recebi trinta de uma corrida"
+
+Resposta correta:
+
+{
+ "intencao": "registrar_lista_financeira",
+ "itens": [
+   {
+     "tipo": "gasto",
+     "descricao": "padaria",
+     "valor": 50,
+     "categoria": "alimentacao"
+   },
+   {
+     "tipo": "receita",
+     "descricao": "corrida",
+     "valor": 30
+   }
+ ]
+}
+
+
+
+
+9. Para cada gasto, identifique também a categoria.
 
 Categorias possíveis:
 
