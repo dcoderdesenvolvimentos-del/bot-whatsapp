@@ -881,23 +881,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       return valores[0];
     }
 
-    function corrigirValorSTT(valor, text) {
-      const isLikelySTTError =
-        valor &&
-        valor >= 1000 &&
-        valor % 100 === 0 &&
-        !/mil|milhares/i.test(text) &&
-        !text.includes(",") &&
-        !text.includes(".");
-
-      if (isLikelySTTError) {
-        console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
-        return valor / 100;
-      }
-
-      return valor;
-    }
-
     async function processarListaFinanceira(userDocId, itens, userData) {
       const batch = db.batch();
 
@@ -917,9 +900,24 @@ export async function routeIntent(userDocId, text, media = {}) {
 ===================================================== */
 
         if (typeof item.valor === "number" && item.valor > 0) {
-          let valor = Number(item.valor);
+          valor = item.valor;
+        }
 
-          valor = corrigirValorSTT(valor, text);
+        /* =====================================================
+2️⃣ CORREÇÃO DE POSSÍVEL ERRO DE STT
+===================================================== */
+
+        const isLikelySTTError =
+          valor &&
+          valor >= 1000 &&
+          valor % 100 === 0 &&
+          !/mil|milhares/i.test(text) &&
+          !text.includes(",") &&
+          !text.includes(".");
+
+        if (isLikelySTTError) {
+          console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
+          valor = valor / 100;
         }
 
         /* =====================================================
