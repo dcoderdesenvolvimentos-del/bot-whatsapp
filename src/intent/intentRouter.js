@@ -893,40 +893,23 @@ export async function routeIntent(userDocId, text, media = {}) {
       let totalInvestimentos = 0;
 
       for (const item of itens) {
-        let valor = null;
+        /* =====================================================
+    NORMALIZA VALOR (MESMA LÓGICA DO CRIAR_GASTO)
+    ===================================================== */
+
+        let rawValor = item.valor;
+
+        if (!rawValor) continue;
+
+        let valor = String(rawValor).replace(/\./g, "").replace(",", ".");
+
+        valor = parseFloat(valor);
+
+        if (isNaN(valor) || valor <= 0) continue;
 
         /* =====================================================
-1️⃣ TENTA USAR VALOR DA IA
-===================================================== */
-
-        if (typeof item.valor === "number" && item.valor > 0) {
-          valor = item.valor;
-        }
-
-        /* =====================================================
-2️⃣ CORREÇÃO DE POSSÍVEL ERRO DE STT
-===================================================== */
-
-        const isLikelySTTError =
-          valor &&
-          valor >= 1000 &&
-          valor % 100 === 0 &&
-          !/mil|milhares/i.test(text) &&
-          !text.includes(",") &&
-          !text.includes(".");
-
-        if (isLikelySTTError) {
-          console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
-          valor = valor / 100;
-        }
-
-        /* =====================================================
-3️⃣ VALIDAÇÃO FINAL
-===================================================== */
-
-        if (!valor || isNaN(valor) || valor <= 0) {
-          continue;
-        }
+    DATA
+    ===================================================== */
 
         let date = buildDateFromList(item.data);
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
@@ -940,6 +923,10 @@ export async function routeIntent(userDocId, text, media = {}) {
               day: "2-digit",
               month: "2-digit",
             });
+
+        /* =====================================================
+    GASTOS
+    ===================================================== */
 
         if (item.tipo === "gasto") {
           const categoria = item.categoria || detectCategory(item.descricao);
@@ -965,6 +952,10 @@ export async function routeIntent(userDocId, text, media = {}) {
           );
         }
 
+        /* =====================================================
+    RECEITAS
+    ===================================================== */
+
         if (item.tipo === "receita") {
           const ref = db
             .collection("users")
@@ -985,6 +976,10 @@ export async function routeIntent(userDocId, text, media = {}) {
             `• ${item.descricao?.replace(/\b\w/g, (l) => l.toUpperCase())} - ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} 📅 ${dataFormatada}`,
           );
         }
+
+        /* =====================================================
+    INVESTIMENTOS
+    ===================================================== */
 
         if (item.tipo === "investimento") {
           const ref = db
