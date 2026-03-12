@@ -911,7 +911,8 @@ export async function routeIntent(userDocId, text, media = {}) {
           valor &&
           valor >= 1000 &&
           valor % 100 === 0 &&
-          !/mil|milhares/i.test(item.descricao || "");
+          !/mil|milhares/i.test(text) &&
+          !text.includes("mil");
 
         if (isLikelySTTError) {
           console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
