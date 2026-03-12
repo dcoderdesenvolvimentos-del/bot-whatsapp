@@ -892,18 +892,24 @@ export async function routeIntent(userDocId, text, media = {}) {
       let totalReceitas = 0;
       let totalInvestimentos = 0;
 
+      function normalizarValor(valor) {
+        if (typeof valor === "number") {
+          return valor;
+        }
+
+        const v = String(valor)
+          .replace(/\.(?=\d{3})/g, "") // remove ponto apenas se for milhar
+          .replace(",", ".");
+
+        return parseFloat(v);
+      }
+
       for (const item of itens) {
         /* =====================================================
     NORMALIZA VALOR (MESMA LÓGICA DO CRIAR_GASTO)
     ===================================================== */
 
-        let rawValor = item.valor;
-
-        if (!rawValor) continue;
-
-        let valor = String(rawValor).replace(/\./g, "").replace(",", ".");
-
-        valor = parseFloat(valor);
+        let valor = normalizarValor(item.valor);
 
         if (isNaN(valor) || valor <= 0) continue;
 
