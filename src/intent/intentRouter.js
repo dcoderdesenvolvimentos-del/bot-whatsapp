@@ -907,12 +907,14 @@ export async function routeIntent(userDocId, text, media = {}) {
 2️⃣ CORREÇÃO DE POSSÍVEL ERRO DE STT
 ===================================================== */
 
+        const textoNumeroExtenso =
+          /\b(um|uma|dois|duas|tres|três|quatro|cinco|seis|sete|oito|nove|dez|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa)\b/i;
+
         const isLikelySTTError =
           valor &&
           valor >= 1000 &&
           valor % 100 === 0 &&
-          !text.match(/\b\d{3,}\b/) && // se usuário digitou número grande
-          !/mil|milhar|milhares/i.test(text);
+          textoNumeroExtenso.test(text);
 
         if (isLikelySTTError) {
           console.warn("⚠️ Correção STT aplicada:", valor, "→", valor / 100);
