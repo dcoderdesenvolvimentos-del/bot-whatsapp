@@ -911,6 +911,11 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let valor = normalizarValor(item.valor);
 
+        if (valor >= 1000 && valor % 100 === 0 && !text.includes("mil")) {
+          console.log("⚠️ STT corrigido:", valor, "→", valor / 100);
+          valor = valor / 100;
+        }
+
         if (isNaN(valor) || valor <= 0) continue;
 
         /* =====================================================
