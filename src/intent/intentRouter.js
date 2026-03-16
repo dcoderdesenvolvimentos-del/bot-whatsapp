@@ -969,8 +969,8 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         /* =====================================================
-    RECEITAS
-    ===================================================== */
+  RECEITAS
+  ===================================================== */
 
         if (item.tipo === "receita") {
           const ref = db
@@ -981,8 +981,8 @@ export async function routeIntent(userDocId, text, media = {}) {
 
           batch.set(ref, {
             valor,
-            descricao: item.descricao || "Receita",
-            origem: "lista",
+            descricao: item.descricao || "Receita sem descrição",
+            origem: item.descricao || "Receita sem Origem",
             createdAt: timestamp,
           });
 
