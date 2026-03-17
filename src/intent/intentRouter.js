@@ -127,6 +127,12 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
+  /* =========================
+     1️⃣ BUSCAR USUÁRIO (ANTES DE TUDO)
+  ========================= */
+
+  const userData = await getUser(userDocId);
+
   // 🔥 INTERCEPTAÇÃO ABSOLUTA
   const buttonText = String(text).trim().toUpperCase();
 
@@ -365,8 +371,6 @@ export async function routeIntent(userDocId, text, media = {}) {
   /* =========================
      1️⃣ BUSCAR USUÁRIO (ANTES DE TUDO)
   ========================= */
-
-  const userData = await getUser(userDocId);
 
   if (!userData) {
     console.error("❌ Usuário não encontrado:", userDocId);
