@@ -246,8 +246,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     await ref.update(update);
 
     // 🔎 BUSCA O GASTO ATUALIZADO
-
-    const gasto = doc.data();
+    const updatedDoc = await ref.get();
+    const gasto = updatedDoc.data();
 
     await updateUser(userDocId, {
       editingGasto: null,
