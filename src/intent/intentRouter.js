@@ -130,6 +130,105 @@ export async function routeIntent(userDocId, text, media = {}) {
   // 🔥 INTERCEPTAÇÃO ABSOLUTA
   const buttonText = String(text).trim().toUpperCase();
 
+  // =======================
+  // EXCLUIR GASTO
+  // =======================
+
+  if (text.startsWith("excluir_gasto_")) {
+    const gastoId = text.replace("excluir_gasto_", "");
+
+    await db
+      .collection("users")
+      .doc(userDocId)
+      .collection("gastos")
+      .doc(gastoId)
+      .delete();
+
+    return "🗑 Gasto excluído com sucesso!";
+  }
+
+  // =======================
+  // EDITAR GASTO
+  // =======================
+
+  if (text.startsWith("editar_gasto_")) {
+    const gastoId = text.replace("editar_gasto_", "");
+
+    await updateUser(userDocId, {
+      editingGasto: gastoId,
+      editingStep: "escolher_campo",
+    });
+
+    return {
+      type: "buttons",
+      text: "✏️ O que deseja editar?",
+      buttons: [
+        { id: "editar_valor", text: "💰 Valor" },
+        { id: "editar_data", text: "📅 Data" },
+        { id: "editar_descricao", text: "📝 Descrição" },
+      ],
+    };
+  }
+
+  if (
+    text === "editar_valor" ||
+    text === "editar_data" ||
+    text === "editar_descricao"
+  ) {
+    const campo = text.replace("editar_", "");
+
+    await updateUser(userDocId, {
+      editingField: campo,
+      editingStep: "aguardando_valor",
+    });
+
+    if (campo === "valor") {
+      return "💰 Digite o novo valor:";
+    }
+
+    if (campo === "data") {
+      return "📅 Digite a nova data (ex: 25/03):";
+    }
+
+    if (campo === "descricao") {
+      return "📝 Digite a nova descrição:";
+    }
+  }
+
+  if (userData.editingStep === "aguardando_valor" && userData.editingGasto) {
+    const ref = db
+      .collection("users")
+      .doc(userDocId)
+      .collection("gastos")
+      .doc(userData.editingGasto);
+
+    let update = {};
+
+    if (userData.editingField === "valor") {
+      update.valor = parseBRL(text);
+    }
+
+    if (userData.editingField === "descricao") {
+      update.local = text;
+    }
+
+    if (userData.editingField === "data") {
+      const date = buildDateFromText(text);
+
+      update.timestamp = Timestamp.fromDate(date);
+    }
+
+    await ref.update(update);
+
+    await updateUser(userDocId, {
+      editingGasto: null,
+      editingField: null,
+      editingStep: null,
+    });
+
+    return "✅ Gasto atualizado com sucesso!";
+  }
+
   if (
     buttonText === "PLANO_MENSAL" ||
     buttonText === "PLANO_TRIMESTRAL" ||
@@ -955,7 +1054,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
           batch.set(ref, {
             valor,
-            local: item.descricao || "não informado",
+            local: item.descricao || "Local não informado",
             categoria,
             timestamp,
             createdAt: Timestamp.now(),
@@ -1533,13 +1632,21 @@ export async function routeIntent(userDocId, text, media = {}) {
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         // 💾 SALVA
-        await createExpense(userDocId, {
-          valor: valorNormalizado, // salva como número real
+        const gastoRef = db
+          .collection("users")
+          .doc(userDocId)
+          .collection("gastos")
+          .doc();
+
+        await gastoRef.set({
+          valor: valorNormalizado,
           local: local || "não informado",
           categoria: categoria || "outros",
           timestamp,
           createdAt: Timestamp.now(),
         });
+
+        const gastoId = gastoRef.id;
 
         // 🔗 DASHBOARD LINK
         const userSnap = await db.collection("users").doc(userDocId).get();
@@ -1549,16 +1656,22 @@ export async function routeIntent(userDocId, text, media = {}) {
           ? `https://app.marioai.com.br/m/${dashboardSlug}`
           : null;
 
-        return (
-          "💾 *Gasto salvo com sucesso!*\n\n" +
-          `💰 Valor:  ${valorNormalizado.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}\n` +
-          `📍 Local: ${capitalize(local || "não informado")}\n` +
-          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
-          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
-        );
+        return {
+          type: "buttons",
+          text:
+            "💸 *Gasto registrado!*\n\n" +
+            `📍 Local: ${capitalize(local || "não informado")}\n` +
+            `💰 Valor: ${valorNormalizado.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}\n` +
+            `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}\n\n` +
+            `📈 Ver no dashboard:\nhttps://app.marioai.com.br/m/${userData.dashboardSlug}`,
+          buttons: [
+            { id: `editar_gasto_${gastoId}`, text: "↩️ Editar transação" },
+            { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir transação" },
+          ],
+        };
       }
 
       /* Gastos do Dia */
