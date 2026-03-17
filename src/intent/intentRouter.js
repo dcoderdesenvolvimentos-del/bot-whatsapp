@@ -201,24 +201,29 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
   }
 
-  if (userData.editingStep === "aguardando_valor" && userData.editingGasto) {
+  const userAtualizado = await getUser(userDocId);
+
+  if (
+    userAtualizado.editingStep === "aguardando_valor" &&
+    userAtualizado.editingGasto
+  ) {
     const ref = db
       .collection("users")
       .doc(userDocId)
       .collection("gastos")
-      .doc(userData.editingGasto);
+      .doc(userAtualizado.editingGasto);
 
     let update = {};
 
-    if (userData.editingField === "valor") {
+    if (userAtualizado.editingField === "valor") {
       update.valor = parseBRL(text);
     }
 
-    if (userData.editingField === "descricao") {
+    if (userAtualizado.editingField === "descricao") {
       update.local = text;
     }
 
-    if (userData.editingField === "data") {
+    if (userAtualizado.editingField === "data") {
       const date = buildDateFromText(text);
 
       update.timestamp = Timestamp.fromDate(date);
@@ -226,13 +231,33 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     await ref.update(update);
 
+    // 🔎 BUSCA O GASTO ATUALIZADO
+    const doc = await ref.get();
+    const gasto = doc.data();
+
     await updateUser(userDocId, {
       editingGasto: null,
       editingField: null,
       editingStep: null,
     });
 
-    return "✅ Gasto atualizado com sucesso!";
+    // 🔁 ENVIA RESUMO NOVAMENTE
+    return {
+      type: "buttons",
+      text:
+        "✏️ *Gasto atualizado!*\n\n" +
+        `📍 Local: ${capitalize(gasto.local)}\n` +
+        `💰 Valor: ${Number(gasto.valor).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}\n` +
+        `📅 Data: ${gasto.timestamp.toDate().toLocaleDateString("pt-BR")}\n\n` +
+        `📊 Ver no dashboard:\nhttps://app.marioai.com.br/m/${userData.dashboardSlug}`,
+      buttons: [
+        { id: `editar_gasto_${doc.id}`, text: "↩️ Editar transação" },
+        { id: `excluir_gasto_${doc.id}`, text: "🗑 Excluir transação" },
+      ],
+    };
   }
 
   if (
