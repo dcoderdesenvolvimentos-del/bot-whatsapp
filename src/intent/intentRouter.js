@@ -205,7 +205,8 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   if (
     userAtualizado.editingStep === "aguardando_valor" &&
-    userAtualizado.editingGasto
+    userAtualizado.editingGasto &&
+    userAtualizado.editingField
   ) {
     const ref = db
       .collection("users")
@@ -229,10 +230,23 @@ export async function routeIntent(userDocId, text, media = {}) {
       update.timestamp = Timestamp.fromDate(date);
     }
 
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      // limpa estado quebrado
+      await updateUser(userDocId, {
+        editingGasto: null,
+        editingField: null,
+        editingStep: null,
+      });
+
+      return "⚠️ Essa transação não existe mais.";
+    }
+
     await ref.update(update);
 
     // 🔎 BUSCA O GASTO ATUALIZADO
-    const doc = await ref.get();
+
     const gasto = doc.data();
 
     await updateUser(userDocId, {
