@@ -127,152 +127,8 @@ function extractNameFromText(text = "") {
 export async function routeIntent(userDocId, text, media = {}) {
   console.log("🔥 routeIntent - userDocId:", userDocId);
 
-  /* =========================
-     1️⃣ BUSCAR USUÁRIO (ANTES DE TUDO)
-  ========================= */
-
-  const userData = await getUser(userDocId);
-
   // 🔥 INTERCEPTAÇÃO ABSOLUTA
   const buttonText = String(text).trim().toUpperCase();
-
-  // =======================
-  // EXCLUIR GASTO
-  // =======================
-
-  if (text.startsWith("excluir_gasto_")) {
-    const gastoId = text.replace("excluir_gasto_", "");
-
-    await db
-      .collection("users")
-      .doc(userDocId)
-      .collection("gastos")
-      .doc(gastoId)
-      .delete();
-
-    return "🗑 Gasto excluído com sucesso!";
-  }
-
-  // =======================
-  // EDITAR GASTO
-  // =======================
-
-  if (text.startsWith("editar_gasto_")) {
-    const gastoId = text.replace("editar_gasto_", "");
-
-    await updateUser(userDocId, {
-      editingGasto: gastoId,
-      editingStep: "escolher_campo",
-    });
-
-    return {
-      type: "buttons",
-      text: "✏️ O que deseja editar?",
-      buttons: [
-        { id: "editar_valor", text: "💰 Valor" },
-        { id: "editar_data", text: "📅 Data" },
-        { id: "editar_descricao", text: "📝 Descrição" },
-      ],
-    };
-  }
-
-  if (
-    text === "editar_valor" ||
-    text === "editar_data" ||
-    text === "editar_descricao"
-  ) {
-    const campo = text.replace("editar_", "");
-
-    await updateUser(userDocId, {
-      editingField: campo,
-      editingStep: "aguardando_valor",
-    });
-
-    if (campo === "valor") {
-      return "💰 Digite o novo valor:";
-    }
-
-    if (campo === "data") {
-      return "📅 Digite a nova data (ex: 25/03):";
-    }
-
-    if (campo === "descricao") {
-      return "📝 Digite a nova descrição:";
-    }
-  }
-
-  const userAtualizado = await getUser(userDocId);
-
-  if (
-    userAtualizado.editingStep === "aguardando_valor" &&
-    userAtualizado.editingGasto &&
-    userAtualizado.editingField
-  ) {
-    const ref = db
-      .collection("users")
-      .doc(userDocId)
-      .collection("gastos")
-      .doc(userAtualizado.editingGasto);
-
-    let update = {};
-
-    if (userAtualizado.editingField === "valor") {
-      update.valor = parseBRL(text);
-    }
-
-    if (userAtualizado.editingField === "descricao") {
-      update.local = text;
-    }
-
-    if (userAtualizado.editingField === "data") {
-      const date = buildDateFromText(text);
-
-      update.timestamp = Timestamp.fromDate(date);
-    }
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      // limpa estado quebrado
-      await updateUser(userDocId, {
-        editingGasto: null,
-        editingField: null,
-        editingStep: null,
-      });
-
-      return "⚠️ Essa transação não existe mais.";
-    }
-
-    await ref.update(update);
-
-    // 🔎 BUSCA O GASTO ATUALIZADO
-    const updatedDoc = await ref.get();
-    const gasto = updatedDoc.data();
-
-    await updateUser(userDocId, {
-      editingGasto: null,
-      editingField: null,
-      editingStep: null,
-    });
-
-    // 🔁 ENVIA RESUMO NOVAMENTE
-    return {
-      type: "buttons",
-      text:
-        "✏️ *Gasto atualizado!*\n\n" +
-        `📍 Local: ${capitalize(gasto.local)}\n` +
-        `💰 Valor: ${Number(gasto.valor).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}\n` +
-        `📅 Data: ${gasto.timestamp.toDate().toLocaleDateString("pt-BR")}\n\n` +
-        `📊 Ver no dashboard:\nhttps://app.marioai.com.br/m/${userData.dashboardSlug}`,
-      buttons: [
-        { id: `editar_gasto_${doc.id}`, text: "↩️ Editar transação" },
-        { id: `excluir_gasto_${doc.id}`, text: "🗑 Excluir transação" },
-      ],
-    };
-  }
 
   if (
     buttonText === "PLANO_MENSAL" ||
@@ -410,6 +266,8 @@ export async function routeIntent(userDocId, text, media = {}) {
   /* =========================
      1️⃣ BUSCAR USUÁRIO (ANTES DE TUDO)
   ========================= */
+
+  const userData = await getUser(userDocId);
 
   if (!userData) {
     console.error("❌ Usuário não encontrado:", userDocId);
@@ -1675,21 +1533,13 @@ export async function routeIntent(userDocId, text, media = {}) {
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         // 💾 SALVA
-        const gastoRef = db
-          .collection("users")
-          .doc(userDocId)
-          .collection("gastos")
-          .doc();
-
-        await gastoRef.set({
-          valor: valorNormalizado,
+        await createExpense(userDocId, {
+          valor: valorNormalizado, // salva como número real
           local: local || "não informado",
           categoria: categoria || "outros",
           timestamp,
           createdAt: Timestamp.now(),
         });
-
-        const gastoId = gastoRef.id;
 
         // 🔗 DASHBOARD LINK
         const userSnap = await db.collection("users").doc(userDocId).get();
@@ -1699,22 +1549,16 @@ export async function routeIntent(userDocId, text, media = {}) {
           ? `https://app.marioai.com.br/m/${dashboardSlug}`
           : null;
 
-        return {
-          type: "buttons",
-          text:
-            "💸 *Gasto registrado!*\n\n" +
-            `📍 Local: ${capitalize(local || "não informado")}\n` +
-            `💰 Valor: ${valorNormalizado.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}\n` +
-            `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}\n\n` +
-            `📈 Ver no dashboard:\nhttps://app.marioai.com.br/m/${userData.dashboardSlug}`,
-          buttons: [
-            { id: `editar_gasto_${gastoId}`, text: "↩️ Editar transação" },
-            { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir transação" },
-          ],
-        };
+        return (
+          "💾 *Gasto salvo com sucesso!*\n\n" +
+          `💰 Valor:  ${valorNormalizado.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n` +
+          `📍 Local: ${capitalize(local || "não informado")}\n` +
+          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
+          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
+        );
       }
 
       /* Gastos do Dia */
