@@ -607,7 +607,7 @@ Saída:
   Se o usuário informar apenas a data,
 ou apenas a ação,
 ou apenas o horário,
-a intenção NUNCA pode ser omitida.
+a intenção NUNCA pode ser chamada.
 
 
 Se o usuário pedir para VER ou LISTAR lembretes,
