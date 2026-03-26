@@ -1871,6 +1871,24 @@ export async function routeIntent(userDocId, text, media = {}) {
         response = `👋 Até mais, ${userData.name}! Estou aqui quando precisar 😊`;
         break;
 
+      case "falha_criar_lembrete":
+        response = `👀 Percebi que você está tentando criar um lembrete!
+
+Mas preciso de algumas informações pra configurar certinho 👇
+
+📌 O que você quer que eu te lembre?
+📅 Qual o dia?
+⏰ Qual horário?
+🔁 (Opcional) Quer repetir todo dia, semana ou mês?
+
+💡 Exemplo de como pedir:
+"Me lembra de tomar remédio amanhã às 08:00"
+ou
+"Me lembra de pagar a conta dia 10 às 14:00"
+
+Me manda no formato que eu já crio pra você rapidinho 🚀`;
+        break;
+
       default: {
         const resposta = await marioFallbackAI(userData.name, text);
 

@@ -46,10 +46,6 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 2️⃣ LEMBRETES
 - Se mencionar "lembrar", "lembre", "aviso", horário ou data:
   → intencao = "criar_lembrete"
-Regra Importante: Se o usuário informar apenas a data,
-ou apenas a ação,
-ou apenas o horário,
-a intenção "criar_lembrete" NUNCA pode ser chamada.
 - Se mencionar "apagar", "excluir lembrete":
   → intencao = "excluir_lembrete"
 
@@ -606,14 +602,6 @@ Saída:
   - "todos os dias às 10h" → tipo: "diario", valor: null
 
 
-  Muita atenção:
-
-  Se o usuário informar apenas a data,
-ou apenas a ação,
-ou apenas o horário,
-a intenção "criar_lembrete_recorrente" NUNCA pode ser chamada.
-
-
 Se o usuário pedir para VER ou LISTAR lembretes,
 identifique também filtros de tempo:
 
@@ -651,10 +639,10 @@ use obrigatoriamente:
 
 "intencao": "criar_lembrete"
 
-Se o usuário informar apenas a data,
+Mesmo que o usuário informe apenas a data,
 ou apenas a ação,
 ou apenas o horário,
-a intenção "criar_lembrete" NUNCA pode ser chamada.
+a intenção NUNCA pode ser omitida.
 
   Exemplo:
   Entrada: "me lembra dia 12 de pagar a internet"
@@ -664,7 +652,6 @@ Saída correta:
   "acao": "pagar a internet",
   "dia": 12
 }
-
   
 
 ATENÇÃO MÁXIMA:
@@ -717,6 +704,35 @@ IMPORTANTE:
 
 
 
+🚨 INTENÇÃO DE FALHA (LEMBRETES)
+
+Se o usuário demonstrar intenção de criar lembrete, MAS faltar informações essenciais,
+retorne:
+
+{
+  "intencao": "falha_criar_lembrete",
+  "motivo": "dados_incompletos",
+  "faltando": []
+}
+
+Regras:
+
+- Se NÃO houver ação clara:
+  adicionar "acao" em faltando
+
+- Se NÃO houver horário:
+  adicionar "horario" em faltando
+
+- Se NÃO houver data nem indicação de quando:
+  adicionar "data" em faltando
+
+- Se a frase for apenas intenção futura:
+  Ex: "vou criar lembrete", "quero criar lembrete"
+  → use motivo: "intencao_futura"
+
+- NUNCA invente ação.
+- NUNCA preencha com exemplos como "limpar a casa"
+
 
 ============================
 FORMATOS DE RETORNO
@@ -759,11 +775,6 @@ REGRAS IMPORTANTES DE DATA:
     }
   ]
 }
-
-  Se o usuário informar apenas a data,
-ou apenas a ação,
-ou apenas o horário,
-a intenção "criar_lembrete" NUNCA pode ser chamada.
 
 
 Quando a intenção for listar compromissos por período, retorne SEMPRE no formato JSON:
@@ -955,6 +966,37 @@ JSON:
     console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
 
     const data = JSON.parse(respostaLimpa);
+
+    const textoOriginal = text.toLowerCase();
+
+    // 🚨 Detectar ação inventada
+    if (data.intencao === "criar_lembrete" && data.acao) {
+      if (!textoOriginal.includes(data.acao.toLowerCase())) {
+        console.log("🚨 IA INVENTOU AÇÃO:", data.acao);
+
+        return {
+          intencao: "falha_criar_lembrete",
+          motivo: "acao_suspeita",
+          faltando: ["acao"],
+        };
+      }
+    }
+
+    // 🚨 Validar dados obrigatórios
+    if (data.intencao === "criar_lembrete") {
+      const faltando = [];
+
+      if (!data.acao) faltando.push("acao");
+      if (!data.hora && !data.offset_ms) faltando.push("horario");
+
+      if (faltando.length > 0) {
+        return {
+          intencao: "falha_criar_lembrete",
+          motivo: "dados_incompletos",
+          faltando,
+        };
+      }
+    }
 
     // 🔒 Fallback de segurança
     if (!data.intencao) {
