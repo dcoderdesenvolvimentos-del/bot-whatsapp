@@ -969,9 +969,43 @@ JSON:
 
     const textoOriginal = text.toLowerCase();
 
-    // 🚨 Detectar ação inventada
-    if (data.intencao === "criar_lembrete" && data.acao) {
-      if (!textoOriginal.includes(data.acao.toLowerCase())) {
+    if (data.intencao === "criar_lembrete") {
+      // =========================
+      // 🔥 CASO: MÚLTIPLOS LEMBRETES
+      // =========================
+      if (Array.isArray(data.lembretes)) {
+        for (const l of data.lembretes) {
+          // 🚨 ação inventada
+          if (l.acao && !textoOriginal.includes(l.acao.toLowerCase())) {
+            console.log("🚨 IA INVENTOU AÇÃO:", l.acao);
+
+            return {
+              intencao: "falha_criar_lembrete",
+              motivo: "acao_suspeita",
+              faltando: ["acao"],
+            };
+          }
+
+          // 🚨 validação individual
+          if (!l.acao || (!l.hora && !l.offset_ms)) {
+            return {
+              intencao: "falha_criar_lembrete",
+              motivo: "dados_incompletos",
+              faltando: ["acao", "horario"],
+            };
+          }
+        }
+
+        return data; // ✅ tudo certo
+      }
+
+      // =========================
+      // 🔥 CASO: LEMBRETE SIMPLES
+      // =========================
+      const faltando = [];
+
+      // 🚨 ação inventada
+      if (data.acao && !textoOriginal.includes(data.acao.toLowerCase())) {
         console.log("🚨 IA INVENTOU AÇÃO:", data.acao);
 
         return {
@@ -980,12 +1014,8 @@ JSON:
           faltando: ["acao"],
         };
       }
-    }
 
-    // 🚨 Validar dados obrigatórios
-    if (data.intencao === "criar_lembrete") {
-      const faltando = [];
-
+      // 🚨 validação simples
       if (!data.acao) faltando.push("acao");
       if (!data.hora && !data.offset_ms) faltando.push("horario");
 
