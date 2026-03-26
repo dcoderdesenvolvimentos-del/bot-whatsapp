@@ -46,6 +46,10 @@ REGRAS DE PRIORIDADE (MUITO IMPORTANTE)
 2️⃣ LEMBRETES
 - Se mencionar "lembrar", "lembre", "aviso", horário ou data:
   → intencao = "criar_lembrete"
+Regra Importante: Se o usuário informar apenas a data,
+ou apenas a ação,
+ou apenas o horário,
+a intenção "criar_lembrete" NUNCA pode ser chamada.
 - Se mencionar "apagar", "excluir lembrete":
   → intencao = "excluir_lembrete"
 
