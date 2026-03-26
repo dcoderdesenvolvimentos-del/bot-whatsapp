@@ -604,7 +604,10 @@ Saída:
 
   Muita atenção:
 
-  Se o usuario falar que quer criar lembrete ou compromisso mas nao dizer a ação a intenção nao pode ser chamada.
+  Se o usuário informar apenas a data,
+ou apenas a ação,
+ou apenas o horário,
+a intenção NUNCA pode ser omitida.
 
 
 Se o usuário pedir para VER ou LISTAR lembretes,
