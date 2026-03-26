@@ -602,6 +602,11 @@ Saída:
   - "todos os dias às 10h" → tipo: "diario", valor: null
 
 
+  Muita atenção:
+
+  Se o usuario falar que quer criar lembrete ou compromisso mas nao dizer a ação a intenção nao pode ser chamada.
+
+
 Se o usuário pedir para VER ou LISTAR lembretes,
 identifique também filtros de tempo:
 
