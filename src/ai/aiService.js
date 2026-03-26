@@ -639,10 +639,10 @@ use obrigatoriamente:
 
 "intencao": "criar_lembrete"
 
-Mesmo que o usuário informe apenas a data,
+Se o usuário informar apenas a data,
 ou apenas a ação,
 ou apenas o horário,
-a intenção NUNCA pode ser omitida.
+a intenção NUNCA pode ser chamada.
 
   Exemplo:
   Entrada: "me lembra dia 12 de pagar a internet"
@@ -652,6 +652,7 @@ Saída correta:
   "acao": "pagar a internet",
   "dia": 12
 }
+
   
 
 ATENÇÃO MÁXIMA:
