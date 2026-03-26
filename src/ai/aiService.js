@@ -607,7 +607,7 @@ Saída:
   Se o usuário informar apenas a data,
 ou apenas a ação,
 ou apenas o horário,
-a intenção NUNCA pode ser chamada.
+a intenção "criar_lembrete_recorrente" NUNCA pode ser chamada.
 
 
 Se o usuário pedir para VER ou LISTAR lembretes,
@@ -650,7 +650,7 @@ use obrigatoriamente:
 Se o usuário informar apenas a data,
 ou apenas a ação,
 ou apenas o horário,
-a intenção NUNCA pode ser chamada.
+a intenção "criar_lembrete" NUNCA pode ser chamada.
 
   Exemplo:
   Entrada: "me lembra dia 12 de pagar a internet"
@@ -755,6 +755,11 @@ REGRAS IMPORTANTES DE DATA:
     }
   ]
 }
+
+  Se o usuário informar apenas a data,
+ou apenas a ação,
+ou apenas o horário,
+a intenção "criar_lembrete" NUNCA pode ser chamada.
 
 
 Quando a intenção for listar compromissos por período, retorne SEMPRE no formato JSON:
