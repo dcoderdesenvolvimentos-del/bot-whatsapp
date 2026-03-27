@@ -60,33 +60,3 @@ export async function sendButtonList(phone, message, buttons) {
     );
   }
 }
-
-export async function sendTyping(phone) {
-  try {
-    await axios.post(
-      `${BASE_URL}/send-presence`,
-      {
-        phone,
-        presence: "composing",
-      },
-      { headers: HEADERS },
-    );
-  } catch (err) {
-    console.error("❌ typing:", err.response?.data || err.message);
-  }
-}
-
-export async function stopTyping(phone) {
-  try {
-    await axios.post(
-      `${BASE_URL}/send-presence`,
-      {
-        phone,
-        presence: "paused",
-      },
-      { headers: HEADERS },
-    );
-  } catch (err) {
-    console.error("❌ stop typing:", err.response?.data || err.message);
-  }
-}

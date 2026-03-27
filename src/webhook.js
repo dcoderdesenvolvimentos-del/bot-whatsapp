@@ -5,7 +5,6 @@ import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 import { temAcesso } from "./utils/access.js";
-import { sendTyping, stopTyping } from "./zapi.js";
 
 const processedMessages = new Set();
 
@@ -159,41 +158,14 @@ export async function handleWebhook(payload, sendMessage) {
     }
 
     console.log("PASSOU DA VERIFICAÇÃO");
-
-    // 🧠 ATIVA DIGITANDO
-    await sendTyping(phone);
-
-    // mantém ativo (IMPORTANTE)
-    setTimeout(() => sendTyping(phone), 1000);
-
-    // 🧠 PROCESSA
+    // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
     console.log("ROUTER RESPONSE:", response);
-
     if (!response) return;
 
-    // ⏱ tempo humano
-    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    const tempo = Math.min(2000, String(response).length * 25);
-    await delay(tempo);
-
-    // 🛑 para digitando
-    await stopTyping(phone);
-
-    // 📤 ENVIO (mantém sua lógica original)
+    // 7️⃣ envia resposta
     if (typeof response === "string") {
       await sendMessage(phone, response);
-      return;
-    }
-
-    if (response.type === "buttons") {
-      await sendButtonList(phone, response.text, response.buttons);
-      return;
-    }
-
-    if (response.type === "pix") {
-      await sendMessage(phone, response.text);
-      await sendMessage(phone, response.pixCode);
       return;
     }
 
