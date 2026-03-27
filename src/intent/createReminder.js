@@ -207,10 +207,13 @@ export async function createReminder(userDocId, data) {
   // 🔹 CASO ÚNICO → MOSTRA DESCRIÇÃO DA IA
   if (resultados.length === 1) {
     const r = resultados[0];
+    const textoFormatado = r.texto
+      ? r.texto.charAt(0).toUpperCase() + r.texto.slice(1)
+      : "";
 
     let resposta =
       `✅ *Compromisso Registrado!*\n\n` +
-      `📌 ${r.texto}\n` +
+      `📌 ${textoFormatado}\n` +
       `🕐 ${new Date(r.when.toMillis()).toLocaleString("pt-BR")}`;
 
     if (r.descricaoIA) {
@@ -223,11 +226,15 @@ export async function createReminder(userDocId, data) {
   // 🔹 CASO MÚLTIPLO → NÃO MOSTRA DESCRIÇÃO DA IA
   let respostaFinal = `✅ *Prontinho!* Registrei ${resultados.length} Compromissos:\n\n`;
 
+  function capitalize2(texto) {
+    if (!texto) return "";
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
   resultados.forEach((r, i) => {
     respostaFinal +=
       `${i + 1}️⃣ ` +
       `${new Date(r.when.toMillis()).toLocaleString("pt-BR")} — ` +
-      `${r.texto}\n`;
+      `${capitalize2(r.texto)}\n`;
   });
 
   return respostaFinal.trim();
