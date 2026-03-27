@@ -64,10 +64,10 @@ export async function sendButtonList(phone, message, buttons) {
 export async function sendTyping(phone, type = "composing") {
   try {
     await axios.post(
-      `${BASE_URL}/typing`,
+      `${BASE_URL}/send-presence`,
       {
         phone,
-        type, // "composing" ou "paused"
+        presence: type, // 👈 AQUI MUDA
       },
       { headers: HEADERS },
     );
