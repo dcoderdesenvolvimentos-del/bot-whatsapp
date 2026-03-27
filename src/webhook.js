@@ -5,6 +5,7 @@ import { sendButtonList } from "./zapi.js";
 import { routeIntent } from "./intent/intentRouter.js";
 import { getOrCreateUserByPhone } from "./services/userResolver.js";
 import { temAcesso } from "./utils/access.js";
+import { sendTyping } from "./zapi.js";
 
 const processedMessages = new Set();
 
@@ -158,6 +159,10 @@ export async function handleWebhook(payload, sendMessage) {
     }
 
     console.log("PASSOU DA VERIFICAÇÃO");
+
+    // 🧠 ATIVA DIGITANDO
+    await sendTyping(phone);
+
     // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
     console.log("ROUTER RESPONSE:", response);
