@@ -1785,17 +1785,21 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       case "criar_lembrete_recorrente":
         const tiposTexto = {
-          diario: "todos os dias",
-          semanal: `toda ${data.valor_recorrencia}`,
-          mensal: `todo dia ${data.valor_recorrencia}`,
-          anual: `todo dia ${data.valor_recorrencia}`,
+          diario: "Todos os dias",
+          semanal: `Toda ${data.valor_recorrencia}`,
+          mensal: `Todo dia ${data.valor_recorrencia}`,
+          anual: `Todo dia ${data.valor_recorrencia}`,
         };
 
         await addRecurringReminder(userDocId, data);
 
+        function capitalize3(texto) {
+          if (!texto) return "";
+          return texto.charAt(0).toUpperCase() + texto.slice(1);
+        }
         response =
           `✅ *Lembrete recorrente criado!*\n\n` +
-          `📝 ${data.mensagem}\n` +
+          `📝 ${capitalize3(data.mensagem)}\n` +
           `🔁 Frequência: ${tiposTexto[data.tipo_recorrencia]}\n` +
           `⏰ Horário: ${data.horario}`;
         break;
