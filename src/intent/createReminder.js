@@ -236,18 +236,20 @@ export async function createReminder(userDocId, data) {
 function ajustarHoraInteligente(data, hora) {
   const texto = (data.text || data.acao || "").toLowerCase();
 
-  if (texto.includes("manhã") || texto.includes("madrugada")) {
+  const isManha = texto.includes("manhã") || texto.includes("madrugada");
+  const isTarde = texto.includes("tarde");
+  const isNoite = texto.includes("noite");
+
+  // ✅ se falou explicitamente
+  if (isManha) {
     if (hora === 12) return 0;
     return hora;
   }
 
-  if (texto.includes("tarde") || texto.includes("noite")) {
+  if (isTarde || isNoite) {
     if (hora < 12) return hora + 12;
     return hora;
   }
-
-  // 🔥 REGRA NOVA:
-  // NÃO inventa período
 
   // 🔥 NOVO: se tem data futura (tipo "amanhã")
   // NÃO inventa período
@@ -255,5 +257,6 @@ function ajustarHoraInteligente(data, hora) {
     return hora;
   }
 
+  // 🔥 fallback (opcional)
   return hora;
 }
