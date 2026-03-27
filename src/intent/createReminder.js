@@ -52,7 +52,7 @@ function buildWhen(data) {
     let hora = data.hora;
 
     // 🔒 REGRA BR: horário ambíguo vira PM
-    if (hora >= 1 && hora <= 5) hora += 12;
+    hora = ajustarHoraPorPeriodo(data, hora);
 
     const local = new Date(
       now.getFullYear(),
@@ -95,7 +95,7 @@ function buildWhen(data) {
   if (typeof data.hora === "number") {
     let hora = data.hora;
 
-    if (hora >= 1 && hora <= 5) hora += 12;
+    hora = ajustarHoraPorPeriodo(data, hora);
 
     const local = new Date(
       now.getFullYear(),
@@ -236,4 +236,30 @@ export async function createReminder(userDocId, data) {
   });
 
   return respostaFinal.trim();
+}
+
+function ajustarHoraPorPeriodo(data, hora) {
+  const texto = (data.text || data.acao || "").toLowerCase();
+
+  const isManha = texto.includes("manhã") || texto.includes("madrugada");
+  const isTarde = texto.includes("tarde");
+  const isNoite = texto.includes("noite");
+
+  if (isManha) {
+    if (hora === 12) hora = 0;
+    return hora;
+  }
+
+  if (isTarde || isNoite) {
+    if (hora < 12) hora += 12;
+    return hora;
+  }
+
+  // ⚠️ fallback (ambíguo)
+  if (hora >= 1 && hora <= 5) {
+    // só assume PM se NÃO falou manhã
+    hora += 12;
+  }
+
+  return hora;
 }
