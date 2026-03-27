@@ -166,6 +166,14 @@ export async function handleWebhook(payload, sendMessage) {
     // 6️⃣ chama o router
     const response = await routeIntent(uid, text.toLowerCase(), media);
     console.log("ROUTER RESPONSE:", response);
+
+    if (!response) return;
+
+    // ⏱ delay inteligente
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+    const tempo = Math.min(2000, String(response).length * 25);
+    await delay(tempo);
+
     if (!response) return;
 
     // 7️⃣ envia resposta
