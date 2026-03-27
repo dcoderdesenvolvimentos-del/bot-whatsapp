@@ -248,5 +248,12 @@ function ajustarHoraInteligente(data, hora) {
 
   // 🔥 REGRA NOVA:
   // NÃO inventa período
+
+  // 🔥 NOVO: se tem data futura (tipo "amanhã")
+  // NÃO inventa período
+  if (data.offset_dias || data.dia || data.weekday) {
+    return hora;
+  }
+
   return hora;
 }
