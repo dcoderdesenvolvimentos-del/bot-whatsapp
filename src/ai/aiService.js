@@ -1004,21 +1004,21 @@ JSON:
       // =========================
       const faltando = [];
 
-      function normalizar(texto) {
-        return texto
+      function normalizar12(str) {
+        return str
           .toLowerCase()
-          .normalize("NFD") // remove acentos
+          .normalize("NFD") // remove acento
           .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-z0-9 ]/g, "") // remove símbolos
+          .replace(/[^a-z0-9\s]/g, "") // remove pontuação e hífen
           .replace(/\s+/g, " ")
           .trim();
       }
 
       // 🚨 ação inventada
-      const original = normalizar(textoOriginal);
-      const acaoIA = normalizar(data.acao);
+      const textoNormalizado = normalizar12(text);
+      const acaoNormalizada = normalizar12(data.acao);
 
-      if (data.acao && !original.includes(acaoIA)) {
+      if (data.acao && !textoNormalizado.includes(acaoNormalizada)) {
         console.log("🚨 IA INVENTOU AÇÃO:", data.acao);
 
         return {
