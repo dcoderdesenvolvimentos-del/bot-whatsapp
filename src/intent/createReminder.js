@@ -49,10 +49,7 @@ function buildWhen(data) {
 
   // 6️⃣ OFFSET EM DIAS + HORA — "amanhã às 10"
   if (typeof data.offset_dias === "number" && typeof data.hora === "number") {
-    let hora = data.hora;
-
-    // 🔒 REGRA BR: horário ambíguo vira PM
-    hora = ajustarHoraPorPeriodo(data, hora);
+    let hora = ajustarHoraInteligente(data, data.hora);
 
     const local = new Date(
       now.getFullYear(),
@@ -93,9 +90,7 @@ function buildWhen(data) {
 
   // 7️⃣ HORA SOLTA — "às 15"
   if (typeof data.hora === "number") {
-    let hora = data.hora;
-
-    hora = ajustarHoraPorPeriodo(data, hora);
+    let hora = ajustarHoraInteligente(data, data.hora);
 
     const local = new Date(
       now.getFullYear(),
@@ -214,7 +209,7 @@ export async function createReminder(userDocId, data) {
     const r = resultados[0];
 
     let resposta =
-      `✅ *Lembrete criado!*\n\n` +
+      `✅ *Compromisso Registrado!*\n\n` +
       `📌 ${r.texto}\n` +
       `🕐 ${new Date(r.when.toMillis()).toLocaleString("pt-BR")}`;
 
@@ -226,7 +221,7 @@ export async function createReminder(userDocId, data) {
   }
 
   // 🔹 CASO MÚLTIPLO → NÃO MOSTRA DESCRIÇÃO DA IA
-  let respostaFinal = `✅ *Prontinho!* Criei ${resultados.length} lembretes:\n\n`;
+  let respostaFinal = `✅ *Prontinho!* Registrei ${resultados.length} Compromissos:\n\n`;
 
   resultados.forEach((r, i) => {
     respostaFinal +=
@@ -238,28 +233,20 @@ export async function createReminder(userDocId, data) {
   return respostaFinal.trim();
 }
 
-function ajustarHoraPorPeriodo(data, hora) {
+function ajustarHoraInteligente(data, hora) {
   const texto = (data.text || data.acao || "").toLowerCase();
 
-  const isManha = texto.includes("manhã") || texto.includes("madrugada");
-  const isTarde = texto.includes("tarde");
-  const isNoite = texto.includes("noite");
-
-  if (isManha) {
-    if (hora === 12) hora = 0;
+  if (texto.includes("manhã") || texto.includes("madrugada")) {
+    if (hora === 12) return 0;
     return hora;
   }
 
-  if (isTarde || isNoite) {
-    if (hora < 12) hora += 12;
+  if (texto.includes("tarde") || texto.includes("noite")) {
+    if (hora < 12) return hora + 12;
     return hora;
   }
 
-  // ⚠️ fallback (ambíguo)
-  if (hora >= 1 && hora <= 5) {
-    // só assume PM se NÃO falou manhã
-    hora += 12;
-  }
-
+  // 🔥 REGRA NOVA:
+  // NÃO inventa período
   return hora;
 }
