@@ -23,12 +23,12 @@ export async function sendMessage(phone, message) {
     await axios.post(
       `${BASE_URL}/send-text`,
       { phone, message },
-      { headers: HEADERS }
+      { headers: HEADERS },
     );
   } catch (err) {
     console.error(
       "❌ Erro ao enviar mensagem:",
-      err.response?.data || err.message
+      err.response?.data || err.message,
     );
   }
 }
@@ -56,7 +56,22 @@ export async function sendButtonList(phone, message, buttons) {
   } catch (err) {
     console.error(
       "❌ Erro ao enviar botões:",
-      err.response?.data || err.message
+      err.response?.data || err.message,
     );
+  }
+}
+
+export async function sendTyping(phone, type = "composing") {
+  try {
+    await axios.post(
+      `${BASE_URL}/typing`,
+      {
+        phone,
+        type, // "composing" ou "paused"
+      },
+      { headers: HEADERS },
+    );
+  } catch (err) {
+    console.error("❌ Erro no typing:", err.response?.data || err.message);
   }
 }
