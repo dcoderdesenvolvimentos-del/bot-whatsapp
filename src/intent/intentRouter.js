@@ -1482,6 +1482,24 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         let rawValor = data.valor;
 
+        // 🔥 CORREÇÃO INTELIGENTE PARA ÁUDIO (STT BUG)
+        if (
+          typeof rawValor === "number" &&
+          rawValor >= 1000 &&
+          rawValor % 100 === 0 && // típico erro tipo 73988
+          !text.includes("mil") &&
+          !text.includes(".") &&
+          !text.includes(",")
+        ) {
+          console.warn(
+            "⚠️ Correção de áudio aplicada:",
+            rawValor,
+            "→",
+            rawValor / 100,
+          );
+          rawValor = rawValor / 100;
+        }
+
         // 🔒 Fallback regex (caso IA não retorne valor)
         if (!rawValor) {
           const cleanText = removeDatePartsFromText(text);
