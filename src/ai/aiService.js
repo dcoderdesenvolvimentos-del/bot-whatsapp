@@ -963,10 +963,11 @@ JSON:
       .replace(/```/g, "")
       .trim();
 
-    const respostaCorrigida = respostaLimpa.replace(
-      /"valor":\s*(\d+),(\d+)/g,
-      (_, inteiro, decimal) => `"valor": ${inteiro}.${decimal}`,
-    );
+    const respostaCorrigida = respostaLimpa
+      // remove ponto de milhar (1.739 → 1739)
+      .replace(/\.(?=\d{3})/g, "")
+      // troca vírgula decimal por ponto
+      .replace(/(\d+),(\d{1,2})/g, "$1.$2");
 
     console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
     console.log("🧠 RESPOSTA IA LIMPA:", respostaCorrigida);
