@@ -1500,11 +1500,18 @@ export async function routeIntent(userDocId, text, media = {}) {
         }
 
         // 🔥 NORMALIZAÇÃO DEFINITIVA
-        let valorNormalizado = String(rawValor)
-          .replace(/\./g, "") // remove separador de milhar
-          .replace(",", "."); // vírgula vira ponto decimal
+        let valorNormalizado;
 
-        valorNormalizado = parseFloat(valorNormalizado);
+        // 🔥 se já for número → usa direto
+        if (typeof rawValor === "number") {
+          valorNormalizado = rawValor;
+        } else {
+          valorNormalizado = parseFloat(
+            String(rawValor)
+              .replace(/\.(?=\d{3})/g, "") // remove só milhar
+              .replace(",", "."), // vírgula decimal
+          );
+        }
 
         if (isNaN(valorNormalizado)) {
           return "❌ Valor inválido.";
