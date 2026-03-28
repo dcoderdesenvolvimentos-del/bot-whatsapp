@@ -2122,13 +2122,21 @@ export function parseMoneySafe({ text, valueFromAI }) {
 
   const suspeito =
     valor >= 1000 &&
-    !textoTemDecimal &&
     Number.isInteger(valor) &&
-    String(valor).length >= 4;
+    !textoTemDecimal &&
+    !/mil/.test(text);
 
   if (suspeito) {
     console.warn("⚠️ Correção STT:", valor, "→", valor / 100);
-    valor = valor / 100;
+    const str = String(valor);
+
+    // 🔥 se termina com 2 dígitos → assume centavos
+    if (str.length >= 3) {
+      const reais = str.slice(0, -2);
+      const centavos = str.slice(-2);
+
+      valor = Number(`${reais}.${centavos}`);
+    }
   }
 
   /* =========================
