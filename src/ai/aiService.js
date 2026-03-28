@@ -975,17 +975,6 @@ JSON:
       // =========================
       if (Array.isArray(data.lembretes)) {
         for (const l of data.lembretes) {
-          // 🚨 ação inventada
-          if (l.acao && !textoOriginal.includes(l.acao.toLowerCase())) {
-            console.log("🚨 IA INVENTOU AÇÃO:", l.acao);
-
-            return {
-              intencao: "falha_criar_lembrete",
-              motivo: "acao_suspeita",
-              faltando: ["acao"],
-            };
-          }
-
           // 🚨 validação individual
           if (!l.acao || (!l.hora && !l.offset_ms)) {
             return {
