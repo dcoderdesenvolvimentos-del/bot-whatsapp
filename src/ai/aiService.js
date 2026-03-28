@@ -1015,11 +1015,30 @@ JSON:
       }
 
       // 🚨 ação inventada
-      const textoNormalizado = normalizar12(text);
-      const acaoNormalizada = normalizar12(data.acao);
+      function similaridadeBasica(texto, acao) {
+        const textoPalavras = normalizar12(texto).split(" ");
+        const acaoPalavras = normalizar12(acao).split(" ");
 
-      if (data.acao && !textoNormalizado.includes(acaoNormalizada)) {
-        console.log("🚨 IA INVENTOU AÇÃO:", data.acao);
+        let match = 0;
+
+        for (const palavra of acaoPalavras) {
+          if (textoPalavras.includes(palavra)) {
+            match++;
+          }
+        }
+
+        return match / acaoPalavras.length;
+      }
+
+      const score = similaridadeBasica(text, data.acao);
+
+      if (data.acao && score < 0.6) {
+        console.log(
+          "🚨 IA POSSIVELMENTE INVENTOU:",
+          data.acao,
+          "score:",
+          score,
+        );
 
         return {
           intencao: "falha_criar_lembrete",
