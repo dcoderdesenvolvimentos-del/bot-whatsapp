@@ -2229,7 +2229,7 @@ export function parseSpokenNumber(text = "") {
   // 🔥 CENTAVOS
   let centavos = 0;
 
-  const matchCentavos = text.match(/(\\w+)\\s+centavos?|e\\s+(\\w+)$/i);
+  const matchCentavos = text.match(/(\d+)\s+centavos?/i);
 
   if (matchCentavos) {
     const palavra = matchCentavos[1] || matchCentavos[2];

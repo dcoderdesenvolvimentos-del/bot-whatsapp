@@ -1030,7 +1030,6 @@ JSON:
 
       // 🚨 validação simples
       if (!data.acao) faltando.push("acao");
-      if (!data.hora && !data.offset_ms) faltando.push("horario");
 
       if (faltando.length > 0) {
         return {
