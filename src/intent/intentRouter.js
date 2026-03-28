@@ -1480,59 +1480,13 @@ export async function routeIntent(userDocId, text, media = {}) {
         console.log("🧠 IA payload:", data);
         console.log("🧠 TEXTO ORIGINAL:", text);
 
-        let rawValor = data.valor;
+        const valorFinal = parseMoneySafe({
+          text,
+          valueFromAI: data.valor,
+        });
 
-        // 🔥 CORREÇÃO INTELIGENTE PARA ÁUDIO (STT BUG)
-        if (
-          typeof rawValor === "number" &&
-          rawValor >= 1000 &&
-          rawValor % 100 === 0 && // típico erro tipo 73988
-          !text.includes("mil") &&
-          !text.includes(".") &&
-          !text.includes(",")
-        ) {
-          console.warn(
-            "⚠️ Correção de áudio aplicada:",
-            rawValor,
-            "→",
-            rawValor / 100,
-          );
-          rawValor = rawValor / 100;
-        }
-
-        // 🔒 Fallback regex (caso IA não retorne valor)
-        if (!rawValor) {
-          const cleanText = removeDatePartsFromText(text);
-
-          const match = cleanText.match(
-            /(r\$|\$)?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/i,
-          );
-
-          if (match) {
-            rawValor = match[2];
-          }
-        }
-
-        if (!rawValor) {
+        if (!valorFinal) {
           return "🤔 Não consegui identificar o valor do gasto.";
-        }
-
-        // 🔥 NORMALIZAÇÃO DEFINITIVA
-        let valorNormalizado;
-
-        // 🔥 se já for número → usa direto
-        if (typeof rawValor === "number") {
-          valorNormalizado = rawValor;
-        } else {
-          valorNormalizado = parseFloat(
-            String(rawValor)
-              .replace(/\.(?=\d{3})/g, "") // remove só milhar
-              .replace(",", "."), // vírgula decimal
-          );
-        }
-
-        if (isNaN(valorNormalizado)) {
-          return "❌ Valor inválido.";
         }
 
         const { local, categoria } = data;
@@ -1559,7 +1513,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         // 💾 SALVA
         await createExpense(userDocId, {
-          valor: valorNormalizado, // salva como número real
+          valor: valorFinal, // salva como número real
           local: local || "não informado",
           categoria: categoria || "outros",
           timestamp,
@@ -2113,4 +2067,68 @@ function getCurrentMonthRange() {
   const start = new Date(now.getFullYear(), now.getMonth(), 1);
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   return { start, end };
+}
+
+export function parseMoneySafe({ text, valueFromAI }) {
+  let valor = null;
+
+  /* =========================
+     1️⃣ PRIORIDADE: TEXTO ORIGINAL
+  ========================= */
+
+  if (text) {
+    const match = text.match(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/);
+
+    if (match) {
+      valor = match[1];
+    }
+  }
+
+  /* =========================
+     2️⃣ FALLBACK: IA
+  ========================= */
+
+  if (!valor && valueFromAI) {
+    valor = valueFromAI;
+  }
+
+  /* =========================
+     3️⃣ NORMALIZAÇÃO
+  ========================= */
+
+  if (typeof valor === "number") {
+    return valor;
+  }
+
+  if (typeof valor === "string") {
+    valor = valor
+      .replace(/\.(?=\d{3})/g, "") // remove milhar
+      .replace(",", "."); // vírgula decimal
+
+    valor = parseFloat(valor);
+  }
+
+  /* =========================
+     4️⃣ CORREÇÃO DE ÁUDIO (STT)
+  ========================= */
+
+  const textoTemDecimal =
+    text.includes(",") || text.includes(".") || /reais?/i.test(text);
+
+  const suspeito = valor >= 1000 && valor % 100 === 0 && !textoTemDecimal;
+
+  if (suspeito) {
+    console.warn("⚠️ Correção STT:", valor, "→", valor / 100);
+    valor = valor / 100;
+  }
+
+  /* =========================
+     5️⃣ VALIDAÇÃO FINAL
+  ========================= */
+
+  if (!valor || isNaN(valor) || valor <= 0) {
+    return null;
+  }
+
+  return valor;
 }
