@@ -1032,17 +1032,6 @@ JSON:
 
       const score = similaridadeBasica(text, data.acao);
 
-      // só bloqueia se for MUITO diferente
-      if (data.acao && score < 0.3) {
-        console.log("🚨 IA REALMENTE INVENTOU:", data.acao, "score:", score);
-
-        return {
-          intencao: "falha_criar_lembrete",
-          motivo: "acao_suspeita",
-          faltando: ["acao"],
-        };
-      }
-
       // 🚨 validação simples
       if (!data.acao) faltando.push("acao");
       if (!data.hora && !data.offset_ms) faltando.push("horario");
