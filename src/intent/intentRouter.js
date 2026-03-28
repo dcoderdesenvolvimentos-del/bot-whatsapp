@@ -2072,6 +2072,12 @@ function getCurrentMonthRange() {
 export function parseMoneySafe({ text, valueFromAI }) {
   let valor = null;
 
+  const valorFalado = parseSpokenNumber(text);
+
+  if (valorFalado && valorFalado > 0) {
+    return valorFalado;
+  }
+
   /* =========================
      1️⃣ PRIORIDADE: TEXTO ORIGINAL
   ========================= */
@@ -2135,4 +2141,98 @@ export function parseMoneySafe({ text, valueFromAI }) {
   }
 
   return valor;
+}
+
+export function parseSpokenNumber(text = "") {
+  if (!text) return null;
+
+  text = text.toLowerCase();
+
+  const unidades = {
+    zero: 0,
+    um: 1,
+    uma: 1,
+    dois: 2,
+    duas: 2,
+    tres: 3,
+    quatro: 4,
+    cinco: 5,
+    seis: 6,
+    sete: 7,
+    oito: 8,
+    nove: 9,
+  };
+
+  const especiais = {
+    dez: 10,
+    onze: 11,
+    doze: 12,
+    treze: 13,
+    quatorze: 14,
+    quinze: 15,
+    dezesseis: 16,
+    dezessete: 17,
+    dezoito: 18,
+    dezenove: 19,
+  };
+
+  const dezenas = {
+    vinte: 20,
+    trinta: 30,
+    quarenta: 40,
+    cinquenta: 50,
+    sessenta: 60,
+    setenta: 70,
+    oitenta: 80,
+    noventa: 90,
+  };
+
+  const centenas = {
+    cem: 100,
+    cento: 100,
+    duzentos: 200,
+    trezentos: 300,
+    quatrocentos: 400,
+    quinhentos: 500,
+    seiscentos: 600,
+    setecentos: 700,
+    oitocentos: 800,
+    novecentos: 900,
+  };
+
+  let total = 0;
+  let current = 0;
+
+  const words = text.split(/\s+/);
+
+  for (let w of words) {
+    if (unidades[w] !== undefined) current += unidades[w];
+    else if (especiais[w] !== undefined) current += especiais[w];
+    else if (dezenas[w] !== undefined) current += dezenas[w];
+    else if (centenas[w] !== undefined) current += centenas[w];
+    else if (w === "mil") {
+      current *= 1000;
+      total += current;
+      current = 0;
+    }
+  }
+
+  total += current;
+
+  // 🔥 CENTAVOS
+  let centavos = 0;
+
+  const matchCentavos = text.match(/(\\w+)\\s+centavos?|e\\s+(\\w+)$/i);
+
+  if (matchCentavos) {
+    const palavra = matchCentavos[1] || matchCentavos[2];
+    if (dezenas[palavra]) centavos += dezenas[palavra];
+    if (unidades[palavra]) centavos += unidades[palavra];
+  }
+
+  if (centavos > 0) {
+    return total + centavos / 100;
+  }
+
+  return total || null;
 }
