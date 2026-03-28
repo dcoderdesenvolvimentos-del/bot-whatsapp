@@ -1530,7 +1530,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
         return (
           "💾 *Despesa registrada com sucesso!*\n\n" +
-          `💰 Valor:  ${valorNormalizado.toLocaleString("pt-BR", {
+          `💰 Valor:  ${Number(valorFinal).toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}\n` +
