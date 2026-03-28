@@ -2083,7 +2083,7 @@ export function parseMoneySafe({ text, valueFromAI }) {
   ========================= */
 
   if (text) {
-    const match = text.match(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/);
+    const match = text.match(/(\d+(?:[.,]\d{2})?)/);
 
     if (match) {
       valor = match[1];
