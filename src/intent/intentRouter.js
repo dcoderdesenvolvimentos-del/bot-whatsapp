@@ -2083,7 +2083,7 @@ export function parseMoneySafe({ text, valueFromAI }) {
   ========================= */
 
   if (text) {
-    const match = text.match(/(\d+(?:[.,]\d{2})?)/);
+    const match = text.match(/\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?/);
 
     if (match) {
       valor = match[1];
@@ -2118,8 +2118,7 @@ export function parseMoneySafe({ text, valueFromAI }) {
      4️⃣ CORREÇÃO DE ÁUDIO (STT)
   ========================= */
 
-  const textoTemDecimal =
-    text.includes(",") || text.includes(".") || /reais?/i.test(text);
+  const textoTemDecimal = /,\d{2}/.test(text) || /\.\d{2}/.test(text);
 
   const suspeito =
     valor >= 1000 &&
