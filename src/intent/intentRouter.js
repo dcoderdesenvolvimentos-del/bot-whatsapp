@@ -569,7 +569,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     await updateUser(userDocId, { tempReceipt: null });
 
     return (
-      "💾 *Gasto salvo com sucesso!*\n\n" +
+      "💾 *Despesa registrada com sucesso!*\n\n" +
       `💰 R$ ${dados.valor.toFixed(2)}\n` +
       `📅 Data: ${dados.data || "Hoje"}`
     );
@@ -1550,7 +1550,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           : null;
 
         return (
-          "💾 *Gasto salvo com sucesso!*\n\n" +
+          "💾 *Despesa registrada com sucesso!*\n\n" +
           `💰 Valor:  ${valorNormalizado.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",

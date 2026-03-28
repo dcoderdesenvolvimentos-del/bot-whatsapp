@@ -963,9 +963,15 @@ JSON:
       .replace(/```/g, "")
       .trim();
 
-    console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
+    const respostaCorrigida = respostaLimpa.replace(
+      /"valor":\s*(\d+),(\d+)/g,
+      (_, inteiro, decimal) => `"valor": ${inteiro}.${decimal}`,
+    );
 
-    const data = JSON.parse(respostaLimpa);
+    console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
+    console.log("🧠 RESPOSTA IA LIMPA:", respostaCorrigida);
+
+    const data = JSON.parse(respostaCorrigida);
 
     const textoOriginal = text.toLowerCase();
 
