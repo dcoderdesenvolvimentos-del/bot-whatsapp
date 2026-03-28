@@ -2115,7 +2115,11 @@ export function parseMoneySafe({ text, valueFromAI }) {
   const textoTemDecimal =
     text.includes(",") || text.includes(".") || /reais?/i.test(text);
 
-  const suspeito = valor >= 1000 && valor % 100 === 0 && !textoTemDecimal;
+  const suspeito =
+    valor >= 1000 &&
+    !textoTemDecimal &&
+    Number.isInteger(valor) &&
+    String(valor).length >= 4;
 
   if (suspeito) {
     console.warn("⚠️ Correção STT:", valor, "→", valor / 100);
