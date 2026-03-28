@@ -1032,13 +1032,9 @@ JSON:
 
       const score = similaridadeBasica(text, data.acao);
 
-      if (data.acao && score < 0.6) {
-        console.log(
-          "🚨 IA POSSIVELMENTE INVENTOU:",
-          data.acao,
-          "score:",
-          score,
-        );
+      // só bloqueia se for MUITO diferente
+      if (data.acao && score < 0.3) {
+        console.log("🚨 IA REALMENTE INVENTOU:", data.acao, "score:", score);
 
         return {
           intencao: "falha_criar_lembrete",
