@@ -2118,7 +2118,12 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
     const temMil = /mil/.test(text);
 
-    if (!temMil && valor >= 1000 && Number.isInteger(valor)) {
+    if (
+      !temMil &&
+      Number.isInteger(valor) &&
+      valor >= 100 && // 🔥 pega 988 agora
+      valor <= 99999 // 🔒 segurança
+    ) {
       const str = String(valor);
 
       if (str.length >= 3) {
