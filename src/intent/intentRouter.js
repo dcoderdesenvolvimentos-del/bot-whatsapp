@@ -2069,10 +2069,34 @@ function getCurrentMonthRange() {
   return { start, end };
 }
 
-export function parseMoneySafe({ text, valueFromAI }) {
+export function parseMoneySafe({ text = "", valueFromAI }) {
   if (!text && !valueFromAI) return null;
 
-  // 🔥 1. tenta pegar valor completo com decimal
+  text = text.toLowerCase();
+
+  // =========================
+  // 🥇 PRIORIDADE 1: TEXTO COM "MIL"
+  // =========================
+  const matchMil = text.match(/(\d+)\s*mil/);
+
+  if (matchMil) {
+    return Number(matchMil[1]) * 1000;
+  }
+
+  // =========================
+  // 🥇 PRIORIDADE 2: "REAIS E CENTAVOS"
+  // =========================
+  const matchCentavos = text.match(/(\d+)\D+(\d+)\s*centavos?/);
+
+  if (matchCentavos) {
+    const reais = Number(matchCentavos[1]);
+    const centavos = Number(matchCentavos[2]);
+    return reais + centavos / 100;
+  }
+
+  // =========================
+  // 🥇 PRIORIDADE 3: NÚMERO FORMATADO (1.739,88)
+  // =========================
   const regexCompleto = /\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})|\d+[.,]\d{2}/;
 
   const match = text.match(regexCompleto);
@@ -2080,19 +2104,21 @@ export function parseMoneySafe({ text, valueFromAI }) {
   if (match) {
     let valor = match[0];
 
-    valor = valor
-      .replace(/\.(?=\d{3})/g, "") // remove milhar
-      .replace(",", ".");
+    valor = valor.replace(/\.(?=\d{3})/g, "").replace(",", ".");
 
     return parseFloat(valor);
   }
 
-  // 🔥 2. fallback IA
+  // =========================
+  // 🥈 FALLBACK: IA
+  // =========================
   if (typeof valueFromAI === "number") {
     let valor = valueFromAI;
 
-    // 🔥 converte tipo 7392 → 73.92
-    if (valor >= 1000 && Number.isInteger(valor)) {
+    // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
+    const temMil = /mil/.test(text);
+
+    if (!temMil && valor >= 1000 && Number.isInteger(valor)) {
       const str = String(valor);
 
       if (str.length >= 3) {
