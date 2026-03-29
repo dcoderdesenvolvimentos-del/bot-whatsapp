@@ -2121,8 +2121,9 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
     if (
       !temMil &&
       Number.isInteger(valor) &&
-      valor >= 100 && // 🔥 pega 988 agora
-      valor <= 99999 // 🔒 segurança
+      valor >= 1000 && // 🔥 volta pra 1000
+      valor <= 99999 &&
+      !text.match(/\b\d{1,3}\b/) // 🔒 protege números simples tipo 100, 500
     ) {
       const str = String(valor);
 
