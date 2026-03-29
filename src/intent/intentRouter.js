@@ -2115,24 +2115,24 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
   if (typeof valueFromAI === "number") {
     let valor = valueFromAI;
 
+    const numeroPequenoDigitado = /^\D*\b\d{1,3}\b/.test(text);
+
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
     const temMil = /mil/.test(text);
 
     if (
       !temMil &&
       Number.isInteger(valor) &&
-      valor >= 1000 && // 🔥 volta pra 1000
+      valor >= 100 &&
       valor <= 99999 &&
-      !text.match(/\b\d{1,3}\b/) // 🔒 protege números simples tipo 100, 500
+      !numeroPequenoDigitado // 🔥 BLOQUEIO
     ) {
       const str = String(valor);
 
-      if (str.length >= 3) {
-        const reais = str.slice(0, -2);
-        const centavos = str.slice(-2);
+      const reais = str.slice(0, -2);
+      const centavos = str.slice(-2);
 
-        return Number(`${reais}.${centavos}`);
-      }
+      valor = Number(`${reais}.${centavos}`);
     }
 
     return valor;
