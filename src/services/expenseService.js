@@ -158,6 +158,14 @@ export async function criarGastoParcelado(userId, data) {
     // trata como gasto normal
   }
 
+  // 🔗 DASHBOARD LINK
+  const userSnap = await db.collection("users").doc(userId).get();
+  const { dashboardSlug } = userSnap.data() || {};
+
+  const link = dashboardSlug
+    ? `https://app.marioai.com.br/m/${dashboardSlug}`
+    : null;
+
   // ⚠️ 1 parcela NÃO é compra parcelada
   if (data.parcelas === 1) {
     return await createExpense(userId, {
@@ -168,7 +176,9 @@ export async function criarGastoParcelado(userId, data) {
       return (
         "💾 *Pagamento registrado com sucesso!*\n\n" +
         `📦 ${data.descricao}\n` +
-        `💰 Valor: R$ ${Number(data.valor_total).toFixed(2)}`
+        `💰 Valor: R$ ${Number(data.valor_total).toFixed(2)}\n` +
+        `📅 Data: ${data.data || "Hoje"}` +
+        (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
       );
     });
   }
