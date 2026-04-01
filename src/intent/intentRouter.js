@@ -290,14 +290,29 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "🗑️ Transação excluída com sucesso.";
   }
 
-  if (msg.startsWith("editar_gasto_")) {
-    const gastoId = msg
-      .replace("editar_gasto_", "")
-      .trim()
-      .replace(/[^\w-]/g, ""); // limpa qualquer sujeira
+  if (msg.startsWith("editar_gasto_") || msg.includes("editar")) {
+    console.log("🔥 ENTROU NO EDITAR");
+
+    let gastoId;
+
+    if (msg.startsWith("editar_gasto_")) {
+      gastoId = msg
+        .replace("editar_gasto_", "")
+        .trim()
+        .replace(/[^\w-]/g, "");
+    } else {
+      const user = await getUser(userDocId);
+      gastoId = user.lastGastoId;
+    }
+
+    console.log("🧪 gastoId:", gastoId);
+
+    if (!gastoId) {
+      return "⚠️ Não encontrei o gasto para editar.";
+    }
 
     await updateUser(userDocId, {
-      editingGasto: user.lastGastoId,
+      editingGasto: gastoId,
       editingStep: "escolher",
       editingField: null,
     });
