@@ -294,7 +294,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EDITAR GASTO (clicou botão)
   // =======================
 
-  if (msg === "editar") {
+  if (msg.includes("editar")) {
     const user = await getUser(userDocId);
 
     if (!user.lastGastoId) {
@@ -310,9 +310,9 @@ export async function routeIntent(userDocId, text, media = {}) {
       type: "buttons",
       text: "✏️ O que deseja editar?",
       buttons: [
-        { id: "editar_valor", text: "💰 Valor" },
-        { id: "editar_data", text: "📅 Data" },
-        { id: "editar_descricao", text: "📝 Descrição" },
+        { id: "edit_valor", text: "💰 Valor" },
+        { id: "edit_data", text: "📅 Data" },
+        { id: "edit_descricao", text: "📝 Descrição" },
       ],
     };
   }
@@ -322,9 +322,9 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
 
   if (
-    text === "editar_valor" ||
-    text === "editar_data" ||
-    text === "editar_descricao"
+    text === "edit_valor" ||
+    text === "edit_data" ||
+    text === "edit_descricao"
   ) {
     const campo = text.replace("editar_", "");
 
