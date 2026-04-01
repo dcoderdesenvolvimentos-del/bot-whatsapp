@@ -291,7 +291,10 @@ export async function routeIntent(userDocId, text, media = {}) {
   }
 
   if (msg.startsWith("editar_gasto_")) {
-    const gastoId = msg.replace("editar_gasto_", "");
+    const gastoId = msg
+      .replace("editar_gasto_", "")
+      .trim()
+      .replace(/[^\w-]/g, ""); // limpa qualquer sujeira
 
     await updateUser(userDocId, {
       editingGasto: gastoId,
