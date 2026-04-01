@@ -294,7 +294,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EDITAR GASTO (clicou botão)
   // =======================
 
-  if (msg.includes("editar") && !userData.editingStep) {
+  if (msg === "editar") {
     const user = await getUser(userDocId);
 
     if (!user.lastGastoId) {
