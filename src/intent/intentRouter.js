@@ -297,7 +297,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .replace(/[^\w-]/g, ""); // limpa qualquer sujeira
 
     await updateUser(userDocId, {
-      editingGasto: gastoId,
+      editingGasto: user.lastGastoId,
       editingStep: "escolher",
       editingField: null,
     });
