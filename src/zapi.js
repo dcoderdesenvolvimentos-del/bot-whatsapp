@@ -35,19 +35,21 @@ export async function sendMessage(phone, message) {
 
 /* 🔘 BUTTON LIST (Z-API OFICIAL) */
 export async function sendButtonList(phone, message, buttons) {
+  const payload = {
+    phone,
+    message,
+    buttonList: {
+      buttons: buttons.map((b) => ({
+        id: b.id || b.text,
+        label: b.text || b.label,
+      })),
+    },
+  };
+
   try {
-    const res = await axios.post(
-      `${BASE_URL}/send-button-list`,
-      {
-        phone,
-        buttonText: message, // 🔥 ESSA LINHA MUDA TUDO
-        buttons: buttons.map((b) => ({
-          id: b.id,
-          label: b.text,
-        })),
-      },
-      { headers: HEADERS },
-    );
+    const res = await axios.post(`${BASE_URL}/send-button-list`, payload, {
+      headers: HEADERS,
+    });
 
     console.log("📤 BOTÕES ENVIADOS:", res.data);
     return res.data;
