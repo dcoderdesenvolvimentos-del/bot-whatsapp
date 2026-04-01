@@ -1686,12 +1686,13 @@ export async function routeIntent(userDocId, text, media = {}) {
           type: "buttons",
           text:
             "💾 *Despesa registrada!*\n\n" +
-            `💰 ${Number(valorFinal).toLocaleString("pt-BR", {
+            `💰 Valor: ${Number(valorFinal).toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
             })}\n` +
-            `📍 ${capitalize(local || "Não informado")}\n` +
-            `📅 ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}`,
+            `📍 Local: ${capitalize(local || "não informado")}\n` +
+            `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
+            (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : ""),
           buttons: [
             { id: `editar_gasto_${gastoId}`, text: "✏️ Editar" },
             { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir" },

@@ -61,7 +61,7 @@ export async function createExpense(userId, data) {
       timestamp: data.timestamp ?? Timestamp.now(),
       createdAt: data.createdAt ?? Timestamp.now(),
     });
-
+  console.log("ID DO GASTO:", gastoId);
   return ref.id; // 🔥 ESSENCIAL
 }
 
