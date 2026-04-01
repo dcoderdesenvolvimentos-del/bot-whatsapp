@@ -37,7 +37,7 @@ export async function sendMessage(phone, message) {
 export async function sendButtonList(phone, message, buttons) {
   try {
     const res = await axios.post(
-      `${BASE_URL}/send-buttons`,
+      `${BASE_URL}/send-button-list`,
       {
         phone,
         buttonText: message, // 🔥 ESSA LINHA MUDA TUDO
