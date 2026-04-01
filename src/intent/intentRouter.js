@@ -326,16 +326,16 @@ export async function routeIntent(userDocId, text, media = {}) {
     text === "edit_data" ||
     text === "edit_descricao"
   ) {
-    const campo = text.replace("editar_", "");
+    const campo = text.replace("edit_", "");
 
     await updateUser(userDocId, {
       editingField: campo,
       editingStep: "aguardando",
     });
 
-    if (campo === "edit_valor") return "💰 Digite o novo valor:";
-    if (campo === "edit_data") return "📅 Digite a nova data:";
-    if (campo === "edit_descricao") return "📝 Digite a nova descrição:";
+    if (campo === "valor") return "💰 Digite o novo valor:";
+    if (campo === "data") return "📅 Digite a nova data:";
+    if (campo === "descricao") return "📝 Digite a nova descrição:";
   }
 
   // =======================
