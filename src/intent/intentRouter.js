@@ -273,22 +273,19 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EXCLUIR GASTO
   // =======================
 
-  if (text.startsWith("excluir_gasto_")) {
-    const gastoId = text.replace("excluir_gasto_", "");
+  if (text === "🗑 Excluir") {
+    const user = await getUser(userDocId);
 
-    const ref = db
+    if (!user.lastGastoId) {
+      return "⚠️ Nenhum gasto recente encontrado.";
+    }
+
+    await db
       .collection("users")
       .doc(userDocId)
       .collection("gastos")
-      .doc(gastoId);
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      return "⚠️ Essa transação não existe mais.";
-    }
-
-    await ref.delete();
+      .doc(user.lastGastoId)
+      .delete();
 
     return "🗑️ Transação excluída com sucesso.";
   }
@@ -297,11 +294,15 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EDITAR GASTO (clicou botão)
   // =======================
 
-  if (text.startsWith("editar_gasto_")) {
-    const gastoId = text.replace("editar_gasto_", "");
+  if (text === "✏️ Editar") {
+    const user = await getUser(userDocId);
+
+    if (!user.lastGastoId) {
+      return "⚠️ Nenhum gasto recente encontrado.";
+    }
 
     await updateUser(userDocId, {
-      editingGasto: gastoId,
+      editingGasto: user.lastGastoId,
       editingStep: "escolher",
     });
 
@@ -1672,6 +1673,9 @@ export async function routeIntent(userDocId, text, media = {}) {
           categoria,
           timestamp,
           createdAt: Timestamp.now(),
+        });
+        await updateUser(userDocId, {
+          lastGastoId: gastoId,
         });
         console.log("ID DO GASTO:", gastoId);
 
