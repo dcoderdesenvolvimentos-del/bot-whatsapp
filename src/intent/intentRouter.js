@@ -320,13 +320,12 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
   // ESCOLHER CAMPO
   // =======================
-
   if (
-    text === "editar_valor" ||
-    text === "editar_data" ||
-    text === "editar_descricao"
+    msg === "editar_valor" ||
+    msg === "editar_data" ||
+    msg === "editar_descricao"
   ) {
-    const campo = text.replace("editar_", "");
+    const campo = msg.replace("editar_", "");
 
     await updateUser(userDocId, {
       editingField: campo,
