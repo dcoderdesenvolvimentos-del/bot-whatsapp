@@ -322,9 +322,9 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
 
   if (
-    text === "edit_valor" ||
-    text === "edit_data" ||
-    text === "edit_descricao"
+    text === "editar_valor" ||
+    text === "editar_data" ||
+    text === "editar_descricao"
   ) {
     const campo = text.replace("edit_", "");
 
@@ -333,9 +333,9 @@ export async function routeIntent(userDocId, text, media = {}) {
       editingStep: "aguardando",
     });
 
-    if (campo === "edit_valor") return "💰 Digite o novo valor:";
-    if (campo === "edit_data") return "📅 Digite a nova data:";
-    if (campo === "edit_descricao") return "📝 Digite a nova descrição:";
+    if (campo === "valor") return "💰 Digite o novo valor:";
+    if (campo === "data") return "📅 Digite a nova data:";
+    if (campo === "descricao") return "📝 Digite a nova descrição:";
   }
 
   // =======================
