@@ -268,12 +268,12 @@ export async function routeIntent(userDocId, text, media = {}) {
   ========================= */
 
   const userData = await getUser(userDocId);
-
+  const msg = normalize(text);
   // =======================
   // EXCLUIR GASTO
   // =======================
 
-  if (text === "🗑 Excluir") {
+  if (msg.includes("excluir")) {
     const user = await getUser(userDocId);
 
     if (!user.lastGastoId) {
@@ -294,7 +294,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EDITAR GASTO (clicou botão)
   // =======================
 
-  if (text === "✏️ Editar") {
+  if (msg.includes("editar")) {
     const user = await getUser(userDocId);
 
     if (!user.lastGastoId) {
