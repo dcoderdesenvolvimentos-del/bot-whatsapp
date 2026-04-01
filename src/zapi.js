@@ -40,7 +40,7 @@ export async function sendButtonList(phone, message, buttons) {
       `${BASE_URL}/send-buttons`,
       {
         phone,
-        message,
+        buttonText: message, // 🔥 ESSA LINHA MUDA TUDO
         buttons: buttons.map((b) => ({
           id: b.id,
           label: b.text,
