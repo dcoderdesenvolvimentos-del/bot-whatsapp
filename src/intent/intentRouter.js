@@ -269,6 +269,160 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   const userData = await getUser(userDocId);
 
+  // =======================
+  // EXCLUIR GASTO
+  // =======================
+
+  if (text.startsWith("excluir_gasto_")) {
+    const gastoId = text.replace("excluir_gasto_", "");
+
+    const ref = db
+      .collection("users")
+      .doc(userDocId)
+      .collection("gastos")
+      .doc(gastoId);
+
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return "⚠️ Essa transação não existe mais.";
+    }
+
+    await ref.delete();
+
+    return "🗑️ Transação excluída com sucesso.";
+  }
+
+  // =======================
+  // EDITAR GASTO (clicou botão)
+  // =======================
+
+  if (text.startsWith("editar_gasto_")) {
+    const gastoId = text.replace("editar_gasto_", "");
+
+    await updateUser(userDocId, {
+      editingGasto: gastoId,
+      editingStep: "escolher",
+    });
+
+    return {
+      type: "buttons",
+      text: "✏️ O que deseja editar?",
+      buttons: [
+        { id: "editar_valor", text: "💰 Valor" },
+        { id: "editar_data", text: "📅 Data" },
+        { id: "editar_descricao", text: "📝 Descrição" },
+      ],
+    };
+  }
+
+  // =======================
+  // ESCOLHER CAMPO
+  // =======================
+
+  if (
+    text === "editar_valor" ||
+    text === "editar_data" ||
+    text === "editar_descricao"
+  ) {
+    const campo = text.replace("editar_", "");
+
+    await updateUser(userDocId, {
+      editingField: campo,
+      editingStep: "aguardando",
+    });
+
+    if (campo === "valor") return "💰 Digite o novo valor:";
+    if (campo === "data") return "📅 Digite a nova data:";
+    if (campo === "descricao") return "📝 Digite a nova descrição:";
+  }
+
+  // =======================
+  // PROCESSAR EDIÇÃO
+  // =======================
+
+  const user = await getUser(userDocId);
+
+  if (
+    user.editingStep === "aguardando" &&
+    user.editingGasto &&
+    user.editingField
+  ) {
+    const ref = db
+      .collection("users")
+      .doc(userDocId)
+      .collection("gastos")
+      .doc(user.editingGasto);
+
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      await updateUser(userDocId, {
+        editingGasto: null,
+        editingField: null,
+        editingStep: null,
+      });
+
+      return "⚠️ Gasto não encontrado.";
+    }
+
+    let update = {};
+
+    if (user.editingField === "valor") {
+      const valor = parseBRL(text);
+
+      if (!valor || isNaN(valor)) {
+        return "💰 Digite um valor válido.";
+      }
+
+      update.valor = valor;
+    }
+
+    if (user.editingField === "descricao") {
+      update.local = text;
+    }
+
+    if (user.editingField === "data") {
+      const date = buildDateFromText(text);
+
+      if (!date) {
+        return "📅 Data inválida.";
+      }
+
+      update.timestamp = Timestamp.fromDate(date);
+    }
+
+    // 🔥 ATUALIZA
+    await ref.update(update);
+
+    // 🔥 BUSCA NOVAMENTE
+    const updatedDoc = await ref.get();
+    const gasto = updatedDoc.data();
+
+    // limpa estado
+    await updateUser(userDocId, {
+      editingGasto: null,
+      editingField: null,
+      editingStep: null,
+    });
+
+    return {
+      type: "buttons",
+      text:
+        "✏️ Gasto atualizado!\n\n" +
+        `📍 ${capitalize(gasto.local)}\n` +
+        `💰 ${Number(gasto.valor).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}\n` +
+        `📅 ${gasto.timestamp.toDate().toLocaleDateString("pt-BR")}`,
+      buttons: [
+        { id: `editar_gasto_${updatedDoc.id}`, text: "↩️ Editar" },
+        { id: `excluir_gasto_${updatedDoc.id}`, text: "🗑 Excluir" },
+      ],
+    };
+  }
+
   if (!userData) {
     console.error("❌ Usuário não encontrado:", userDocId);
     return "Erro ao carregar seus dados. Tente novamente.";
