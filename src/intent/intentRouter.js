@@ -1673,6 +1673,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           timestamp,
           createdAt: Timestamp.now(),
         });
+        console.log("ID DO GASTO:", gastoId);
 
         // 🔗 DASHBOARD LINK
         const userSnap = await db.collection("users").doc(userDocId).get();
@@ -1690,7 +1691,7 @@ export async function routeIntent(userDocId, text, media = {}) {
               style: "currency",
               currency: "BRL",
             })}\n` +
-            `📍 Local: ${capitalize(local || "não informado")}\n` +
+            `📍 Local: ${capitalize(local || "Não informado")}\n` +
             `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
             (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : ""),
           buttons: [
