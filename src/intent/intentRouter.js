@@ -290,7 +290,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "🗑️ Transação excluída com sucesso.";
   }
 
-  // =======================
+  // ======================
   // EDITAR GASTO (clicou botão)
   // =======================
 
