@@ -50,7 +50,7 @@ export async function createExpense(userId, data) {
     throw new Error("Valor inválido para gasto");
   }
 
-  await db
+  const ref = await db
     .collection("users")
     .doc(userId)
     .collection("gastos")
@@ -58,13 +58,11 @@ export async function createExpense(userId, data) {
       valor,
       local: data.local,
       categoria: data.categoria,
-
-      // 🔥 ESSENCIAL
       timestamp: data.timestamp ?? Timestamp.now(),
-
-      // quando foi cadastrado
       createdAt: data.createdAt ?? Timestamp.now(),
     });
+
+  return ref.id; // 🔥 ESSENCIAL
 }
 
 export async function getTodayExpenses(userId) {

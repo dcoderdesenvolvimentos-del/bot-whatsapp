@@ -1666,10 +1666,10 @@ export async function routeIntent(userDocId, text, media = {}) {
         const timestamp = date ? Timestamp.fromDate(date) : Timestamp.now();
 
         // 💾 SALVA
-        await createExpense(userDocId, {
-          valor: valorFinal, // salva como número real
-          local: local || "não informado",
-          categoria: categoria || "outros",
+        const gastoId = await createExpense(userDocId, {
+          valor: valorFinal,
+          local,
+          categoria,
           timestamp,
           createdAt: Timestamp.now(),
         });
@@ -1682,16 +1682,21 @@ export async function routeIntent(userDocId, text, media = {}) {
           ? `https://app.marioai.com.br/m/${dashboardSlug}`
           : null;
 
-        return (
-          "💾 *Despesa registrada com sucesso!*\n\n" +
-          `💰 Valor:  ${Number(valorFinal).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}\n` +
-          `📍 Local: ${capitalize(local || "não informado")}\n` +
-          `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
-          (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : "")
-        );
+        return {
+          type: "buttons",
+          text:
+            "💾 *Despesa registrada!*\n\n" +
+            `💰 ${Number(valorFinal).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}\n` +
+            `📍 ${capitalize(local || "Não informado")}\n` +
+            `📅 ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}`,
+          buttons: [
+            { id: `editar_gasto_${gastoId}`, text: "✏️ Editar" },
+            { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir" },
+          ],
+        };
       }
 
       /* Gastos do Dia */
