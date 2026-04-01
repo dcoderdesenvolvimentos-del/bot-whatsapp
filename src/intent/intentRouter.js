@@ -329,11 +329,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     };
   }
 
-  if (
-    msg === "editar_valor" ||
-    msg === "editar_data" ||
-    msg === "editar_descricao"
-  ) {
+  if (msg === "edit_valor" || msg === "edit_data" || msg === "edit_descricao") {
     const campo = msg.replace("editar_", "");
 
     await updateUser(userDocId, {
