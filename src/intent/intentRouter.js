@@ -321,9 +321,9 @@ export async function routeIntent(userDocId, text, media = {}) {
       type: "buttons",
       text: "✏️ O que deseja editar?",
       buttons: [
-        { id: "editar_valor", text: "💰 Valor" },
-        { id: "editar_data", text: "📅 Data" },
-        { id: "editar_descricao", text: "📝 Descrição" },
+        { id: "edit_valor", text: "💰 Valor" },
+        { id: "edit_data", text: "📅 Data" },
+        { id: "edit_descricao", text: "📝 Descrição" },
         { id: "cancelar_edicao", text: "❌ Cancelar" },
       ],
     };
