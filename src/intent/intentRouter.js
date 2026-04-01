@@ -290,7 +290,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "🗑️ Transação excluída com sucesso.";
   }
 
-  if (msg.startsWith("editar_gasto_") || msg.includes("editar")) {
+  if (msg.startsWith("editar_gasto_") || msg === "editar") {
     console.log("🔥 ENTROU NO EDITAR");
 
     let gastoId;
