@@ -366,6 +366,8 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.editingGasto);
 
     const doc = await ref.get();
+    // 🔥 pega atualizado
+    const user = await getUser(userDocId);
 
     if (!doc.exists) {
       await updateUser(userDocId, {
