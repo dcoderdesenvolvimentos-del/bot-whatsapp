@@ -294,11 +294,15 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EDITAR GASTO (clicou botão)
   // =======================
 
-  if (msg.startsWith("editar_gasto_")) {
-    const gastoId = msg.replace("editar_gasto_", "");
+  if (msg.includes("editar")) {
+    const user = await getUser(userDocId);
+
+    if (!user.lastGastoId) {
+      return "⚠️ Nenhum gasto recente encontrado.";
+    }
 
     await updateUser(userDocId, {
-      editingGasto: gastoId,
+      editingGasto: user.lastGastoId,
       editingStep: "escolher",
     });
 
