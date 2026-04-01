@@ -310,9 +310,9 @@ export async function routeIntent(userDocId, text, media = {}) {
       type: "buttons",
       text: "✏️ O que deseja editar?",
       buttons: [
-        { id: "edit_valor", text: "💰 Valor" },
-        { id: "edit_data", text: "📅 Data" },
-        { id: "edit_descricao", text: "📝 Descrição" },
+        { id: "editar_valor", text: "💰 Valor" },
+        { id: "editar_data", text: "📅 Data" },
+        { id: "editar_descricao", text: "📝 Descrição" },
       ],
     };
   }
@@ -326,7 +326,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     text === "editar_data" ||
     text === "editar_descricao"
   ) {
-    const campo = text.replace("edit_", "");
+    const campo = text.replace("editar_", "");
 
     await updateUser(userDocId, {
       editingField: campo,
