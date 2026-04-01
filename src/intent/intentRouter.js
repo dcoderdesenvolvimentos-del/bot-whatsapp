@@ -290,7 +290,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "🗑️ Transação excluída com sucesso.";
   }
 
-  // ======================
+  // =======================
   // EDITAR GASTO (clicou botão)
   // =======================
 
@@ -393,6 +393,13 @@ export async function routeIntent(userDocId, text, media = {}) {
       update.timestamp = Timestamp.fromDate(date);
     }
 
+    console.log("🧪 editingField:", user.editingField);
+    console.log("🧪 editingStep:", user.editingStep);
+    console.log("🧪 texto:", text);
+    if (Object.keys(update).length === 0) {
+      console.log("⚠️ UPDATE VAZIO - BLOQUEADO");
+      return "⚠️ Não consegui atualizar o gasto.";
+    }
     // 🔥 ATUALIZA
     await ref.update(update);
 
