@@ -268,14 +268,13 @@ export async function routeIntent(userDocId, text, media = {}) {
   ========================= */
 
   const userData = await getUser(userDocId);
+  const user = await getUser(userDocId);
   const msg = normalize(text);
   // =======================
   // EXCLUIR GASTO
   // =======================
 
   if (msg.includes("excluir")) {
-    const user = userData;
-
     if (!user.lastGastoId) {
       return "⚠️ Nenhum gasto recente encontrado.";
     }
@@ -301,7 +300,6 @@ export async function routeIntent(userDocId, text, media = {}) {
         .trim()
         .replace(/[^\w-]/g, "");
     } else {
-      const user = userData;
       gastoId = user.lastGastoId;
     }
 
@@ -352,14 +350,11 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "❌ Edição cancelada.";
   }
 
-  const user = userData;
-
   if (
     user.editingStep === "aguardando" &&
     user.editingGasto &&
     user.editingField
   ) {
-    const user = userData;
     const ref = db
       .collection("users")
       .doc(userDocId)
@@ -367,6 +362,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.editingGasto);
 
     const doc = await ref.get();
+    // 🔥 pega atualizado
 
     if (!doc.exists) {
       await updateUser(userDocId, {
@@ -719,7 +715,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   }
 
   if (normalized === "confirmar_salvar_comprovante") {
-    const user = userData;
+    const user = await getUser(userDocId);
 
     if (!user?.tempReceipt) {
       return "⚠️ Nenhum comprovante pendente para salvar.";
