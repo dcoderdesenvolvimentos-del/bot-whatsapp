@@ -272,164 +272,6 @@ export async function routeIntent(userDocId, text, media = {}) {
   const msg = normalize(text);
 
   // =======================
-  // EXCLUIR RECEITAS
-  // =======================
-  if (msg.startsWith("excluir_receita_")) {
-    const receitaId = text.replace("excluir_receita_", "").trim();
-
-    if (!receitaId) {
-      return "⚠️ Não encontrei a receita para excluir.";
-    }
-
-    await db
-      .collection("users")
-      .doc(userDocId)
-      .collection("receitas")
-      .doc(user.lastReceitaId)
-      .delete();
-
-    return "🗑️ Receita excluída com sucesso.";
-  }
-
-  if (msg.startsWith("editar_receita_")) {
-    const receitaId = text.replace("editar_receita_", "").trim();
-
-    if (!receitaId) {
-      return "⚠️ Não encontrei a receita.";
-    }
-
-    await updateUser(userDocId, {
-      editingReceita: receitaId,
-      editingReceitaStep: "escolher",
-      editingReceitaField: null,
-    });
-
-    return {
-      type: "buttons",
-      text: "✏️ O que deseja editar na receita?",
-      buttons: [
-        { id: "edit_valor_receita", text: "💰 Valor" },
-        { id: "edit_data_receita", text: "📅 Data" },
-        { id: "edit_descricao_receita", text: "📝 Descrição" },
-        { id: "cancelar_edicao_receita", text: "❌ Cancelar" },
-      ],
-    };
-  }
-
-  if (
-    msg === "edit_valor_receita" ||
-    msg === "edit_data_receita" ||
-    msg === "edit_descricao_receita"
-  ) {
-    const campo = msg.replace("edit_", "").replace("_receita", "");
-
-    await updateUser(userDocId, {
-      editingReceitaField: campo,
-      editingReceitaStep: "aguardando",
-    });
-
-    if (campo === "valor") return "💰 Digite o novo valor:";
-    if (campo === "data") return "📅 Digite a nova data:";
-    if (campo === "descricao") return "📝 Digite a nova descrição:";
-  }
-
-  if (msg === "cancelar_edicao_receita") {
-    await updateUser(userDocId, {
-      editingReceita: null,
-      editingReceitaField: null,
-      editingReceitaStep: null,
-    });
-
-    return "❌ Edição cancelada.";
-  }
-
-  if (
-    user.editingReceitaStep === "aguardando" &&
-    user.editingReceita &&
-    user.editingReceitaField
-  ) {
-    const ref = db
-      .collection("users")
-      .doc(userDocId)
-      .collection("receitas")
-      .doc(user.editingReceita);
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      await updateUser(userDocId, {
-        editingReceita: null,
-        editingReceitaField: null,
-        editingReceitaStep: null,
-      });
-
-      return "⚠️ Receita não encontrada.";
-    }
-
-    let update = {};
-
-    // 💰 VALOR
-    if (user.editingReceitaField === "valor") {
-      const valor = parseBRL(text);
-
-      if (!valor || isNaN(valor)) {
-        return "💰 Digite um valor válido. Ex: 50 ou 32,90";
-      }
-
-      update.valor = valor;
-    }
-
-    // 📝 DESCRIÇÃO
-    if (user.editingReceitaField === "descricao") {
-      if (!text || text.length < 2) {
-        return "📝 Digite uma descrição válida.";
-      }
-
-      update.descricao = text;
-      update.origem = text;
-    }
-
-    // 📅 DATA
-    if (user.editingReceitaField === "data") {
-      const date = buildDateFromText(text);
-
-      if (!date) {
-        return "📅 Data inválida. Ex: 25/03";
-      }
-
-      update.createdAt = Timestamp.fromDate(date);
-    }
-
-    await ref.update(update);
-
-    const updatedDoc = await ref.get();
-    const receita = updatedDoc.data();
-
-    // 🧹 limpa estado
-    await updateUser(userDocId, {
-      editingReceita: null,
-      editingReceitaField: null,
-      editingReceitaStep: null,
-    });
-
-    return {
-      type: "buttons",
-      text:
-        "✅ *Receita atualizada!*\n\n" +
-        `📌 ${receita.descricao}\n` +
-        `💰 ${Number(receita.valor).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}\n` +
-        `📅 ${receita.createdAt.toDate().toLocaleDateString("pt-BR")}`,
-      buttons: [
-        { id: `editar_receita_${updatedDoc.id}`, text: "✏️ Editar" },
-        { id: `excluir_receita_${updatedDoc.id}`, text: "🗑 Excluir" },
-      ],
-    };
-  }
-
-  // =======================
   // EXCLUIR GASTO
   // =======================
 
@@ -1488,42 +1330,31 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   6️⃣ SALVA
   ===================================================== */
-        const receitaId = await criarReceita({
+        await criarReceita({
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
           origem: data.origem || "não informado",
           date: createdAt.toDate(),
         });
-        await updateUser(userDocId, {
-          lastReceitaId: receitaId,
-        });
-
-        console.log("🧪 receitaId:", receitaId);
-        console.log("🧪 tipo:", typeof receitaId);
 
         /* =====================================================
   7️⃣ RESPOSTA
   ===================================================== */
 
-        return {
-          type: "buttons",
-          text:
-            "💰 *Receita registrada com sucesso!*\n\n" +
-            `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}\n` +
-            `📌 Origem: ${data.origem || "não informada"}\n` +
-            `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
-            `━━━━━━━━━━━━━━━━━\n` +
-            `📊 *Dashboard Online*\n` +
-            `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`,
-          buttons: [
-            { id: `editar_receita_${receitaId}`, text: "✏️ Editar" },
-            { id: `excluir_receita_${receitaId}`, text: "🗑 Excluir" },
-          ],
-        };
+        return (
+          "💰 *Receita registrada com sucesso!*\n\n" +
+          `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}\n` +
+          `📌 Origem: ${data.origem || "não informada"}\n` +
+          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
+          `━━━━━━━━━━━━━━━━━\n` +
+          `📊 *Dashboard Online*\n` +
+          `Você também pode acompanhar tudo pelo seu painel:\n` +
+          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`
+        );
       }
 
       case "consultar_receitas_periodo": {
