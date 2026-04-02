@@ -400,7 +400,7 @@ export async function routeIntent(userDocId, text, media = {}) {
   // EXCLUIR GASTO
   // =======================
 
-  if (msg.includes("excluir")) {
+  if (msg.includes("excluir_gastos")) {
     if (!user.lastGastoId) {
       return "⚠️ Nenhum gasto recente encontrado.";
     }
