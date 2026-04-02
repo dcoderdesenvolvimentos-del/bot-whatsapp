@@ -274,21 +274,20 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
   // EXCLUIR RECEITAS
   // =======================
-  if (msg.startsWith("excluir_receita_")) {
-    const receitaId = text.replace("excluir_receita_", "").trim();
 
-    if (!receitaId) {
-      return "⚠️ Não encontrei a receita para excluir.";
+  if (msg.includes("excluir_receita")) {
+    if (!user.lastReceitaId) {
+      return "⚠️ Nenhum gasto recente encontrado.";
     }
 
     await db
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(receitaId)
+      .doc(user.lastReceitaId)
       .delete();
 
-    return "🗑️ Receita excluída com sucesso.";
+    return "🗑️ Registro excluído com sucesso.";
   }
 
   if (msg.startsWith("editar_receita_")) {
