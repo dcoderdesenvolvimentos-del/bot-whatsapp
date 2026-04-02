@@ -285,7 +285,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(receitaId)
+      .doc(user.lastReceitaId)
       .delete();
 
     return "🗑️ Receita excluída com sucesso.";
@@ -1495,6 +1495,10 @@ export async function routeIntent(userDocId, text, media = {}) {
           origem: data.origem || "não informado",
           date: createdAt.toDate(),
         });
+        await updateUser(userDocId, {
+          lastReceitaId: receitaId,
+        });
+        console.log("ID DA RECEITA:", receitaId);
 
         /* =====================================================
   7️⃣ RESPOSTA
