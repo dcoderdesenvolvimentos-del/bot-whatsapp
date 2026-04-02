@@ -434,8 +434,8 @@ export async function routeIntent(userDocId, text, media = {}) {
         })}\n` +
         `📅 ${gasto.timestamp.toDate().toLocaleDateString("pt-BR")}`,
       buttons: [
-        { id: `editar_gasto_${updatedDoc.id}`, text: "✏️ Editar" },
-        { id: `excluir_gasto_${updatedDoc.id}`, text: "🗑 Excluir" },
+        { id: `editar_gasto_${updatedDoc.id}`, text: "✏️ Editar Despesa" },
+        { id: `excluir_gasto_${updatedDoc.id}`, text: "🗑 Excluir Despesa" },
       ],
     };
   }
@@ -1715,8 +1715,8 @@ export async function routeIntent(userDocId, text, media = {}) {
             `📅 Data: ${date ? date.toLocaleDateString("pt-BR") : "Hoje"}` +
             (link ? `\n\n📊 *Ver no dashboard:*\n${link}` : ""),
           buttons: [
-            { id: `editar_gasto_${gastoId}`, text: "✏️ Editar" },
-            { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir" },
+            { id: `editar_gasto_${gastoId}`, text: "✏️ Editar Despesa" },
+            { id: `excluir_gasto_${gastoId}`, text: "🗑 Excluir Despesa" },
           ],
         };
       }
