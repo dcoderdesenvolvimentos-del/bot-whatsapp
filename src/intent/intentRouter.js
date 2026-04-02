@@ -359,6 +359,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     user.editingGasto &&
     user.editingField
   ) {
+    const user = userData;
     const ref = db
       .collection("users")
       .doc(userDocId)
@@ -366,8 +367,6 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.editingGasto);
 
     const doc = await ref.get();
-    // 🔥 pega atualizado
-    const user = userData;
 
     if (!doc.exists) {
       await updateUser(userDocId, {
