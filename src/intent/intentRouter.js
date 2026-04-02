@@ -298,7 +298,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     await updateUser(userDocId, {
-      editingReceita: receitaId,
+      editingReceita: user.lastReceitaId,
       editingStep: "escolher",
       editingField: null,
     });
