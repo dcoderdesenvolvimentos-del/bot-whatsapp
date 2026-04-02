@@ -274,33 +274,34 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
   // EXCLUIR RECEITAS
   // =======================
+  if (msg.startsWith("excluir_receita_")) {
+    const receitaId = text.replace("excluir_receita_", "").trim();
 
-  if (msg.includes("excluir_receita")) {
-    if (!user.lastReceitaId) {
-      return "⚠️ Nenhum gasto recente encontrado.";
+    if (!receitaId) {
+      return "⚠️ Não encontrei a receita para excluir.";
     }
 
     await db
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(user.lastReceitaId)
+      .doc(receitaId)
       .delete();
 
-    return "🗑️ Registro excluído com sucesso.";
+    return "🗑️ Receita excluída com sucesso.";
   }
 
   if (msg.startsWith("editar_receita_")) {
     const receitaId = text.replace("editar_receita_", "").trim();
 
     if (!receitaId) {
-      return "⚠️ Não encontrei a receita para editar.";
+      return "⚠️ Não encontrei a receita.";
     }
 
     await updateUser(userDocId, {
-      editingReceita: user.lastReceitaId,
-      editingStep: "escolher",
-      editingField: null,
+      editingReceita: receitaId,
+      editingReceitaStep: "escolher",
+      editingReceitaField: null,
     });
 
     return {
@@ -323,8 +324,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     const campo = msg.replace("edit_", "").replace("_receita", "");
 
     await updateUser(userDocId, {
-      editingField: campo,
-      editingStep: "aguardando_receita",
+      editingReceitaField: campo,
+      editingReceitaStep: "aguardando",
     });
 
     if (campo === "valor") return "💰 Digite o novo valor:";
@@ -335,17 +336,17 @@ export async function routeIntent(userDocId, text, media = {}) {
   if (msg === "cancelar_edicao_receita") {
     await updateUser(userDocId, {
       editingReceita: null,
-      editingField: null,
-      editingStep: null,
+      editingReceitaField: null,
+      editingReceitaStep: null,
     });
 
-    return "❌ Edição da receita cancelada.";
+    return "❌ Edição cancelada.";
   }
 
   if (
-    user.editingStep === "aguardando_receita" &&
+    user.editingReceitaStep === "aguardando" &&
     user.editingReceita &&
-    user.editingField
+    user.editingReceitaField
   ) {
     const ref = db
       .collection("users")
@@ -356,51 +357,83 @@ export async function routeIntent(userDocId, text, media = {}) {
     const doc = await ref.get();
 
     if (!doc.exists) {
+      await updateUser(userDocId, {
+        editingReceita: null,
+        editingReceitaField: null,
+        editingReceitaStep: null,
+      });
+
       return "⚠️ Receita não encontrada.";
     }
 
     let update = {};
 
     // 💰 VALOR
-    if (user.editingField === "valor") {
+    if (user.editingReceitaField === "valor") {
       const valor = parseBRL(text);
 
-      if (!valor) return "💰 Valor inválido.";
+      if (!valor || isNaN(valor)) {
+        return "💰 Digite um valor válido. Ex: 50 ou 32,90";
+      }
 
       update.valor = valor;
     }
 
     // 📝 DESCRIÇÃO
-    if (user.editingField === "descricao") {
+    if (user.editingReceitaField === "descricao") {
+      if (!text || text.length < 2) {
+        return "📝 Digite uma descrição válida.";
+      }
+
       update.descricao = text;
       update.origem = text;
     }
 
     // 📅 DATA
-    if (user.editingField === "data") {
+    if (user.editingReceitaField === "data") {
       const date = buildDateFromText(text);
 
-      if (!date) return "📅 Data inválida.";
+      if (!date) {
+        return "📅 Data inválida. Ex: 25/03";
+      }
 
       update.createdAt = Timestamp.fromDate(date);
     }
 
     await ref.update(update);
 
+    const updatedDoc = await ref.get();
+    const receita = updatedDoc.data();
+
+    // 🧹 limpa estado
     await updateUser(userDocId, {
       editingReceita: null,
-      editingField: null,
-      editingStep: null,
+      editingReceitaField: null,
+      editingReceitaStep: null,
     });
 
-    return "✅ Receita atualizada com sucesso!";
+    return {
+      type: "buttons",
+      text:
+        "✅ *Receita atualizada!*\n\n" +
+        `📌 ${receita.descricao}\n` +
+        `💰 ${Number(receita.valor).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}\n` +
+        `📅 ${receita.createdAt.toDate().toLocaleDateString("pt-BR")}`,
+      buttons: [
+        { id: `editar_receita_${updatedDoc.id}`, text: "✏️ Editar" },
+        { id: `excluir_receita_${updatedDoc.id}`, text: "🗑 Excluir" },
+      ],
+    };
   }
 
   // =======================
   // EXCLUIR GASTO
   // =======================
 
-  if (msg.includes("excluir_gastos")) {
+  if (msg.includes("excluir")) {
     if (!user.lastGastoId) {
       return "⚠️ Nenhum gasto recente encontrado.";
     }
@@ -1455,7 +1488,7 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   6️⃣ SALVA
   ===================================================== */
-        await criarReceita({
+        const receitaId = await criarReceita({
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
@@ -1466,14 +1499,6 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   7️⃣ RESPOSTA
   ===================================================== */
-
-        const receitaId = await criarReceita({
-          userId: userDocId,
-          valor,
-          descricao: data.descricao || "Recebimento",
-          origem: data.origem || "não informado",
-          date: createdAt.toDate(),
-        });
 
         return {
           type: "buttons",
@@ -1487,11 +1512,10 @@ export async function routeIntent(userDocId, text, media = {}) {
             `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
             `━━━━━━━━━━━━━━━━━\n` +
             `📊 *Dashboard Online*\n` +
-            `Você também pode acompanhar tudo pelo seu painel:\n` +
             `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`,
           buttons: [
-            { id: `editar_receita_${receitaId}`, text: "✏️ Editar Receita" },
-            { id: `excluir_receita_${receitaId}`, text: "🗑 Excluir Receita" },
+            { id: `editar_receita_${receitaId}`, text: "✏️ Editar" },
+            { id: `excluir_receita_${receitaId}`, text: "🗑 Excluir" },
           ],
         };
       }
@@ -2359,17 +2383,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  // 🔥 SALVA E PEGA O ID
-  const docRef = await db
-    .collection("users")
-    .doc(userId)
-    .collection("receitas")
-    .add(receita);
-
-  console.log("✅ Receita salva com ID:", docRef.id);
-
-  // 👉 RETORNA SÓ O ID
-  return docRef.id;
+  await db.collection("users").doc(userId).collection("receitas").add(receita);
 
   // 🔥 BUSCA O USUÁRIO CORRETAMENTE
   const userSnap = await db.collection("users").doc(userId).get();
