@@ -1498,7 +1498,9 @@ export async function routeIntent(userDocId, text, media = {}) {
         await updateUser(userDocId, {
           lastReceitaId: receitaId,
         });
-        console.log("ID DA RECEITA:", receitaId);
+
+        console.log("🧪 receitaId:", receitaId);
+        console.log("🧪 tipo:", typeof receitaId);
 
         /* =====================================================
   7️⃣ RESPOSTA
