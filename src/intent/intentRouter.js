@@ -286,7 +286,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.lastGastoId)
       .delete();
 
-    return "🗑️ Transação excluída com sucesso.";
+    return "🗑️ Registro excluído com sucesso.";
   }
 
   if (msg.startsWith("editar_gasto_") || msg === "editar") {
@@ -294,11 +294,8 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     let gastoId;
 
-    if (msg.startsWith("editar_gasto_")) {
-      gastoId = msg
-        .replace("editar_gasto_", "")
-        .trim()
-        .replace(/[^\w-]/g, "");
+    if (text.startsWith("editar_gasto_")) {
+      gastoId = text.replace("editar_gasto_", "").trim();
     } else {
       gastoId = user.lastGastoId;
     }
