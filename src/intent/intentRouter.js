@@ -1490,8 +1490,8 @@ export async function routeIntent(userDocId, text, media = {}) {
             `Você também pode acompanhar tudo pelo seu painel:\n` +
             `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`,
           buttons: [
-            { id: `editar_receita_${receitaId}`, text: "✏️ Editar" },
-            { id: `excluir_receita_${receitaId}`, text: "🗑 Excluir" },
+            { id: `editar_receita_${receitaId}`, text: "✏️ Editar Receita" },
+            { id: `excluir_receita_${receitaId}`, text: "🗑 Excluir Receita" },
           ],
         };
       }
