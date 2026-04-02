@@ -307,7 +307,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     await updateUser(userDocId, {
-      editingGasto: gastoId,
+      editingGasto: user.lastGastoId,
       editingStep: "escolher",
       editingField: null,
     });
