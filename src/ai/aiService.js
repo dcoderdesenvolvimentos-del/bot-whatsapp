@@ -205,6 +205,7 @@ Nunca multiplicar.
 Nunca converter para centavos.
 Se o usuário disser "trinta reais", retorne 30.
 Se disser "3 mil", retorne 3000.
+Nunca retorne r$ ou R$ junto com o valor q o usuario citou.
 
 
 Categorias possíveis:
