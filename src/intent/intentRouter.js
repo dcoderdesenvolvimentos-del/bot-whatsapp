@@ -2259,8 +2259,6 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
 
   if (!text && !valueFromAI) return null;
 
-  text = text.toLowerCase();
-
   // =========================
   // 🥇 PRIORIDADE 1: TEXTO COM "MIL"
   // =========================
