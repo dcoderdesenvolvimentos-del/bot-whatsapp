@@ -2285,7 +2285,14 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
   if (match) {
     let valor = match[0];
 
-    valor = valor.replace(/\.(?=\d{3})/g, "").replace(",", ".");
+    // 🇺🇸 formato tipo 1,000 (milhar com vírgula)
+    if (/^\d{1,3},\d{3}$/.test(valor)) {
+      valor = valor.replace(",", ""); // vira 1000
+    } else {
+      valor = valor
+        .replace(/\.(?=\d{3})/g, "") // remove milhar
+        .replace(",", "."); // decimal BR
+    }
 
     return parseFloat(valor);
   }
