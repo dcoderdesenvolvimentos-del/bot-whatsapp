@@ -2303,45 +2303,19 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
         .replace(",", "."); // decimal BR
     }
 
-    let valorExtraido = null;
-
-    if (match) {
-      let valor = match[0];
-
-      if (/^\d{1,3},\d{3}$/.test(valor)) {
-        valor = valor.replace(",", "");
-      } else {
-        valor = valor.replace(/\.(?=\d{3})/g, "").replace(",", ".");
-      }
-
-      valorExtraido = parseFloat(valor);
-    }
+    return parseFloat(valor);
   }
 
   // =========================
   // 🥈 FALLBACK: IA
   // =========================
-  let valor = valorExtraido ?? valueFromAI;
+  if (typeof valueFromAI === "number") {
+    let valor = valueFromAI;
 
-  if (typeof valor === "number") {
     const numeroPequenoDigitado = /^\D*\b\d{1,3}\b/.test(text);
 
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
     const temMil = /mil/.test(text);
-
-    // 🔥 CASO ESPECÍFICO: STT multiplicou (120 → 12000)
-    if (
-      typeof valor === "number" &&
-      valor >= 10000 &&
-      valor % 100 === 0 &&
-      !/mil/.test(text)
-    ) {
-      const corrigido = valor / 100;
-
-      console.warn("⚠️ STT inflado:", valor, "→", corrigido);
-
-      valor = corrigido;
-    }
 
     if (
       !temMil &&
