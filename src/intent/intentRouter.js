@@ -2317,6 +2317,20 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
     const temMil = /mil/.test(text);
 
+    // 🔥 CASO ESPECÍFICO: STT multiplicou (120 → 12000)
+    if (
+      typeof valor === "number" &&
+      valor >= 10000 &&
+      valor % 100 === 0 &&
+      !/mil/.test(text)
+    ) {
+      const corrigido = valor / 100;
+
+      console.warn("⚠️ STT inflado:", valor, "→", corrigido);
+
+      valor = corrigido;
+    }
+
     if (
       !temMil &&
       Number.isInteger(valor) &&
