@@ -2251,6 +2251,12 @@ function getCurrentMonthRange() {
 }
 
 export function parseMoneySafe({ text = "", valueFromAI }) {
+  text = text
+    .toLowerCase()
+    .replace(/r\$\s*/g, "") // 🔥 remove r$
+    .replace(/\s+/g, " ")
+    .trim();
+
   if (!text && !valueFromAI) return null;
 
   text = text.toLowerCase();
