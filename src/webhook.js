@@ -91,7 +91,11 @@ export async function handleWebhook(payload, sendMessage) {
     }
 
     if (!text && !media.hasImage) return;
-
+    text = text
+      .toLowerCase()
+      .replace(/r\$\s*/g, "") // 🔥 remove r$
+      .replace(/\s+/g, " ")
+      .trim();
     console.log("💬 Texto:", text);
 
     // TRAVA ANTI-DUPLICAÇÃO
