@@ -2251,13 +2251,13 @@ function getCurrentMonthRange() {
 }
 
 export function parseMoneySafe({ text = "", valueFromAI }) {
+  if (!text && !valueFromAI) return null;
+
   text = text
     .toLowerCase()
     .replace(/r\$\s*/g, "") // 🔥 remove r$
     .replace(/\s+/g, " ")
     .trim();
-
-  if (!text && !valueFromAI) return null;
 
   // =========================
   // 🥇 PRIORIDADE 1: TEXTO COM "MIL"
