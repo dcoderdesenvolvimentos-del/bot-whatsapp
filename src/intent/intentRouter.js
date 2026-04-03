@@ -1649,6 +1649,11 @@ export async function routeIntent(userDocId, text, media = {}) {
 
       case "criar_gasto": {
         console.log("🧠 IA payload:", data);
+        text = text
+          .toLowerCase()
+          .replace(/r\$\s*/g, "") // 🔥 remove r$
+          .replace(/\s+/g, " ")
+          .trim();
         console.log("🧠 TEXTO ORIGINAL:", text);
 
         const valorFinal = parseMoneySafe({
