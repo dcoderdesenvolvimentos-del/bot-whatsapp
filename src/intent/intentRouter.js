@@ -2278,7 +2278,7 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
   // =========================
   // 🥇 PRIORIDADE 3: NÚMERO FORMATADO (1.739,88)
   // =========================
-  const regexCompleto = /\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})|\d+[.,]\d{2}/;
+  const regexCompleto = /\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?|\d+[.,]\d{2}|\d+/;
 
   const match = text.match(regexCompleto);
 
