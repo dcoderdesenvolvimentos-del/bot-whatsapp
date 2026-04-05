@@ -2287,6 +2287,8 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
   // =========================
   // 🥇 PRIORIDADE 3: NÚMERO FORMATADO (1.739,88)
   // =========================
+
+  let valorExtraido = null;
   const regexCompleto = /\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?|\d+[.,]\d{2}|\d+/;
 
   const match = text.match(regexCompleto);
@@ -2302,8 +2304,6 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
         .replace(/\.(?=\d{3})/g, "") // remove milhar
         .replace(",", "."); // decimal BR
     }
-
-    let valorExtraido = null;
 
     if (match) {
       let valor = match[0];
