@@ -2303,15 +2303,27 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
         .replace(",", "."); // decimal BR
     }
 
-    return parseFloat(valor);
+    let valorExtraido = null;
+
+    if (match) {
+      let valor = match[0];
+
+      if (/^\d{1,3},\d{3}$/.test(valor)) {
+        valor = valor.replace(",", "");
+      } else {
+        valor = valor.replace(/\.(?=\d{3})/g, "").replace(",", ".");
+      }
+
+      valorExtraido = parseFloat(valor);
+    }
   }
 
   // =========================
   // 🥈 FALLBACK: IA
   // =========================
-  if (typeof valueFromAI === "number") {
-    let valor = valueFromAI;
+  let valor = valorExtraido ?? valueFromAI;
 
+  if (typeof valor === "number") {
     const numeroPequenoDigitado = /^\D*\b\d{1,3}\b/.test(text);
 
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
