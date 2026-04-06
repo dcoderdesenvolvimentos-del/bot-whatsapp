@@ -2333,7 +2333,6 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
       !temMil &&
       Number.isInteger(valor) &&
       valor >= 1000 &&
-      valor <= 99999 &&
       !numeroPequenoDigitado // 🔥 BLOQUEIO
     ) {
       const str = String(valor);
