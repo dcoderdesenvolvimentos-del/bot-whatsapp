@@ -206,7 +206,9 @@ Nunca converter para centavos.
 Se o usuário disser "trinta reais", retorne 30.
 Se disser "3 mil", retorne 3000.
 Nunca retorne r$ ou R$ junto com o valor q o usuario citou. Ex: gastei r$12500 ou gastei r$15000
-
+Se o valor informado pelo usuario for acima de 2 mil reais, retorne sempre em por extenso.
+Exemplo 1: Usario disse 13 mil,retorne exatamente 13 mil.
+Exemplo 2: Usuario disse 1300000, retone 13 mil em por extenso.          
 
 Categorias possíveis:
 alimentação, supermercado, transporte, saúde, lazer, contas, educação, outros isso é voce quem vai definir para entender onde o suario gastou e automaticamente vc vai pensar em uma categoria para aquele gasto.
