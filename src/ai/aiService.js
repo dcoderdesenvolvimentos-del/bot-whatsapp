@@ -205,7 +205,6 @@ Nunca multiplicar.
 Nunca converter para centavos.
 Se o usuário disser "trinta reais", retorne 30.
 Se disser "3 mil", retorne 3000.
-Se o valor for "13 mil", retorne 13000. e assim por diante
 Nunca retorne r$ ou R$ junto com o valor q o usuario citou. Ex: gastei r$12500 ou gastei r$15000
 
 
