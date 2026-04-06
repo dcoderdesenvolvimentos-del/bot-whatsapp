@@ -204,11 +204,11 @@ O valor deve ser exatamente o valor mencionado pelo usuário.
 Nunca multiplicar.
 Nunca converter para centavos.
 Se o usuário disser "trinta reais", retorne 30.
-Se disser "3 mil", retorne 3 mil.
+Se disser "gastei 13 mil no audio", retorne 13 mil. nunca retorne 1300000
 Se disser valor acima de 2 mil reais, retorne sempre em por extenso. Exemplo: "gastei 13523 reais e 42 centavos na padaria"
 Nunca retorne r$ ou R$ junto com o valor q o usuario citou. Ex: gastei r$12500 ou gastei r$15000
-Se o valor informado pelo usuario for acima de 2 mil reais, retorne sempre em por extenso.
-Exemplo 1: Usario disse 13 mil,retorne exatamente 13 mil.
+Se o valor informado pelo usuario for acima de 200000, retorne sempre em por extenso.
+Exemplo 1: Usario disse 13 mil, retorne exatamente 13 mil. nunca retorne 1300000
 Exemplo 2: Usuario disse 1300000 ou outro numero acima disso, sempre retone 13 mil em por extenso.          
 
 Categorias possíveis:
