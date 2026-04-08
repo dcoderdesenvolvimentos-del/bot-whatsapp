@@ -79,10 +79,31 @@ function buildWhen(data) {
       0,
     );
 
-    // se o dia já passou neste mês, joga para o próximo
     if (date <= now) {
-      month += 1;
-      date = new Date(year, month, data.dia, data.hora, data.minuto ?? 0, 0, 0);
+      if (typeof data.mes === "number") {
+        // 🔥 usuário definiu mês → pula pro próximo ano
+        date = new Date(
+          year + 1,
+          month,
+          data.dia,
+          data.hora ?? 9,
+          data.minuto ?? 0,
+          0,
+          0,
+        );
+      } else {
+        // 🔁 comportamento antigo (sem mês)
+        month += 1;
+        date = new Date(
+          year,
+          month,
+          data.dia,
+          data.hora ?? 9,
+          data.minuto ?? 0,
+          0,
+          0,
+        );
+      }
     }
 
     return Timestamp.fromDate(date);
@@ -125,18 +146,31 @@ function buildWhen(data) {
       0,
     );
 
-    // se o dia já passou neste mês, joga para o próximo
     if (date <= now) {
-      month += 1;
-      date = new Date(
-        year,
-        month,
-        data.dia,
-        data.hora ?? 9,
-        data.minuto ?? 0,
-        0,
-        0,
-      );
+      if (typeof data.mes === "number") {
+        // 🔥 usuário definiu mês → pula pro próximo ano
+        date = new Date(
+          year + 1,
+          month,
+          data.dia,
+          data.hora ?? 9,
+          data.minuto ?? 0,
+          0,
+          0,
+        );
+      } else {
+        // 🔁 comportamento antigo (sem mês)
+        month += 1;
+        date = new Date(
+          year,
+          month,
+          data.dia,
+          data.hora ?? 9,
+          data.minuto ?? 0,
+          0,
+          0,
+        );
+      }
     }
 
     return Timestamp.fromDate(date);
