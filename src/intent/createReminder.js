@@ -67,7 +67,7 @@ function buildWhen(data) {
   // 7️⃣ DIA DO MÊS + HORA — "dia 24 às 9"
   if (typeof data.dia === "number" && typeof data.hora === "number") {
     const year = now.getFullYear();
-    let month = now.getMonth(); // 0 = janeiro
+    let month = typeof data.mes === "number" ? data.mes - 1 : now.getMonth();
 
     let date = new Date(
       year,
@@ -113,7 +113,7 @@ function buildWhen(data) {
   // 7️⃣ DIA DO MÊS ISOLADO — "dia 24"
   if (typeof data.dia === "number") {
     const year = now.getFullYear();
-    let month = now.getMonth(); // 0 = janeiro
+    let month = typeof data.mes === "number" ? data.mes - 1 : now.getMonth();
 
     let date = new Date(
       year,
