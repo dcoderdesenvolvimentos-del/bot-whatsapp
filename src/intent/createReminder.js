@@ -194,10 +194,12 @@ export async function createReminder(userDocId, data) {
   const itens = Array.isArray(data.lembretes) ? data.lembretes : [data];
 
   const resultados = [];
-
   for (const item of itens) {
     try {
-      const r = await createReminderCore(uid, item);
+      // 🔥 CORREÇÃO AQUI
+      const itemCorrigido = corrigirDataDoTexto(data.textoOriginal || "", item);
+
+      const r = await createReminderCore(uid, itemCorrigido);
       resultados.push(r);
     } catch (err) {
       return err.message;
@@ -238,6 +240,20 @@ export async function createReminder(userDocId, data) {
   });
 
   return respostaFinal.trim();
+}
+
+function corrigirDataDoTexto(texto, item) {
+  const match = texto.match(/(\d{1,2})[\/\-.](\d{1,2})/);
+
+  if (match) {
+    return {
+      ...item,
+      dia: parseInt(match[1]),
+      mes: parseInt(match[2]),
+    };
+  }
+
+  return item;
 }
 
 function ajustarHoraInteligente(data, hora) {
