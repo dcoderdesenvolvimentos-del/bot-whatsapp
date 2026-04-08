@@ -2328,12 +2328,14 @@ export function parseMoneySafe({ text = "", valueFromAI }) {
 
     // 🚨 CORREÇÃO SOMENTE SE NÃO TEM "MIL"
     const temMil = /mil/.test(text);
+    const temContextoReal = /real|reais|r\$/i.test(text);
 
     if (
       !temMil &&
+      !temContextoReal && // 🔥 NOVA PROTEÇÃO
       Number.isInteger(valor) &&
       valor >= 1000 &&
-      !numeroPequenoDigitado // 🔥 BLOQUEIO
+      !numeroPequenoDigitado
     ) {
       const str = String(valor);
 
