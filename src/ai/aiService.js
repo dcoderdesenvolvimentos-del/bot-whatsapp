@@ -593,7 +593,7 @@ Saída:
     "mensagem": "texto do lembrete",
     "tipo_recorrencia": "diario|semanal|mensal|anual",
     "valor_recorrencia": "número ou dia da semana",
-    "horario": "HH:MM" // se não especificar, retorne "00:00"
+    "horario": "HH:MM" // se não especificar, retorne "09:00"
   }
   
   Exemplos de recorrência:
@@ -693,6 +693,9 @@ REGRAS IMPORTANTES SOBRE HORÁRIOS:
   “às 11 E às 13” ou “às 11 e às 13”.
 
 - Em frases ambíguas, PRIORIZE SEMPRE um único lembrete.
+
+- Se o usuario mensionar data por extenso exemplo: Dia 20 do 5 retorne 20/05
+- Se o usuario mensionar data por extenso exemplo: Dia 22 de maio retorne 22/05
 
 
 IMPORTANTE:
