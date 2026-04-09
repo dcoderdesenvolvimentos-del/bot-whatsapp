@@ -1944,9 +1944,15 @@ export async function routeIntent(userDocId, text, media = {}) {
       // ⏰ CRIAR LEMBRETE(S)
       // =====================================================
 
-      case "criar_lembrete":
+      case "criar_lembrete": {
+        // 🔥 NORMALIZA IGUAL RECORRENTE
+        if (data.dia && data.mes) {
+          data.data_string = `${String(data.dia).padStart(2, "0")}-${String(data.mes).padStart(2, "0")}`;
+        }
+
         response = await createReminder(userDocId, data);
         break;
+      }
 
       case "criar_lembrete_recorrente":
         const tiposTexto = {

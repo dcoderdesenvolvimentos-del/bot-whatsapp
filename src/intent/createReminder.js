@@ -12,6 +12,36 @@ import { Timestamp } from "firebase-admin/firestore";
 function buildWhen(data) {
   const now = new Date();
 
+  // 🔥 NOVO PADRÃO (IGUAL RECORRENTE)
+  if (data.data_string) {
+    const [dia, mes] = data.data_string.split("-").map(Number);
+
+    let date = new Date(
+      now.getFullYear(),
+      mes - 1,
+      dia,
+      data.hora ?? 9,
+      data.minuto ?? 0,
+      0,
+      0,
+    );
+
+    // 🔥 SE JÁ PASSOU → PRÓXIMO ANO
+    if (date <= now) {
+      date = new Date(
+        now.getFullYear() + 1,
+        mes - 1,
+        dia,
+        data.hora ?? 9,
+        data.minuto ?? 0,
+        0,
+        0,
+      );
+    }
+
+    return Timestamp.fromDate(date);
+  }
+
   // 1️⃣ OFFSET EM MS — "daqui 2 minutos"
   if (typeof data.offset_ms === "number" && data.offset_ms > 0) {
     return Timestamp.fromMillis(Date.now() + data.offset_ms);
@@ -280,10 +310,22 @@ function corrigirDataDoTexto(texto, item) {
   const match = texto.match(/(\d{1,2})[\/\-.](\d{1,2})/);
 
   if (match) {
+    const dia = parseInt(match[1]);
+    const mes = parseInt(match[2]);
+
     return {
       ...item,
-      dia: parseInt(match[1]),
-      mes: parseInt(match[2]),
+      dia,
+      mes,
+      data_string: `${String(dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}`, // 🔥 NOVO
+    };
+  }
+
+  // 🔥 SE JÁ VEIO DA IA
+  if (item.dia && item.mes) {
+    return {
+      ...item,
+      data_string: `${String(item.dia).padStart(2, "0")}-${String(item.mes).padStart(2, "0")}`,
     };
   }
 
