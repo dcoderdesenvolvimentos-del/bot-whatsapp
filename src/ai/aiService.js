@@ -667,6 +667,9 @@ Sempre extraia HORA e MINUTO quando o usuário mencionar:
 
 Exemplos obrigatórios:
 
+- Se o usuario mensionar data por extenso exemplo: Dia 20 do 5 retorne 20/05
+- Se o usuario mensionar data por extenso exemplo: Dia 22 de maio retorne 22/05
+
 Entrada:
 "me lembra dia 12 às 11 horas da manhã"
 
@@ -759,6 +762,8 @@ AJUDA GERAL
 
 REGRAS IMPORTANTES DE DATA:
 
+- Se o usuario mensionar data por extenso exemplo: Dia 20 do 5 retorne 20/05
+- Se o usuario mensionar data por extenso exemplo: Dia 22 de maio retorne 22/05
 - Se o usuário mencionar um DIA DA SEMANA (ex: terça-feira, quarta, sexta),
   NÃO calcule offset_dias.
 - Nesse caso, retorne o campo:
