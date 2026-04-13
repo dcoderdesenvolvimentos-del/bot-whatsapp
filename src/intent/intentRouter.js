@@ -272,6 +272,40 @@ export async function routeIntent(userDocId, text, media = {}) {
   const msg = normalize(text);
 
   // =======================
+  // EXCLUIR LEMBRETE
+  // =======================
+
+  if (text.startsWith("excluir_lembrete_")) {
+    const id = text.replace("excluir_lembrete_", "").trim();
+
+    await deleteReminder(userDocId, { id });
+
+    return "🗑️ Lembrete excluído com sucesso.";
+  }
+
+  // =======================
+  // EDITAR LEMBRETE
+  // =======================
+  if (text.startsWith("editar_lembrete_")) {
+    const id = text.replace("editar_lembrete_", "").trim();
+
+    await updateUser(userDocId, {
+      editingReminder: id,
+      editingStep: "escolher",
+    });
+
+    return {
+      type: "buttons",
+      text: "✏️ O que deseja editar?",
+      buttons: [
+        { id: "edit_texto", text: "📝 Texto" },
+        { id: "edit_data", text: "📅 Data" },
+        { id: "cancelar_edicao", text: "❌ Cancelar" },
+      ],
+    };
+  }
+
+  // =======================
   // EXCLUIR GASTO
   // =======================
 

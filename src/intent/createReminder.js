@@ -231,7 +231,7 @@ async function createReminderCore(uid, data) {
   }
 
   // 🔥 SALVA PELO UID (CORRETO)
-  await addReminder(uid, {
+  const docRef = await addReminder(uid, {
     text: texto,
     when,
   });
@@ -241,7 +241,7 @@ async function createReminderCore(uid, data) {
     descricaoIA = await generateReminderDescription(texto);
   } catch {}
 
-  return { texto, when, descricaoIA };
+  return { texto, when, descricaoIA, id: docRef.id };
 }
 
 /**
@@ -290,7 +290,14 @@ export async function createReminder(userDocId, data) {
       resposta += `\n\n💬 ${r.descricaoIA}`;
     }
 
-    return resposta;
+    return {
+      type: "buttons",
+      text: resposta,
+      buttons: [
+        { id: `editar_lembrete_${r.id}`, text: "✏️ Editar" },
+        { id: `excluir_lembrete_${r.id}`, text: "🗑 Excluir" },
+      ],
+    };
   }
 
   // 🔹 CASO MÚLTIPLO → NÃO MOSTRA DESCRIÇÃO DA IA
