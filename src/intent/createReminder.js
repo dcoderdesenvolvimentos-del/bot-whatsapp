@@ -375,6 +375,24 @@ function corrigirDataDoTexto(texto, item) {
     .normalize("NFD") // remove acento
     .replace(/[\u0300-\u036f]/g, "");
 
+  // =========================
+  // 🧠 FORMATO: 25 do mês que vem
+  // =========================
+  let matchMesQueVem = base.match(
+    /(\d{1,2})\s*(?:de|do)?\s*(mes\s*(que|q)?\s*vem)/,
+  );
+
+  if (matchMesQueVem) {
+    const dia = parseInt(matchMesQueVem[1]);
+
+    const hoje = new Date();
+    let mes = hoje.getMonth() + 2; // próximo mês (1-12)
+
+    if (mes > 12) mes = 1;
+
+    return montar(item, dia, mes);
+  }
+
   // 🧠 MÊS QUE VEM
   const mesQueVemRegex =
     /\b(mes\s+que\s+vem|proximo\s+mes|mes\s+seguinte|mes\s+q\s+vem)\b/;
