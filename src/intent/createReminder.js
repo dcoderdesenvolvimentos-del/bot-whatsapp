@@ -164,7 +164,20 @@ function buildWhen(data) {
   // 7️⃣ DIA DO MÊS ISOLADO — "dia 24"
   if (typeof data.dia === "number") {
     const year = now.getFullYear();
-    let month = typeof data.mes === "number" ? data.mes - 1 : now.getMonth();
+    let month;
+
+    if (typeof data.mes === "number") {
+      month = data.mes - 1;
+    } else {
+      // 🔥 INTELIGENTE DE VERDADE
+      const hoje = now.getDate();
+
+      if (data.dia >= hoje) {
+        month = now.getMonth();
+      } else {
+        month = now.getMonth() + 1;
+      }
+    }
 
     let date = new Date(
       year,
@@ -375,6 +388,21 @@ function corrigirDataDoTexto(texto, item) {
     const mes = meses[match[2]];
 
     return montar(item, dia, mes);
+  }
+
+  // =========================
+  // 🧠 FORMATO: "dia 24" (SEM MÊS)
+  // =========================
+  match = base.match(/\bdia\s+(\d{1,2})\b/);
+
+  if (match) {
+    const dia = parseInt(match[1]);
+
+    return {
+      ...item,
+      dia,
+      // ⚠️ NÃO define mes ainda
+    };
   }
 
   // =========================
