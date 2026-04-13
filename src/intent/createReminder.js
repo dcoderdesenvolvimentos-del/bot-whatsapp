@@ -310,29 +310,85 @@ export async function createReminder(userDocId, data) {
 }
 
 function corrigirDataDoTexto(texto, item) {
-  const match = texto.match(/(\d{1,2})[\/\-.](\d{1,2})/);
+  const base = (texto || "").toLowerCase();
+
+  // =========================
+  // 🧠 MESES POR NOME
+  // =========================
+  const meses = {
+    janeiro: 1,
+    fevereiro: 2,
+    março: 3,
+    marco: 3,
+    abril: 4,
+    maio: 5,
+    junho: 6,
+    julho: 7,
+    agosto: 8,
+    setembro: 9,
+    outubro: 10,
+    novembro: 11,
+    dezembro: 12,
+  };
+
+  // =========================
+  // 🥇 FORMATO: 25/03 ou 25-03
+  // =========================
+  let match = base.match(/(\d{1,2})[\/\-.](\d{1,2})/);
 
   if (match) {
     const dia = parseInt(match[1]);
     const mes = parseInt(match[2]);
 
+    return montar(item, dia, mes);
+  }
+
+  // =========================
+  // 🥈 FORMATO: 25 do 03
+  // =========================
+  match = base.match(/(\d{1,2})\s*(?:de|do)\s*(\d{1,2})/);
+
+  if (match) {
+    const dia = parseInt(match[1]);
+    const mes = parseInt(match[2]);
+
+    return montar(item, dia, mes);
+  }
+
+  // =========================
+  // 🥉 FORMATO: 25 de março
+  // =========================
+  match = base.match(
+    /(\d{1,2})\s*(?:de|do)\s*(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)/,
+  );
+
+  if (match) {
+    const dia = parseInt(match[1]);
+    const mes = meses[match[2]];
+
+    return montar(item, dia, mes);
+  }
+
+  // =========================
+  // 🔥 fallback IA
+  // =========================
+  if (item.dia && item.mes) {
+    return montar(item, item.dia, item.mes);
+  }
+
+  return item;
+
+  // =========================
+  // 🔧 helper
+  // =========================
+  function montar(item, dia, mes) {
     return {
       ...item,
       dia,
       mes,
-      data_string: `${String(dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}`, // 🔥 NOVO
+      data_string: `${String(dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}`,
     };
   }
-
-  // 🔥 SE JÁ VEIO DA IA
-  if (item.dia && item.mes) {
-    return {
-      ...item,
-      data_string: `${String(item.dia).padStart(2, "0")}-${String(item.mes).padStart(2, "0")}`,
-    };
-  }
-
-  return item;
 }
 
 function ajustarHoraInteligente(data, hora) {
