@@ -98,7 +98,20 @@ function buildWhen(data) {
   // 7️⃣ DIA DO MÊS + HORA — "dia 24 às 9"
   if (typeof data.dia === "number" && typeof data.hora === "number") {
     const year = now.getFullYear();
-    let month = typeof data.mes === "number" ? data.mes - 1 : now.getMonth();
+    let month;
+
+    if (typeof data.mes === "number") {
+      month = data.mes - 1;
+    } else {
+      // 🔥 MESMA LÓGICA DO BLOCO SEM HORA
+      const hoje = now.getDate();
+
+      if (data.dia >= hoje) {
+        month = now.getMonth();
+      } else {
+        month = now.getMonth() + 1;
+      }
+    }
 
     let date = new Date(
       year,
@@ -356,6 +369,35 @@ function corrigirDataDoTexto(texto, item) {
     novembro: 11,
     dezembro: 12,
   };
+
+  const base1 = (texto || "")
+    .toLowerCase()
+    .normalize("NFD") // remove acento
+    .replace(/[\u0300-\u036f]/g, "");
+
+  // 🧠 MÊS QUE VEM
+  const mesQueVemRegex =
+    /\b(mes\s+que\s+vem|proximo\s+mes|mes\s+seguinte|mes\s+q\s+vem)\b/;
+
+  if (mesQueVemRegex.test(base1)) {
+    const hoje = new Date();
+    let mes = hoje.getMonth() + 2; // próximo mês (1-12)
+
+    if (mes > 12) mes = 1;
+
+    if (item.dia) {
+      return {
+        ...item,
+        mes,
+        data_string: `${String(item.dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}`,
+      };
+    }
+
+    return {
+      ...item,
+      mes,
+    };
+  }
 
   // =========================
   // 🥇 FORMATO: 25/03 ou 25-03
