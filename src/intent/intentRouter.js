@@ -270,36 +270,16 @@ export async function routeIntent(userDocId, text, media = {}) {
   const userData = await getUser(userDocId);
   const user = await getUser(userDocId);
   const msg = normalize(text);
-  const rawText = String(text).trim(); // 🔥 ORIGINAL (NUNCA ALTERA)
 
-  // =======================
-  // EXCLUIR LEMBRETE
-  // =======================
+  if (text.startsWith("excluir_lembrete_")) {
+    const id = text.replace("excluir_lembrete_", "").trim();
 
-  if (rawText.startsWith("excluir_lembrete_")) {
-    const id = rawText.replace("excluir_lembrete_", "").trim();
-
-    const ref = db
+    await db
       .collection("users")
       .doc(userDocId)
       .collection("reminders")
-      .doc(id);
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      console.log("❌ ID NÃO ENCONTRADO:", user.editingReminder);
-
-      await updateUser(userDocId, {
-        editingReminder: null,
-        editingField: null,
-        editingStep: null,
-      });
-
-      return "⚠️ Lembrete não encontrado. Edição cancelada.";
-    }
-
-    await ref.delete();
+      .doc(id)
+      .delete();
 
     await updateUser(userDocId, {
       lastReminderId: null,
@@ -310,57 +290,29 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   if (msg.includes("excluir lembrete") || msg === "excluir") {
     if (!user.lastReminderId) {
-      return "⚠️ Nenhum lembrete recente encontrado.";
+      return "⚠️ Nenhum lembrete recente.";
     }
 
-    const ref = db
+    await db
       .collection("users")
       .doc(userDocId)
       .collection("reminders")
-      .doc(user.lastReminderId);
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      console.log("❌ ID NÃO ENCONTRADO:", user.editingReminder);
-
-      await updateUser(userDocId, {
-        editingReminder: null,
-        editingField: null,
-        editingStep: null,
-      });
-
-      return "⚠️ Lembrete não encontrado. Edição cancelada.";
-    }
-
-    await ref.delete();
+      .doc(user.lastReminderId)
+      .delete();
 
     await updateUser(userDocId, {
       lastReminderId: null,
     });
 
-    return "🗑️ Lembrete excluído com sucesso.";
+    return "🗑️ Lembrete excluído.";
   }
 
-  // =======================
-  // EDITAR LEMBRETE
-  // =======================
-  if (msg === "cancelar_edicao") {
+  if (text.startsWith("editar_lembrete_")) {
+    const id = text.replace("editar_lembrete_", "").trim();
+
     await updateUser(userDocId, {
-      editingReminder: null,
+      lastReminderId: id,
       editingField: null,
-      editingStep: null,
-    });
-
-    return "❌ Edição cancelada.";
-  }
-
-  if (rawText.startsWith("editar_lembrete_")) {
-    const id = rawText.replace("editar_lembrete_", "").trim();
-
-    await updateUser(userDocId, {
-      editingReminder: id,
-      editingStep: "escolher",
     });
 
     return {
@@ -379,31 +331,34 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     await updateUser(userDocId, {
       editingField: campo,
-      editingStep: "aguardando",
     });
 
     if (campo === "texto") return "📝 Digite o novo texto:";
     if (campo === "data") return "📅 Digite a nova data:";
   }
 
-  if (
-    user.editingStep === "aguardando" &&
-    user.editingReminder &&
-    user.editingField
-  ) {
+  if (msg === "cancelar_edicao") {
+    await updateUser(userDocId, {
+      lastReminderId: null,
+      editingField: null,
+    });
+
+    return "❌ Edição cancelada.";
+  }
+
+  if (user.lastReminderId && user.editingField) {
     const ref = db
       .collection("users")
       .doc(userDocId)
       .collection("reminders")
-      .doc(user.editingReminder);
+      .doc(user.lastReminderId);
 
     const doc = await ref.get();
 
     if (!doc.exists) {
       await updateUser(userDocId, {
-        editingReminder: null,
+        lastReminderId: null,
         editingField: null,
-        editingStep: null,
       });
 
       return "⚠️ Lembrete não encontrado.";
@@ -420,9 +375,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     if (user.editingField === "data") {
       const date = buildDateFromText(text);
 
-      if (!date) {
-        return "📅 Data inválida.";
-      }
+      if (!date) return "📅 Data inválida.";
 
       update.when = Timestamp.fromDate(date);
     }
@@ -434,12 +387,11 @@ export async function routeIntent(userDocId, text, media = {}) {
     await ref.update(update);
 
     await updateUser(userDocId, {
-      editingReminder: null,
+      lastReminderId: null,
       editingField: null,
-      editingStep: null,
     });
 
-    return "✅ Lembrete atualizado com sucesso!";
+    return "✅ Lembrete atualizado!";
   }
 
   // =======================
