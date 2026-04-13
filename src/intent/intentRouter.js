@@ -270,13 +270,14 @@ export async function routeIntent(userDocId, text, media = {}) {
   const userData = await getUser(userDocId);
   const user = await getUser(userDocId);
   const msg = normalize(text);
+  const rawText = String(text).trim(); // 🔥 ORIGINAL (NUNCA ALTERA)
 
   // =======================
   // EXCLUIR LEMBRETE
   // =======================
 
-  if (text.startsWith("excluir_lembrete_")) {
-    const id = text.replace("excluir_lembrete_", "").trim();
+  if (rawText.startsWith("excluir_lembrete_")) {
+    const id = rawText.replace("excluir_lembrete_", "").trim();
 
     const ref = db
       .collection("users")
@@ -354,8 +355,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "❌ Edição cancelada.";
   }
 
-  if (text.startsWith("editar_lembrete_")) {
-    const id = text.replace("editar_lembrete_", "").trim();
+  if (rawText.startsWith("editar_lembrete_")) {
+    const id = rawText.replace("editar_lembrete_", "").trim();
 
     await updateUser(userDocId, {
       editingReminder: id,
