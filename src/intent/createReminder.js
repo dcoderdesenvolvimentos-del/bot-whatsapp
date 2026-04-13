@@ -224,7 +224,8 @@ async function createReminderCore(uid, data) {
     throw new Error("❌ Esse horário já passou! Tente um horário futuro.");
   }
 
-  const texto = data.acao || data.text;
+  const textoBruto = data.acao || data.text;
+  const texto = limparTextoLembrete(textoBruto);
   if (!texto) {
     throw new Error("❌ Não consegui identificar o lembrete.");
   }
@@ -417,4 +418,39 @@ function ajustarHoraInteligente(data, hora) {
 
   // 🔥 fallback (opcional)
   return hora;
+}
+
+function limparTextoLembrete(texto = "") {
+  let t = texto.toLowerCase().trim();
+
+  // =========================
+  // 🎯 DETECTAR ANIVERSÁRIO
+  // =========================
+  const matchAniversario = t.match(/anivers[aá]rio\s+(de|do)\s+([a-z\s]+)/i);
+
+  if (matchAniversario) {
+    const nome = matchAniversario[2]
+      .trim()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+
+    return `Aniversário de ${nome}`;
+  }
+
+  // =========================
+  // 🧹 LIMPEZA PADRÃO
+  // =========================
+
+  t = t.replace(/^ô?\s*me lembra (que)?/i, "");
+  t = t.replace(/^me lembra (que)?/i, "");
+  t = t.replace(/^lembra (que)?/i, "");
+
+  t = t.replace(
+    /\bdia\s+\d{1,2}(\s*(de|do)\s*(\d{1,2}|janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro))?/i,
+    "",
+  );
+
+  t = t.replace(/\bque\b/i, "");
+  t = t.replace(/\s+/g, " ").trim();
+
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
