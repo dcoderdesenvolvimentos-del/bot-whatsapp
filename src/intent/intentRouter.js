@@ -2040,6 +2040,25 @@ export async function routeIntent(userDocId, text, media = {}) {
         break;
 
       case "falha_criar_lembrete":
+        const textoLower = text.toLowerCase();
+
+        const temData =
+          /\d{1,2}[\/\-.]\d{1,2}/.test(textoLower) || // 25/03
+          /\d{1,2}\s*(de|do)\s*(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)/.test(
+            textoLower,
+          ) || // 25 de março
+          /\bdia\s+\d{1,2}/.test(textoLower); // dia 25
+
+        if (temData) {
+          console.log("🔥 FORÇANDO CRIAÇÃO DE LEMBRETE");
+
+          data.text = text;
+          data.acao = text;
+
+          response = await createReminder(userDocId, data);
+          break;
+        }
+
         response = `👀 Percebi que você está tentando criar um lembrete!
 
 Mas preciso de algumas informações pra configurar certinho 👇
