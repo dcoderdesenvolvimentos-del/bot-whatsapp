@@ -321,12 +321,13 @@ export async function routeIntent(userDocId, text, media = {}) {
       buttons: [
         { id: "edit_texto", text: "📝 Texto" },
         { id: "edit_data", text: "📅 Data" },
+        { id: "edit_hora", text: "⏰ Hora" }, // 🔥 NOVO
         { id: "cancelar_edicao", text: "❌ Cancelar" },
       ],
     };
   }
 
-  if (msg === "edit_texto" || msg === "edit_data") {
+  if (msg === "edit_texto" || msg === "edit_data" || msg === "edit_hora") {
     const campo = msg.replace("edit_", "");
 
     await updateUser(userDocId, {
@@ -334,7 +335,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     });
 
     if (campo === "texto") return "📝 Digite o novo texto:";
-    if (campo === "data") return "📅 Digite a nova data:";
+    if (campo === "data") return "📅 Digite a nova data! (Ex: 15/05/2027)";
+    if (campo === "hora") return "⏰ Digite o novo horário (ex: 14:30):";
   }
 
   if (msg === "cancelar_edicao") {
@@ -375,9 +377,30 @@ export async function routeIntent(userDocId, text, media = {}) {
     if (user.editingField === "data") {
       const date = buildDateFromText(text);
 
-      if (!date) return "📅 Data inválida.";
+      if (!date) return "📅 Data inválida! Tente por exemplo: 15/05/2027";
 
       update.when = Timestamp.fromDate(date);
+    }
+
+    // 📅 Hora
+    if (user.editingField === "hora") {
+      const match = text.match(/(\d{1,2}):?(\d{2})?/);
+
+      if (!match) return "⏰ Hora inválida. Ex: 14:30";
+
+      const hora = parseInt(match[1]);
+      const minuto = parseInt(match[2] || "0");
+
+      if (hora > 23 || minuto > 59) {
+        return "⏰ Hora inválida.";
+      }
+
+      const atual = doc.data().when.toDate();
+
+      atual.setHours(hora);
+      atual.setMinutes(minuto);
+
+      update.when = Timestamp.fromDate(atual);
     }
 
     if (Object.keys(update).length === 0) {
@@ -391,7 +414,16 @@ export async function routeIntent(userDocId, text, media = {}) {
       editingField: null,
     });
 
-    return "✅ Lembrete atualizado!";
+    const atualizado = await ref.get();
+
+    const r = atualizado.data();
+
+    let resposta =
+      `✅ *Lembrete atualizado!*\n\n` +
+      `📌 ${r.text}\n` +
+      `🕐 ${new Date(r.when.toDate()).toLocaleString("pt-BR")}`;
+
+    return resposta;
   }
 
   // =======================
