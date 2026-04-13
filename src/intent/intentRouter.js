@@ -1942,6 +1942,7 @@ export async function routeIntent(userDocId, text, media = {}) {
           data.data_string = `${String(data.dia).padStart(2, "0")}-${String(data.mes).padStart(2, "0")}`;
         }
 
+        data.textoOriginal = text; // 🔥 ESSENCIAL
         response = await createReminder(userDocId, data);
         break;
       }
