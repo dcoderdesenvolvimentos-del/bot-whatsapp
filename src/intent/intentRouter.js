@@ -328,6 +328,16 @@ export async function routeIntent(userDocId, text, media = {}) {
   // =======================
   // EDITAR LEMBRETE
   // =======================
+  if (msg === "cancelar_edicao") {
+    await updateUser(userDocId, {
+      editingReminder: null,
+      editingField: null,
+      editingStep: null,
+    });
+
+    return "❌ Edição cancelada.";
+  }
+
   if (text.startsWith("editar_lembrete_")) {
     const id = text.replace("editar_lembrete_", "").trim();
 
