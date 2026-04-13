@@ -311,7 +311,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     const id = text.replace("editar_lembrete_", "").trim();
 
     await updateUser(userDocId, {
-      lastReminderId: id,
+      lastReminderId: user.lastReminderId,
       editingField: null,
     });
 
