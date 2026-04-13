@@ -261,7 +261,10 @@ export async function createReminder(userDocId, data) {
   for (const item of itens) {
     try {
       // 🔥 CORREÇÃO AQUI
-      const itemCorrigido = corrigirDataDoTexto(data.textoOriginal || "", item);
+      const itemCorrigido = corrigirDataDoTexto(
+        item.text || item.acao || "",
+        item,
+      );
 
       const r = await createReminderCore(uid, itemCorrigido);
       resultados.push(r);
