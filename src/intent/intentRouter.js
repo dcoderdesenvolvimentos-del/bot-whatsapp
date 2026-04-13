@@ -1276,18 +1276,10 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   1️⃣ EXTRAÇÃO DIRETA DO TEXTO (PRIORIDADE MÁXIMA)
   ===================================================== */
-        const valorTexto = extractMoneyFromText(text);
-
-        if (valorTexto && valorTexto > 0) {
-          valor = valorTexto;
-        }
-
-        /* =====================================================
-  2️⃣ SE NÃO ACHOU NO TEXTO → USA VALOR DA IA
-  ===================================================== */
-        if (!valor && typeof data.valor === "number" && data.valor > 0) {
-          valor = data.valor;
-        }
+        valor = parseMoneySafe({
+          text,
+          valueFromAI: data.valor,
+        });
 
         /* =====================================================
   3️⃣ CORREÇÃO SEGURA DE POSSÍVEL ERRO DE STT
