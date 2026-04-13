@@ -262,7 +262,7 @@ export async function createReminder(userDocId, data) {
     try {
       // 🔥 CORREÇÃO AQUI
       const itemCorrigido = corrigirDataDoTexto(
-        item.text || item.acao || "",
+        data.textoOriginal || item.text || item.acao || "",
         item,
       );
 
