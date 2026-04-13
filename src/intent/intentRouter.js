@@ -405,6 +405,62 @@ export async function routeIntent(userDocId, text, media = {}) {
     return "✅ Lembrete atualizado!";
   }
 
+  if (
+    user.editingStep === "aguardando" &&
+    user.editingReminder &&
+    user.editingField
+  ) {
+    const ref = db
+      .collection("users")
+      .doc(userDocId)
+      .collection("reminders")
+      .doc(user.editingReminder);
+
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      await updateUser(userDocId, {
+        editingReminder: null,
+        editingField: null,
+        editingStep: null,
+      });
+
+      return "⚠️ Lembrete não encontrado.";
+    }
+
+    let update = {};
+
+    // 📝 TEXTO
+    if (user.editingField === "texto") {
+      update.text = text;
+    }
+
+    // 📅 DATA
+    if (user.editingField === "data") {
+      const date = buildDateFromText(text);
+
+      if (!date) {
+        return "📅 Data inválida.";
+      }
+
+      update.when = Timestamp.fromDate(date);
+    }
+
+    if (Object.keys(update).length === 0) {
+      return "⚠️ Não consegui atualizar.";
+    }
+
+    await ref.update(update);
+
+    await updateUser(userDocId, {
+      editingReminder: null,
+      editingField: null,
+      editingStep: null,
+    });
+
+    return "✅ Lembrete atualizado com sucesso!";
+  }
+
   // =======================
   // EXCLUIR GASTO
   // =======================
