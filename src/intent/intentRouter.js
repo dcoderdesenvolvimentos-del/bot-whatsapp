@@ -387,7 +387,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     await ref.update(update);
 
     await updateUser(userDocId, {
-      lastReminderId: null,
+      lastReminderId: user.lastReminderId,
       editingField: null,
     });
 
