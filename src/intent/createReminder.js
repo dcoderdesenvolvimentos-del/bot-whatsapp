@@ -379,24 +379,13 @@ function corrigirDataDoTexto(texto, item) {
   const mesQueVemRegex =
     /\b(mes\s+que\s+vem|proximo\s+mes|mes\s+seguinte|mes\s+q\s+vem)\b/;
 
+  let mesDetectado = null;
+
   if (mesQueVemRegex.test(base1)) {
     const hoje = new Date();
-    let mes = hoje.getMonth() + 2; // próximo mês (1-12)
+    mesDetectado = hoje.getMonth() + 2;
 
-    if (mes > 12) mes = 1;
-
-    if (item.dia) {
-      return {
-        ...item,
-        mes,
-        data_string: `${String(item.dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}`,
-      };
-    }
-
-    return {
-      ...item,
-      mes,
-    };
+    if (mesDetectado > 12) mesDetectado = 1;
   }
 
   // =========================
@@ -414,11 +403,12 @@ function corrigirDataDoTexto(texto, item) {
   // =========================
   // 🥈 FORMATO: 25 do 03
   // =========================
+  // 🥈 FORMATO: 25 do 03 (COM SUPORTE A "MÊS QUE VEM")
   match = base.match(/(\d{1,2})\s*(?:de|do)\s*(\d{1,2})/);
 
   if (match) {
     const dia = parseInt(match[1]);
-    const mes = parseInt(match[2]);
+    const mes = mesDetectado || parseInt(match[2]);
 
     return montar(item, dia, mes);
   }
@@ -435,6 +425,15 @@ function corrigirDataDoTexto(texto, item) {
     const mes = meses[match[2]];
 
     return montar(item, dia, mes);
+  }
+
+  // 🧠 FORMATO: 25 mês que vem
+  match = base.match(/(\d{1,2})/);
+
+  if (match && mesDetectado) {
+    const dia = parseInt(match[1]);
+
+    return montar(item, dia, mesDetectado);
   }
 
   // =========================
