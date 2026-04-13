@@ -2,6 +2,7 @@ import { addReminder } from "../services/reminderService.js";
 import { generateReminderDescription } from "../services/reminderDescriptionService.js";
 import { nextWeekdayUTC } from "../utils/dateUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { updateUser } from "../services/userService.js";
 
 /**
  * ============================================================
