@@ -287,7 +287,15 @@ export async function routeIntent(userDocId, text, media = {}) {
     const doc = await ref.get();
 
     if (!doc.exists) {
-      return "⚠️ Lembrete não encontrado.";
+      console.log("❌ ID NÃO ENCONTRADO:", user.editingReminder);
+
+      await updateUser(userDocId, {
+        editingReminder: null,
+        editingField: null,
+        editingStep: null,
+      });
+
+      return "⚠️ Lembrete não encontrado. Edição cancelada.";
     }
 
     await ref.delete();
@@ -313,7 +321,15 @@ export async function routeIntent(userDocId, text, media = {}) {
     const doc = await ref.get();
 
     if (!doc.exists) {
-      return "⚠️ Lembrete não encontrado.";
+      console.log("❌ ID NÃO ENCONTRADO:", user.editingReminder);
+
+      await updateUser(userDocId, {
+        editingReminder: null,
+        editingField: null,
+        editingStep: null,
+      });
+
+      return "⚠️ Lembrete não encontrado. Edição cancelada.";
     }
 
     await ref.delete();
@@ -367,52 +383,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     if (campo === "texto") return "📝 Digite o novo texto:";
     if (campo === "data") return "📅 Digite a nova data:";
-  }
-
-  if (
-    user.editingStep === "aguardando" &&
-    user.editingReminder &&
-    user.editingField
-  ) {
-    const ref = db
-      .collection("users")
-      .doc(userDocId)
-      .collection("reminders")
-      .doc(user.editingReminder);
-
-    const doc = await ref.get();
-
-    if (!doc.exists) {
-      return "⚠️ Lembrete não encontrado.";
-    }
-
-    let update = {};
-
-    // 📝 TEXTO
-    if (user.editingField === "texto") {
-      update.text = text;
-    }
-
-    // 📅 DATA
-    if (user.editingField === "data") {
-      const date = buildDateFromText(text);
-
-      if (!date) {
-        return "📅 Data inválida.";
-      }
-
-      update.when = Timestamp.fromDate(date);
-    }
-
-    await ref.update(update);
-
-    await updateUser(userDocId, {
-      editingReminder: null,
-      editingField: null,
-      editingStep: null,
-    });
-
-    return "✅ Lembrete atualizado!";
   }
 
   if (
