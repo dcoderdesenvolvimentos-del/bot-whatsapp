@@ -278,7 +278,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("reminders")
-      .doc(id)
+      .doc(user.lastReminderId)
       .delete();
 
     await updateUser(userDocId, {

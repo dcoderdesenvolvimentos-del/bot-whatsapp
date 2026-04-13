@@ -303,6 +303,10 @@ export async function createReminder(userDocId, data) {
       resposta += `\n\n💬 ${r.descricaoIA}`;
     }
 
+    await updateUser(userDocId, {
+      lastReminderId: r.id,
+    });
+
     return {
       type: "buttons",
       text: resposta,
