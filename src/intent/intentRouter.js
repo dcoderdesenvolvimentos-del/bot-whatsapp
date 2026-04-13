@@ -375,11 +375,20 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     // 📅 DATA
     if (user.editingField === "data") {
-      const date = buildDateFromText(text);
+      const novaData = buildDateFromText(text);
 
-      if (!date) return "📅 Data inválida! Tente por exemplo: 15/05/2027";
+      if (!novaData) return "📅 Data inválida.";
 
-      update.when = Timestamp.fromDate(date);
+      // 🔥 pega data atual do banco
+      const atual = doc.data().when.toDate();
+
+      // 🔥 mantém hora antiga
+      novaData.setHours(atual.getHours());
+      novaData.setMinutes(atual.getMinutes());
+      novaData.setSeconds(0);
+      novaData.setMilliseconds(0);
+
+      update.when = Timestamp.fromDate(novaData);
     }
 
     // 📅 Hora
