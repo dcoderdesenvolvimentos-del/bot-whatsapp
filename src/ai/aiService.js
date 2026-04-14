@@ -978,7 +978,7 @@ JSON:
       // troca vírgula decimal por ponto
       .replace(/(\d+),(\d{1,2})/g, "$1.$2");
 
-    console.log("🧠 RESPOSTA IA LIMPA:", respostaLimpa);
+    console.log(" 🧠 RESPOSTA IA LIMPA:", respostaLimpa);
     console.log("🧠 RESPOSTA IA LIMPA:", respostaCorrigida);
 
     const data = JSON.parse(respostaCorrigida);
