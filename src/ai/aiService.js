@@ -992,7 +992,13 @@ JSON:
       if (Array.isArray(data.lembretes)) {
         for (const l of data.lembretes) {
           // 🚨 validação individual
-          if (!l.acao || (!l.hora && !l.offset_ms)) {
+          if (
+            !l.acao ||
+            (!l.hora &&
+              !l.offset_ms &&
+              l.weekday === undefined &&
+              l.dia === undefined)
+          ) {
             return {
               intencao: "falha_criar_lembrete",
               motivo: "dados_incompletos",
