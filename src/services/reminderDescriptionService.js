@@ -6,14 +6,31 @@ const openai = new OpenAI({
 
 export async function generateReminderDescription(titulo) {
   const prompt = `
-Crie UMA frase curta, amigável e positiva sobre o lembrete abaixo.
+Crie UMA única frase baseada no lembrete abaixo.
+
+A frase deve seguir esta estrutura:
+1. Começar com uma percepção leve, emocional ou inteligente sobre o tipo do lembrete
+2. Trazer um pequeno significado (valor, benefício ou sensação)
+3. Finalizar com uma promessa natural de que você vai lembrar o usuário
+
+Estilo:
+- Natural, humano e agradável
+- Pode ser levemente divertido ou inteligente
+- Evite frases robóticas ou repetitivas
+- Varie o estilo entre: acolhedor, leve, inteligente ou motivacional
 
 Regras:
-- Não altere o significado do lembrete
-- Não invente informações
-- Não mencione data ou hora
-- Apenas uma frase
-- Tom natural e humano
+- NÃO alterar o significado do lembrete
+- NÃO inventar informações
+- NÃO mencionar datas ou horários
+- NÃO antecipe acontecimentos futuros como se fossem hoje
+- NÃO falar como se o evento fosse hoje
+- SEMPRE incluir a promessa de lembrar o usuário
+- Apenas 1 frase (média, nem curta demais nem longa demais)
+
+Objetivo:
+Transformar o lembrete em algo mais agradável, importante ou interessante, enquanto reforça que você vai ajudar o usuário a não esquecer.
+
 
 Lembrete: "${titulo}"
 `;
