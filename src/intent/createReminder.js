@@ -378,7 +378,7 @@ function corrigirDataDoTexto(texto, item) {
   // =========================
   // 🧠 FORMATO: 25 do mês que vem
   // =========================
-  let matchMesQueVem = base.match(
+  let matchMesQueVem = base1.match(
     /(\d{1,2})\s*(?:de|do)?\s*(mes\s*(que|q)?\s*vem)/,
   );
 
