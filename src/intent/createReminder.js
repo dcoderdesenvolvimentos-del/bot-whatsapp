@@ -379,13 +379,12 @@ function corrigirDataDoTexto(texto, item) {
     sábado: 6,
   };
 
+  let weekdayDetectado = null;
+
   for (const nome in diasSemana) {
     if (base1.includes(nome)) {
-      return {
-        ...item,
-        weekday: diasSemana[nome],
-        hora: item.hora ?? 9, // 🔥 força horário padrão
-      };
+      weekdayDetectado = diasSemana[nome];
+      break;
     }
   }
 
@@ -499,6 +498,13 @@ function corrigirDataDoTexto(texto, item) {
       ...item,
       dia,
       // ⚠️ NÃO define mes ainda
+    };
+  }
+  if (weekdayDetectado !== null) {
+    return {
+      ...item,
+      weekday: weekdayDetectado,
+      hora: item.hora ?? 9,
     };
   }
 
