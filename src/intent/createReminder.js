@@ -300,6 +300,13 @@ export async function createReminder(userDocId, data) {
       return err.message;
     }
   }
+  // 🔥 BUSCA O USUÁRIO CORRETAMENTE
+  const userSnap = await db.collection("users").doc(userId).get();
+  const user = userSnap.data();
+
+  const link = user?.dashboardSlug
+    ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
+    : null;
 
   // 🔹 CASO ÚNICO → MOSTRA DESCRIÇÃO DA IA
   if (resultados.length === 1) {
@@ -311,7 +318,8 @@ export async function createReminder(userDocId, data) {
     let resposta =
       `✅ *Compromisso Registrado!*\n\n` +
       `📌 ${textoFormatado}\n` +
-      `🕐 ${new Date(r.when.toMillis()).toLocaleString("pt-BR")}`;
+      `🕐 ${new Date(r.when.toMillis()).toLocaleString("pt-BR")}` +
+      (link ? `\n\n📊 Veja compromissos no dashboard:\n${link}` : "");
 
     if (r.descricaoIA) {
       resposta += `\n\n💬 ${r.descricaoIA}`;
