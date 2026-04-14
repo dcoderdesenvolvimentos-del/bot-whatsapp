@@ -362,6 +362,10 @@ export async function createReminder(userDocId, data) {
 
 function corrigirDataDoTexto(texto, item) {
   const base = (texto || "").toLowerCase();
+  const base1 = (texto || "")
+    .toLowerCase()
+    .normalize("NFD") // remove acento
+    .replace(/[\u0300-\u036f]/g, "");
 
   const diasSemana = {
     domingo: 0,
@@ -403,11 +407,6 @@ function corrigirDataDoTexto(texto, item) {
     novembro: 11,
     dezembro: 12,
   };
-
-  const base1 = (texto || "")
-    .toLowerCase()
-    .normalize("NFD") // remove acento
-    .replace(/[\u0300-\u036f]/g, "");
 
   // =========================
   // 🧠 FORMATO: 25 do mês que vem
