@@ -75,7 +75,10 @@ function buildWhen(data) {
 
   // 5️⃣ DIA DA SEMANA — "terça às 14"
   if (typeof data.weekday === "number") {
-    const date = nextWeekdayUTC(data.weekday, data.hora ?? 9, data.minuto ?? 0);
+    const hora = data.hora ?? 9;
+
+    const date = nextWeekdayUTC(data.weekday, hora, data.minuto ?? 0);
+
     return Timestamp.fromDate(date);
   }
 
