@@ -360,6 +360,28 @@ export async function createReminder(userDocId, data) {
 function corrigirDataDoTexto(texto, item) {
   const base = (texto || "").toLowerCase();
 
+  const diasSemana = {
+    domingo: 0,
+    segunda: 1,
+    terca: 2,
+    terça: 2,
+    quarta: 3,
+    quinta: 4,
+    sexta: 5,
+    sabado: 6,
+    sábado: 6,
+  };
+
+  for (const nome in diasSemana) {
+    if (base1.includes(nome)) {
+      return {
+        ...item,
+        weekday: diasSemana[nome],
+        hora: item.hora ?? 9, // 🔥 força horário padrão
+      };
+    }
+  }
+
   // =========================
   // 🧠 MESES POR NOME
   // =========================
