@@ -3,6 +3,7 @@ import { generateReminderDescription } from "../services/reminderDescriptionServ
 import { nextWeekdayUTC } from "../utils/dateUtils.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { updateUser } from "../services/userService.js";
+import { db } from "../config/firebase.js";
 
 /**
  * ============================================================
@@ -301,7 +302,7 @@ export async function createReminder(userDocId, data) {
     }
   }
   // 🔥 BUSCA O USUÁRIO CORRETAMENTE
-  const userSnap = await db.collection("users").doc(userId).get();
+  const userSnap = await db.collection("users").doc(userDocId).get();
   const user = userSnap.data();
 
   const link = user?.dashboardSlug
