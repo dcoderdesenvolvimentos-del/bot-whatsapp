@@ -278,22 +278,17 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(user.lastReceitaId)
+      .doc(id)
       .delete();
 
-    await updateUser(userDocId, {
-      lastReceitaId: null,
-    });
-
-    return "🗑️ Receita excluída com sucesso!";
+    return "🗑 Receita excluída com sucesso!";
   }
 
   if (text.startsWith("editar_receita_")) {
     const id = text.replace("editar_receita_", "");
 
     await updateUser(userDocId, {
-      editingReceitaId: id, // 🔥 ESSENCIAL
-      editingField: null,
+      editingReceitaId: id,
     });
 
     return {
