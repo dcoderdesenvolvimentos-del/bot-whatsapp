@@ -1566,19 +1566,31 @@ export async function routeIntent(userDocId, text, media = {}) {
   7️⃣ RESPOSTA
   ===================================================== */
 
-        return (
-          "💰 *Receita registrada com sucesso!*\n\n" +
-          `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}\n` +
-          `📌 Origem: ${data.origem || "não informada"}\n` +
-          `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
-          `━━━━━━━━━━━━━━━━━\n` +
-          `📊 *Dashboard Online*\n` +
-          `Você também pode acompanhar tudo pelo seu painel:\n` +
-          `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`
-        );
+        return {
+          type: "buttons",
+          text:
+            "💰 *Receita registrada com sucesso!*\n\n" +
+            `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}\n` +
+            `📌 Origem: ${data.origem || "não informada"}\n` +
+            `📅 Data: ${createdAt.toDate().toLocaleDateString("pt-BR")}\n\n` +
+            `━━━━━━━━━━━━━━━━━\n` +
+            `📊 *Dashboard Online*\n` +
+            `Você também pode acompanhar tudo pelo seu painel:\n` +
+            `👉 https://app.marioai.com.br/m/${userData.dashboardSlug}\n`,
+          buttons: [
+            {
+              id: `editar_receita_${docRef.id}`,
+              text: "✏️ Editar",
+            },
+            {
+              id: `excluir_receita_${docRef.id}`,
+              text: "🗑 Excluir",
+            },
+          ],
+        };
       }
 
       case "consultar_receitas_periodo": {
