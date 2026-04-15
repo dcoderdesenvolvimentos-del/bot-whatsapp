@@ -302,7 +302,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     };
   }
 
-  if (user.editingReceitaId) {
+  if (user.editingReceitaId && user.editingField) {
     const ref = db
       .collection("users")
       .doc(userDocId)
@@ -313,7 +313,7 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     if (user.editingField === "valor") {
       const valor = extractMoney(text);
-      if (!valor) return "❌ Valor inválido";
+      if (valor === null || valor === undefined) return "❌ Valor inválido";
 
       update.valor = valor;
     }
@@ -324,10 +324,11 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     await ref.update(update);
 
-    await updateUser(userDocId, {
-      editingReceitaId: null,
-      editingField: null,
-    });
+    if (user.editingReceitaId && !user.editingField) {
+      await updateUser(userDocId, {
+        editingReceitaId: null,
+      });
+    }
 
     const atualizado = await ref.get();
     const r = atualizado.data();
