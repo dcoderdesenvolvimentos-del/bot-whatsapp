@@ -2475,15 +2475,15 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  await updateUser(userId, {
-    lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
-  });
-
   const docRef = await db
     .collection("users")
     .doc(userId)
     .collection("receitas")
     .add(receita);
+
+  await updateUser(userId, {
+    lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
+  });
 
   // 🔥 BUSCA O USUÁRIO CORRETAMENTE
   const userSnap = await db.collection("users").doc(userId).get();
