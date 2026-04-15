@@ -331,7 +331,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     const update = {};
 
     if (user.editingField === "valor") {
-      const valor = extractMoney(text);
+      const valor = parseBRL(text);
       if (valor === null || valor === undefined) return "❌ Valor inválido";
 
       update.valor = valor;
@@ -349,7 +349,6 @@ export async function routeIntent(userDocId, text, media = {}) {
     await ref.update(update);
 
     await updateUser(userDocId, {
-      lastReceitaId: null,
       editingField: null,
     });
 
