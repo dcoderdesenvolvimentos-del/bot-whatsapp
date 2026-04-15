@@ -281,6 +281,10 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.lastReceitaId)
       .delete();
 
+    await updateUser(userDocId, {
+      lastReceitaId: null,
+    });
+
     return "🗑 Receita excluída com sucesso!";
   }
 
@@ -288,7 +292,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     const id = text.replace("editar_receita_", "");
 
     await updateUser(userDocId, {
-      editingReceitaId: id,
+      lastReceitaId: user.lastReceitaId,
     });
 
     return {
@@ -307,7 +311,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(user.editingReceitaId);
+      .doc(user.lastReceitaId);
 
     const update = {};
 
