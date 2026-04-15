@@ -292,7 +292,7 @@ export async function routeIntent(userDocId, text, media = {}) {
     const id = text.replace("editar_receita_", "");
 
     await updateUser(userDocId, {
-      editingReceitaId: id,
+      lastReceitaId: user.lastReceitaId,
     });
 
     return {
