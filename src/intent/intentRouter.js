@@ -223,6 +223,25 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     let day, month, year;
 
+    // 🔥 amanhã
+    if (dataStr.includes("amanhã" || "amanha")) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      return d;
+    }
+
+    // 🔥 ontem
+    if (dataStr.includes("ontem" || "omtem")) {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return d;
+    }
+
+    // 🔥 hoje
+    if (dataStr.includes("hoje")) {
+      return new Date();
+    }
+
     // aceita 24-01-2026
     if (dataStr.includes("-")) {
       [day, month, year] = dataStr.split("-").map(Number);
@@ -355,7 +374,11 @@ export async function routeIntent(userDocId, text, media = {}) {
       const novaData = buildDateFromText(text); // 👈 usa seu parser de data
 
       if (!novaData) {
-        return "❌ Não entendi a data. Ex: 25/03/2026";
+        return {
+          type: "buttons",
+          text: "❌ Não entendi a data.\nEx: 25/03, amanhã\n\nOu escolha:",
+          buttons: [{ id: "cancelar_edicao", text: "❌ Cancelar" }],
+        };
       }
 
       update.createdAt = Timestamp.fromDate(novaData);
@@ -378,7 +401,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     return (
       `✅ *Receita atualizada!*\n\n` +
       `💰 R$ ${r.valor}\n` +
-      `📌 ${r.descricao}`
+      `📌 ${r.descricao}\n` +
+      `📅 ${r.createdAt.toDate().toLocaleDateString("pt-BR")}`
     );
   }
 
