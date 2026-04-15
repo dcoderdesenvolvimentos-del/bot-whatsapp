@@ -346,7 +346,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       editingField: "data",
     });
 
-    return "📅 Me diga a nova data (ex: 25/03/2026)";
+    return "📅 Me diga a nova data (ex: 25/03/2026 ou amanha, hoje, ontem)";
   }
 
   if (user.lastReceitaId && user.editingField) {
@@ -408,7 +408,6 @@ export async function routeIntent(userDocId, text, media = {}) {
 
   if (text === "cancelar_edicao") {
     await updateUser(userDocId, {
-      lastReceitaId: null,
       editingField: null,
     });
 
