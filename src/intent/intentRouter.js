@@ -327,7 +327,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       editingField: "data",
     });
 
-    return "📅 Me diga a nova data (ex: 25/03/2026 ou amanhã)";
+    return "📅 Me diga a nova data (ex: 25/03/2026)";
   }
 
   if (user.lastReceitaId && user.editingField) {
@@ -352,10 +352,10 @@ export async function routeIntent(userDocId, text, media = {}) {
     }
 
     if (user.editingField === "data") {
-      const novaData = parseDate(text); // 👈 usa seu parser de data
+      const novaData = buildDateFromText(text); // 👈 usa seu parser de data
 
       if (!novaData) {
-        return "❌ Não entendi a data. Ex: 25/03/2026 ou amanhã";
+        return "❌ Não entendi a data. Ex: 25/03/2026";
       }
 
       update.createdAt = Timestamp.fromDate(novaData);
