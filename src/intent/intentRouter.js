@@ -278,7 +278,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(id)
+      .doc(user.lastReceitaId)
       .delete();
 
     return "🗑 Receita excluída com sucesso!";
