@@ -271,6 +271,74 @@ export async function routeIntent(userDocId, text, media = {}) {
   const user = await getUser(userDocId);
   const msg = normalize(text);
 
+  if (text.startsWith("excluir_receita_")) {
+    const id = text.replace("excluir_receita_", "");
+
+    await db
+      .collection("users")
+      .doc(userDocId)
+      .collection("receitas")
+      .doc(id)
+      .delete();
+
+    return "🗑 Receita excluída com sucesso!";
+  }
+
+  if (text.startsWith("editar_receita_")) {
+    const id = text.replace("editar_receita_", "");
+
+    await updateUser(userDocId, {
+      editingReceitaId: id,
+    });
+
+    return {
+      type: "buttons",
+      text: "✏️ O que deseja editar?",
+      buttons: [
+        { id: "edit_receita_valor", text: "💰 Valor" },
+        { id: "edit_receita_texto", text: "📝 Descrição" },
+        { id: "cancelar_edicao", text: "❌ Cancelar" },
+      ],
+    };
+  }
+
+  if (user.editingReceitaId) {
+    const ref = db
+      .collection("users")
+      .doc(userDocId)
+      .collection("receitas")
+      .doc(user.editingReceitaId);
+
+    const update = {};
+
+    if (user.editingField === "valor") {
+      const valor = extractMoney(text);
+      if (!valor) return "❌ Valor inválido";
+
+      update.valor = valor;
+    }
+
+    if (user.editingField === "texto") {
+      update.descricao = text;
+    }
+
+    await ref.update(update);
+
+    await updateUser(userDocId, {
+      editingReceitaId: null,
+      editingField: null,
+    });
+
+    const atualizado = await ref.get();
+    const r = atualizado.data();
+
+    return (
+      `✅ *Receita atualizada!*\n\n` +
+      `💰 R$ ${r.valor}\n` +
+      `📌 ${r.descricao}`
+    );
+  }
+
   if (text.startsWith("excluir_lembrete_")) {
     const id = text.replace("excluir_lembrete_", "").trim();
 
@@ -2407,7 +2475,15 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  await db.collection("users").doc(userId).collection("receitas").add(receita);
+  await updateUser(uid, {
+    lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
+  });
+
+  const docRef = await db
+    .collection("users")
+    .doc(userId)
+    .collection("receitas")
+    .add(receita);
 
   // 🔥 BUSCA O USUÁRIO CORRETAMENTE
   const userSnap = await db.collection("users").doc(userId).get();
@@ -2419,15 +2495,15 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
 
   console.log("✅ Receita salva com data correta:\n", receita);
 
-  return (
-    "💰 *Receita registrada com sucesso!*\n\n" +
-    `💵 Valor: ${Number(valor).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    })}\n` +
-    `🏷 Origem: ${origem || "Não informado"}` +
-    (link ? `\n\n📊 Ver no dashboard:\n${link}` : "")
-  );
+  return {
+    type: "buttons",
+    text:
+      `✅ *Receita registrada!*\n\n` + `💰 R$ ${valor}\n` + `📌 ${descricao}`,
+    buttons: [
+      { id: `editar_receita_${docRef.id}`, text: "✏️ Editar" },
+      { id: `excluir_receita_${docRef.id}`, text: "🗑 Excluir" },
+    ],
+  };
 }
 
 function getCurrentMonthRange() {
