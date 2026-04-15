@@ -1554,12 +1554,16 @@ export async function routeIntent(userDocId, text, media = {}) {
         /* =====================================================
   6️⃣ SALVA
   ===================================================== */
-        await criarReceita({
+        const docRef = await criarReceita({
           userId: userDocId,
           valor,
           descricao: data.descricao || "Recebimento",
           origem: data.origem || "não informado",
           date: createdAt.toDate(),
+        });
+
+        await updateUser(userDocId, {
+          lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
         });
 
         /* =====================================================
