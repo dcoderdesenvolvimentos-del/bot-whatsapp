@@ -281,7 +281,11 @@ export async function routeIntent(userDocId, text, media = {}) {
       .doc(user.lastReceitaId)
       .delete();
 
-    return "🗑 Receita excluída com sucesso!";
+    await updateUser(userDocId, {
+      lastReceitaId: null,
+    });
+
+    return "🗑️ Receita excluída com sucesso!";
   }
 
   if (text.startsWith("editar_receita_")) {
