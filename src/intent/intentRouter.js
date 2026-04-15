@@ -2475,7 +2475,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     createdAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   };
 
-  await updateUser(uid, {
+  await updateUser(userId, {
     lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
   });
 
