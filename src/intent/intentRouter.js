@@ -2497,10 +2497,6 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     .collection("receitas")
     .add(receita);
 
-  await updateUser(userId, {
-    lastReceitaId: docRef.id, // 🔥 IGUAL lembrete
-  });
-
   // 🔥 BUSCA O USUÁRIO CORRETAMENTE
   const userSnap = await db.collection("users").doc(userId).get();
   const user = userSnap.data();
@@ -2511,15 +2507,7 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
 
   console.log("✅ Receita salva com data correta:\n", receita);
 
-  return {
-    type: "buttons",
-    text:
-      `✅ *Receita registrada!*\n\n` + `💰 R$ ${valor}\n` + `📌 ${descricao}`,
-    buttons: [
-      { id: `editar_receita_${docRef.id}`, text: "✏️ Editar" },
-      { id: `excluir_receita_${docRef.id}`, text: "🗑 Excluir" },
-    ],
-  };
+  return docRef;
 }
 
 function getCurrentMonthRange() {
