@@ -292,7 +292,8 @@ export async function routeIntent(userDocId, text, media = {}) {
     const id = text.replace("editar_receita_", "");
 
     await updateUser(userDocId, {
-      lastReceitaId: user.lastReceitaId,
+      lastReceitaId: id,
+      editingField: null,
     });
 
     return {
@@ -306,12 +307,28 @@ export async function routeIntent(userDocId, text, media = {}) {
     };
   }
 
-  if (user.editingReceitaId && user.editingField) {
+  if (text === "edit_receita_valor") {
+    await updateUser(userDocId, {
+      editingField: "valor",
+    });
+
+    return "💰 Digite o novo valor:";
+  }
+
+  if (text === "edit_receita_texto") {
+    await updateUser(userDocId, {
+      editingField: "texto",
+    });
+
+    return "📝 Digite a nova descrição:";
+  }
+
+  if (user.lastReceitaId && user.editingField) {
     const ref = db
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(user.lastReceitaId);
+      .doc(user.lastReceitaId); // 🔥 ID CERTO
 
     const update = {};
 
@@ -326,13 +343,17 @@ export async function routeIntent(userDocId, text, media = {}) {
       update.descricao = text;
     }
 
+    // 🔥 PROTEÇÃO
+    if (Object.keys(update).length === 0) {
+      return "⚠️ Não entendi o que você quer editar.";
+    }
+
     await ref.update(update);
 
-    if (user.editingReceitaId && !user.editingField) {
-      await updateUser(userDocId, {
-        editingReceitaId: null,
-      });
-    }
+    await updateUser(userDocId, {
+      lastReceitaId: null,
+      editingField: null,
+    });
 
     const atualizado = await ref.get();
     const r = atualizado.data();
@@ -342,6 +363,15 @@ export async function routeIntent(userDocId, text, media = {}) {
       `💰 R$ ${r.valor}\n` +
       `📌 ${r.descricao}`
     );
+  }
+
+  if (text === "cancelar_edicao") {
+    await updateUser(userDocId, {
+      lastReceitaId: null,
+      editingField: null,
+    });
+
+    return "❌ Edição cancelada.";
   }
 
   if (text.startsWith("excluir_lembrete_")) {
