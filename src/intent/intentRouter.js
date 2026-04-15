@@ -300,6 +300,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       buttons: [
         { id: "edit_receita_valor", text: "💰 Valor" },
         { id: "edit_receita_texto", text: "📝 Descrição" },
+        { id: "edit_receita_data", text: "📅 Data" },
         { id: "cancelar_edicao", text: "❌ Cancelar" },
       ],
     };
@@ -310,7 +311,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       editingField: "valor",
     });
 
-    return "💰 Digite o novo valor:";
+    return "💰 Digite o novo valor, exemplo: 50 ou 50,00";
   }
 
   if (text === "edit_receita_texto") {
@@ -319,6 +320,14 @@ export async function routeIntent(userDocId, text, media = {}) {
     });
 
     return "📝 Digite a nova descrição:";
+  }
+
+  if (text === "edit_receita_data") {
+    await updateUser(userDocId, {
+      editingField: "data",
+    });
+
+    return "📅 Me diga a nova data (ex: 25/03/2026 ou amanhã)";
   }
 
   if (user.lastReceitaId && user.editingField) {
@@ -332,13 +341,24 @@ export async function routeIntent(userDocId, text, media = {}) {
 
     if (user.editingField === "valor") {
       const valor = parseBRL(text);
-      if (valor === null || valor === undefined) return "❌ Valor inválido";
+      if (valor === null || valor === undefined)
+        return "❌ Valor inválido, deve ser no formato brasileiro, exemplo: 50 ou 50,00";
 
       update.valor = valor;
     }
 
     if (user.editingField === "texto") {
       update.descricao = text;
+    }
+
+    if (user.editingField === "data") {
+      const novaData = parseDate(text); // 👈 usa seu parser de data
+
+      if (!novaData) {
+        return "❌ Não entendi a data. Ex: 25/03/2026 ou amanhã";
+      }
+
+      update.createdAt = Timestamp.fromDate(novaData);
     }
 
     // 🔥 PROTEÇÃO
