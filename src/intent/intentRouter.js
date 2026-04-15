@@ -278,7 +278,7 @@ export async function routeIntent(userDocId, text, media = {}) {
       .collection("users")
       .doc(userDocId)
       .collection("receitas")
-      .doc(id)
+      .doc(user.lastReceitaId)
       .delete();
 
     return "🗑 Receita excluída com sucesso!";
@@ -2496,14 +2496,6 @@ async function criarReceita({ userId, valor, descricao, origem, date }) {
     .doc(userId)
     .collection("receitas")
     .add(receita);
-
-  // 🔥 BUSCA O USUÁRIO CORRETAMENTE
-  const userSnap = await db.collection("users").doc(userId).get();
-  const user = userSnap.data();
-
-  const link = user?.dashboardSlug
-    ? `https://app.marioai.com.br/m/${user.dashboardSlug}`
-    : null;
 
   console.log("✅ Receita salva com data correta:\n", receita);
 
